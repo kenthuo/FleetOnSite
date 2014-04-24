@@ -76,6 +76,8 @@ ContigoMap.prototype = {
 				}
             }
         });
+        this.initCentralMap();
+
 	},
 	
 	/**
@@ -106,6 +108,22 @@ ContigoMap.prototype = {
 				that.contextMenu.close();
 			});
 	},
+	
+	/**
+	 * Show a cross-hair image to represent the center of the map.
+	 */
+	initCentralMap: function() {
+        var marker = new google.maps.Marker({
+			map: this.map.gmap3("get"),
+			 icon: new google.maps.MarkerImage(
+			 	ICON_HOST_PATH + 'crosshair.png', 
+			 	null, 
+			 	null, 
+			 	new google.maps.Point(20, 20)), // crosshair.png is 41x41
+			shape: {coords: [0,0,0,0], type: 'rect'}
+		});
+		marker.bindTo('position', this.map.gmap3("get"), 'center');
+	},
     
     /**
      * Sends points to be displayed on the map.
@@ -129,7 +147,7 @@ ContigoMap.prototype = {
 	    //var landmarkMarkers = this.buildLandmarkMarkers(landmarks, this.isMetric);
 	    //var jobMarkers = this.buildJobMarkers(jobCollection, this.isMetric);
         this.map.gmap3({
-            marker:{
+            marker: {
                 values: locationMarkers,
                 options:{
                     draggable: false
