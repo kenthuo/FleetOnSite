@@ -136,17 +136,33 @@ ContigoMap.prototype = {
                     draggable: false
                 },
                 events:{
+                	click: function(marker, event, context){
+						var map = $(this).gmap3("get"),
+            			infowindow = $(this).gmap3({get:{name:"infowindow"}});
+            			if (infowindow){
+              				infowindow.open(map, marker);
+              				infowindow.setContent(context.data);
+            			} else {
+              				$(this).gmap3({
+                				infowindow:{
+                  					anchor:marker,
+                  					options:{content: context.data}
+                				}
+              				});
+              			}
+            		}
+            		/*,
                     mouseover: function(marker, event, context){
                         var map = $(this).gmap3("get"),
                         infowindow = $(this).gmap3({get:{name:"infowindow"}});
                         if (infowindow){
                             infowindow.open(map, marker);
-                            infowindow.setContent(context.data);
+                            infowindow.setContent(context.tag[0]);
                         } else {
                             $(this).gmap3({
                                 infowindow:{
                                     anchor:marker, 
-                                    options:{content: context.data}
+                                    options:{content: context.tag[0]}
                                 }
                             });
                         }
@@ -156,7 +172,7 @@ ContigoMap.prototype = {
                         if (infowindow){
                             infowindow.close();
                         }
-                    }
+                    }*/
                 }
             }
         }, "autofit");
@@ -217,9 +233,16 @@ ContigoMap.prototype = {
 				var dispatch = currentPoint.dispatch;
 
 	            if (label) {
+	            	var infoContent = this.buildLocationInfoWindowContents(
+		                            label, coord, eventType, address, stopDuration, speed, 
+		                            direction, timestamp, landmark, circleCertaintyRadius, 
+		                            status, userNote, driverID, driverStatus, beaconID,
+		                            guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, 
+		                            dispatch, isMetric);
                     var marker = {
+                    	tag: [label, "grouping-location"],
                         latLng: [coord.lat, coord.lng], 
-                        data: "Paris !", 
+                        data: infoContent, 
                         options: {
                             icon: this.constructMarkerIconName(icon, numberLabel),
                             labelAnchor: new google.maps.Point(52, -2),
@@ -253,7 +276,67 @@ ContigoMap.prototype = {
 		 }
 		 
 		 return iconName;
-	},    
+	},  
+	
+		/**
+	 * Construct the content of InfoWindow for each location Poi object.
+	 * 
+	 * @returns string the content of InfoWindow
+	 */
+	buildLocationInfoWindowContents : function(
+	                label, coord, eventType, address, stopDuration, speed, direction, timestamp, landmark,
+	                circleCertaintyRadius, status, userNote, driverID, driverStatus, beaconID,
+	                guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, dispatch, isMetric) {
+
+	    var infoContent = "<div class='marker_infowindow'>";
+	    infoContent += "<div class='marker_infowindow_title'>" + label + "</div>";
+		infoContent += "<div class='event_time'>";
+	    infoContent += this.createMarkerInfoWindowPara(timestamp);
+
+	    infoContent += (speed) ? this.createMarkerInfoWindowPara(speed + " " + direction) : "";
+		infoContent += "</div>";
+	    infoContent += "<div class='event_location'>";
+	    infoContent += this.createMarkerInfoWindowPara(address.street);
+
+	    var secondAddressLine = "";
+	    var city = address.city;
+	    var county = address.county;
+	    var stateProvince = address.state;
+	    secondAddressLine += (city) ? city : "";
+	    secondAddressLine += (county) ? ((secondAddressLine) ? ", " + county : county) : "";
+	    secondAddressLine += (stateProvince) ? ((secondAddressLine) ? ", " + stateProvince : stateProvince) : "";
+	    secondAddressLine += " " + address.postalCode;
+	    infoContent += this.createMarkerInfoWindowPara(secondAddressLine);
+
+	    infoContent += this.createMarkerInfoWindowPara(address.country);
+	    infoContent += (stopDuration) ? this.createMarkerInfoWindowPara(stopDuration) : "";
+
+	    if (!isMetric) {
+	        var cocValueFeet = Math.round(circleCertaintyRadius) * 3.2808399;
+	        infoContent += (cocValueFeet > 0) ? this.createMarkerInfoWindowPara(cocValueFeet + " ft accuracy (radius)") : "";
+	    } else {
+	        var cocValueMetres = circleCertaintyRadius;
+	        infoContent += (cocValueMetres > 0) ? this.createMarkerInfoWindowPara(cocValueFeet + " m accuracy (radius)") : "";
+	    }
+	    infoContent += (coord && this.latLonDisplayed) ? this.createMarkerInfoWindowPara("Lat/Long: (" + coord.lat + ", " + coord.lng + ")") : "";
+	    infoContent += (eventType) ? this.createMarkerInfoWindowPara("Event Type: " + eventType) : "";
+	    infoContent += (landmark) ? this.createMarkerInfoWindowPara("Landmark: " + landmark) : "";
+	    infoContent += "</div>";
+
+		
+	    infoContent += "</div>";
+		return infoContent;
+	},
+	
+	/**
+	 * Construct a paragraph for the content of InfoWindow of Parker object.
+	 * 
+	 * @param paragraph
+	 * @returns string the decorated paragraph
+	 */
+	createMarkerInfoWindowPara : function(paragraph) {
+	    return "<p>" + paragraph + "</p>";
+	},
     
 	/**
 	 * Determines the initial index to start putting locate points for a 

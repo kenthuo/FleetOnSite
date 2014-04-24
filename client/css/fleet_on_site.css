@@ -13,13 +13,26 @@ body {
 }
 
 .labels {
-    color: red;
-    background-color: white;
-    font-family: "Lucida Grande", "Arial", sans-serif;
-    font-size: 11px;
-    font-weight: bold;
-    text-align: center;
-    width: 100px;     
-    border: 2px solid black;
-    white-space: nowrap;
+	white-space: nowrap;
+	background-color: #ffffff;
+	font-family: sans-serif, Verdana, Arial, Helvetica;
+	font-size: 10px;
+	font-weight: bold;
+	padding: 1px 1px 2px 1px;
+	border: solid 1px black;
+	box-shadow: 2px 2px 1px #555555;
+}
+
+.marker_infowindow .event_time, .marker_infowindow .event_location {
+	padding: 3px 0 3px 0;
+}
+
+.marker_infowindow_title {
+    background-color: #999999;
+	padding: 2px;
+}
+
+.marker_infowindow p {
+	padding: 1px 0;
+	margin: 0;
 }
