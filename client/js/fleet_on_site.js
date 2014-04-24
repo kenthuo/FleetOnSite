@@ -34,7 +34,6 @@ ContigoMap.prototype = {
 	/**
 	 * Initialize and show the map with the default central position and zoom level, and
 	 * also initialize the context menu.
-	 * 
 	 */
 	init: function() {
 		var that = this;
@@ -84,9 +83,9 @@ ContigoMap.prototype = {
 	 */
 	initContextMenu: function() {
 		var that = this;
-        this.contextMenu.add("Send Point", "sendPoint separator", 
+        this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function(){
-                that.sendPoints(null);
+                that.clearMarkers();
                 that.contextMenu.close();
             });
 		this.contextMenu.add("Zoom in", "zoomIn", 
@@ -198,8 +197,8 @@ ContigoMap.prototype = {
 	        
 	        // determine the starting and ending index to display location points
 	        if (szLocatePoints > 0) {
-		        var minNetworkTs = this.toUTC(locatePoints[0]['timestamp']);
-                var maxNetworkTs = this.toUTC(locatePoints[szLocatePoints - 1]['timestamp']);
+		        var minNetworkTs = Util.toUTC(locatePoints[0]['timestamp']);
+                var maxNetworkTs = Util.toUTC(locatePoints[szLocatePoints - 1]['timestamp']);
                 var isDescOrder = (minNetworkTs > maxNetworkTs);
                 if (isDescOrder) {
                     locatePoints = locatePoints.reverse();
@@ -311,13 +310,14 @@ ContigoMap.prototype = {
 	    infoContent += this.createMarkerInfoWindowPara(address.country);
 	    infoContent += (stopDuration) ? this.createMarkerInfoWindowPara(stopDuration) : "";
 
-	    if (!isMetric) {
-	        var cocValueFeet = Math.round(circleCertaintyRadius) * 3.2808399;
-	        infoContent += (cocValueFeet > 0) ? this.createMarkerInfoWindowPara(cocValueFeet + " ft accuracy (radius)") : "";
-	    } else {
-	        var cocValueMetres = circleCertaintyRadius;
-	        infoContent += (cocValueMetres > 0) ? this.createMarkerInfoWindowPara(cocValueFeet + " m accuracy (radius)") : "";
-	    }
+        if (!isMetric) {
+            var cocValueFeet = Math.round(circleCertaintyRadius) * 3.2808399;
+            infoContent += (cocValueFeet > 0) ? this.createMarkerInfoWindowPara(cocValueFeet + " ft accuracy (radius)") : "";
+        } else {
+            var cocValueMetres = circleCertaintyRadius;
+            infoContent += (cocValueMetres > 0) ? this.createMarkerInfoWindowPara(cocValueMetres + " m accuracy (radius)") : "";
+        }
+
 	    infoContent += (coord && this.latLonDisplayed) ? this.createMarkerInfoWindowPara("Lat/Long: (" + coord.lat + ", " + coord.lng + ")") : "";
 	    infoContent += (eventType) ? this.createMarkerInfoWindowPara("Event Type: " + eventType) : "";
 	    infoContent += (landmark) ? this.createMarkerInfoWindowPara("Landmark: " + landmark) : "";
@@ -364,27 +364,15 @@ ContigoMap.prototype = {
 	},
     
     /**
-     * Convert a string format of date/time to UTC timestamp
+     * Clear all of markers on the map.
      */
-    toUTC : function (dateTime) {
-        var tsDate = dateTime.split(" "),
-            date = tsDate[0],
-            time = tsDate[1],
-            timeInfo = time.split(":"),
-            amPm = time.substr(-2),
-            hh = parseInt(timeInfo[0]),
-            mm = parseInt(timeInfo[1]),
-            ss = parseInt(timeInfo[2]);
-            
-        if (amPm == "PM") {
-            if (hh < 12) {
-            	hh += 12;
-    		}
-        }
-
-        //Subtract 1 from month to accomodate the month start from 0 in the function
-        var timestamp = new Date(date.substring(6, 10), ((date.substring(0, 2) * 1) - 1), date.substring(3, 5), hh, mm, ss).getTime() / 1000;
-        return timestamp;
+    clearMarkers : function() {
+        this.map.gmap3({
+            clear: {
+                name:["marker"],
+                all: true
+            }
+        });
     }
 }
 

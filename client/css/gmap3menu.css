@@ -23,8 +23,8 @@
 	background-position: 4px center;
 }
 
-#gmap3-menu .item.sendPoint {
-	background-image: url(../images/zoomin.png);
+#gmap3-menu .item.clearMarker {
+	background-image: url(../images/eraser.png);
 }
 
 #gmap3-menu .item.zoomIn {
