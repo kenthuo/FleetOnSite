@@ -305,6 +305,7 @@ ContigoMap.prototype = {
                                 center: [coord.lat, coord.lng],
                                 radius : parseInt(circleCertaintyRadius, 10),
                                 fillColor : "#C80000",
+                                strokeWeight: 1,
                                 strokeColor : "#F00000"}};
                         cocs.push(circle);
 	        		}
