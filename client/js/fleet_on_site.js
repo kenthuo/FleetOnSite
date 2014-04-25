@@ -37,6 +37,8 @@ var TAG_GROUP_LOCATION = "group_location";
  */
 var TAG_GROUP_COC = "group_coc";
 
+var DEFAULT_ROUTE_COLOR = "#FF0000";
+
 var ICON_HOST_PATH = "icons/";
 
 var NUMBERS_ICON_HOST_PATH = "icons/numbers/";
@@ -111,7 +113,7 @@ ContigoMap.prototype = {
 		var that = this;
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function(){
-                that.clear(["marker", "circle"]);
+                that.clear(["marker", "circle", "polyline"]);
                 that.contextMenu.close();
             });
 		this.contextMenu.add("Zoom in", "zoomIn", 
@@ -170,8 +172,9 @@ ContigoMap.prototype = {
         var locationPois = this.buildLocationPois(beaconItems, this.isMetric);
 	    //var landmarkMarkers = this.buildLandmarkMarkers(landmarks, this.isMetric);
 	    //var jobMarkers = this.buildJobMarkers(jobCollection, this.isMetric);
-        this.map.gmap3({
-            marker: {
+	    var mapObjects = {};
+	    if (locationPois.marker.length) {
+	    	mapObjects["marker"] = {
                 values: locationPois.marker,
                 options:{
                     draggable: false
@@ -215,11 +218,27 @@ ContigoMap.prototype = {
                         }
                     }*/
                 }
-            },
-            circle: {
-                values: locationPois.coc
             }
-        }, "autofit");
+	    }
+	    
+	    if (locationPois.coc.length > 0) {
+	    	mapObjects["circle"] = {
+	    		values: locationPois.coc
+	    	}
+	    }
+	    
+	    if (locationPois.route.length > 0) {
+	    	mapObjects["polyline"] = {
+	    		options: {
+						strokeColor: DEFAULT_ROUTE_COLOR,
+						strokeOpacity: 1.0,
+						strokeWeight: 1,
+						path: locationPois.route
+					}
+	    	}
+	    }
+	    
+        this.map.gmap3(mapObjects, "autofit");
     },
     	/**
 	 * Convert from a list of contigo's location poi objects into marker and circle objects.
@@ -233,10 +252,12 @@ ContigoMap.prototype = {
 		var self = this;
 	    var markers = new Array();
         var cocs = new Array();
+        var routes = new Array();
 	    for (var x in beaconItems) {
 	        //var beaconId = x; // 3994
 	        var locatePoints = beaconItems[x].locatePoints;
 	        var isPointsConnected = beaconItems[x].isPointsConnected;
+	        var showInputOutputColor = beaconItems[x].showInputOutputColor;
 	        var szLocatePoints = locatePoints.length;
 	        var initialIndex = 0;
 	        var lastIndex = szLocatePoints;
@@ -296,8 +317,8 @@ ContigoMap.prototype = {
                             labelContent: label}};
 		            markers.push(marker);
 	            }
-                
-                if (circleCertaintyRadius) {
+                circleCertaintyRadius = parseInt(circleCertaintyRadius, 10);
+                if (circleCertaintyRadius > 0) {
                     if (this.currentCocMode == COC_SHOW_ALL || this.currentCocMode == COC_SHOW_LAST && i == szLocatePoints - 1) {
                         var circle = {
                             tag: [TAG_GROUP_COC],
@@ -310,10 +331,14 @@ ContigoMap.prototype = {
                         cocs.push(circle);
 	        		}
                 }
+                
+                if (isPointsConnected) {
+                	routes.push([coord.lat, coord.lng]);
+                }
 	        } // for (var i = 0; i < szLocatePoints; i++)
 
 	    } // for (var x in beaconItems)
-	    return {"marker": markers, "coc": cocs};
+	    return {"marker": markers, "coc": cocs, "route": routes};
 	},
     
 	/**
