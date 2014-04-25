@@ -13,6 +13,29 @@ var LOCATES_SHOW_LAST_THREE = "locates_show_last_three";
  * set to show only the most recent point.
  */
 var LOCATES_SHOW_LAST = "locates_show_last";
+/**
+ * Constant indicating that the current CoC filter mode is set show CoCs
+ * only on the last point for each beacon on the map.
+ */
+var COC_SHOW_LAST = "coc_show_last";
+/**
+ * Constant indicating that the current CoC filter mode is set show CoCs
+ * for all points on the map.
+ */
+var COC_SHOW_ALL = "coc_show_all";
+/**
+ * Constant indicating that the current CoC filter mode is set show no CoCs
+ * on the map.
+ */
+var COC_SHOW_NONE = "coc_show_none";
+/**
+ * The tag for all of location markers.
+ */
+var TAG_GROUP_LOCATION = "group_location";
+/**
+ * The tag for all of circle of certainty.
+ */
+var TAG_GROUP_COC = "group_coc";
 
 var ICON_HOST_PATH = "icons/";
 
@@ -26,6 +49,7 @@ function ContigoMap() {
     this.current = null; // current click event (used to save as start / end position)
     this.isMetric = false;
     this.currentLocateFilterMode = LOCATES_SHOW_ALL;
+    this.currentCocMode = COC_SHOW_ALL;
     this.m1 = null;
     this.m2 = null;
 }
@@ -87,7 +111,7 @@ ContigoMap.prototype = {
 		var that = this;
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function(){
-                that.clearMarkers();
+                that.clear(["marker", "circle"]);
                 that.contextMenu.close();
             });
 		this.contextMenu.add("Zoom in", "zoomIn", 
@@ -143,12 +167,12 @@ ContigoMap.prototype = {
 	    var measurementUnit = poiCollection.measurementUnit;
 	    this.isMetric = (measurementUnit && measurementUnit.toLowerCase() == "m") ? true : false;
         
-        var locationMarkers = this.buildLocationMarkers(beaconItems, this.isMetric);
+        var locationPois = this.buildLocationPois(beaconItems, this.isMetric);
 	    //var landmarkMarkers = this.buildLandmarkMarkers(landmarks, this.isMetric);
 	    //var jobMarkers = this.buildJobMarkers(jobCollection, this.isMetric);
         this.map.gmap3({
             marker: {
-                values: locationMarkers,
+                values: locationPois.marker,
                 options:{
                     draggable: false
                 },
@@ -191,20 +215,24 @@ ContigoMap.prototype = {
                         }
                     }*/
                 }
+            },
+            circle: {
+                values: locationPois.coc
             }
         }, "autofit");
     },
     	/**
-	 * Convert from a list of contigo's poi objects into MQA's poi objects.
+	 * Convert from a list of contigo's location poi objects into marker and circle objects.
 	 * 
 	 * @param beaconItems a list of beacon items
 	 * @param is metric system applied
 	 * 
-	 * @returns a list of definition of location markers
+	 * @returns a list of definition of location markers and a list of definition of CoCs (circle of certainty)
 	 */
-	buildLocationMarkers : function(beaconItems, isMetric) {
+	buildLocationPois : function(beaconItems, isMetric) {
 		var self = this;
 	    var markers = new Array();
+        var cocs = new Array();
 	    for (var x in beaconItems) {
 	        //var beaconId = x; // 3994
 	        var locatePoints = beaconItems[x].locatePoints;
@@ -257,7 +285,7 @@ ContigoMap.prototype = {
 		                            guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, 
 		                            dispatch, isMetric);
                     var marker = {
-                    	tag: [label, "grouping-location"],
+                    	tag: [label, TAG_GROUP_LOCATION],
                         latLng: [coord.lat, coord.lng], 
                         data: infoContent, 
                         options: {
@@ -268,10 +296,23 @@ ContigoMap.prototype = {
                             labelContent: label}};
 		            markers.push(marker);
 	            }
+                
+                if (circleCertaintyRadius) {
+                    if (this.currentCocMode == COC_SHOW_ALL || this.currentCocMode == COC_SHOW_LAST && i == szLocatePoints - 1) {
+                        var circle = {
+                            tag: [TAG_GROUP_COC],
+                            options: {
+                                center: [coord.lat, coord.lng],
+                                radius : parseInt(circleCertaintyRadius, 10),
+                                fillColor : "#C80000",
+                                strokeColor : "#F00000"}};
+                        cocs.push(circle);
+	        		}
+                }
 	        } // for (var i = 0; i < szLocatePoints; i++)
 
 	    } // for (var x in beaconItems)
-	    return markers;
+	    return {"marker": markers, "coc": cocs};
 	},
     
 	/**
@@ -382,12 +423,14 @@ ContigoMap.prototype = {
 	},
     
     /**
-     * Clear all of markers on the map.
+     * Clear objects in the groups on the map.
+     *
+     * @param groups a list of groups
      */
-    clearMarkers : function() {
+    clear : function(groups) {
         this.map.gmap3({
             clear: {
-                name:["marker"],
+                name: groups,
                 all: true
             }
         });
