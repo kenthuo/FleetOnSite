@@ -228,14 +228,18 @@ ContigoMap.prototype = {
 	    }
 	    
 	    if (locationPois.route.length > 0) {
-	    	mapObjects["polyline"] = {
-	    		options: {
-						strokeColor: DEFAULT_ROUTE_COLOR,
-						strokeOpacity: 1.0,
-						strokeWeight: 1,
-						path: locationPois.route
-					}
-	    	}
+            mapObjects["polyline"] = {};
+            mapObjects["polyline"]["values"] = new Array();
+            for (var i = 0; i < locationPois.route.length; i++) {
+                mapObjects["polyline"]["values"].push({
+                    options: {
+                        strokeColor: locationPois.route[i].color,
+                        strokeOpacity: 1.0,
+                        strokeWeight: 1,
+                        path: locationPois.route[i].path
+                    }
+                });
+            }
 	    }
 	    
         this.map.gmap3(mapObjects, "autofit");
@@ -255,6 +259,7 @@ ContigoMap.prototype = {
         var routes = new Array();
 	    for (var x in beaconItems) {
 	        //var beaconId = x; // 3994
+            var path = new Array();
 	        var locatePoints = beaconItems[x].locatePoints;
 	        var isPointsConnected = beaconItems[x].isPointsConnected;
 	        var showInputOutputColor = beaconItems[x].showInputOutputColor;
@@ -308,9 +313,10 @@ ContigoMap.prototype = {
                     var marker = {
                     	tag: [label, TAG_GROUP_LOCATION],
                         latLng: [coord.lat, coord.lng], 
-                        data: infoContent, 
+                        data: infoContent,
+                        
                         options: {
-                            icon: this.constructMarkerIconName(icon, numberLabel),
+                            icon: {url: this.constructMarkerIconName(icon, numberLabel)},
                             labelAnchor: new google.maps.Point(10, -2),
                             labelClass: "labels",
                             labelStyle: {opacity: 0.75},
@@ -333,9 +339,29 @@ ContigoMap.prototype = {
                 }
                 
                 if (isPointsConnected) {
-                	routes.push([coord.lat, coord.lng]);
+                    path.push([coord.lat, coord.lng]);
+                    // change the color of line segment of the route log if the showInputOutputColor flag is turned on
+                    if (showInputOutputColor) {
+                        var nextPoint = null;
+	                	var nextCoord = null;
+                        lineColor = lineColor.replace("0x", "#"); // convert from flash color to html color
+	                	if (i != szLocatePoints - 1) {
+							// not last point
+							nextPoint = locatePoints[i + 1];
+							nextCoord = nextPoint.coord;
+                            if (nextPoint) {
+                                path.push([nextCoord.lat, nextCoord.lng]);
+                                routes.push({"color": lineColor, "path": path});
+                                path = new Array();
+                            }
+						}
+                    }	
                 }
 	        } // for (var i = 0; i < szLocatePoints; i++)
+            
+            if (isPointsConnected && !showInputOutputColor) {
+                routes.push({"color": DEFAULT_ROUTE_COLOR, "path": path});
+            }
 
 	    } // for (var x in beaconItems)
 	    return {"marker": markers, "coc": cocs, "route": routes};
@@ -467,7 +493,7 @@ $(document).ready(function() {
     var map = new ContigoMap();
     map.init();
     
-
+    
     var locatePoint_786_1 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27700, lng: -123.11995}), eventType: "Locate", address: new Address({street: "380 Nelson St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 05:46:38PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "8", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
 	var locatePoint_786_2 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27715, lng: -123.12038}), eventType: "Low Battery", address: new Address({street: "1021 Homer St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B 0A3", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 06:28:06PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "12", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
 	var locatePoint_786_3 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27715, lng: -123.12038}), eventType: "Locate", address: new Address({street: "1021 Homer St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B 0A3", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 07:27:57PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "10", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
@@ -488,6 +514,7 @@ $(document).ready(function() {
 	beaconPointsArray["786"] = beaconItem;
 	var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, measurementUnit: 'm', "zones":{"47":[{"type":1,"points":[{"lat":49.28061,"lng":-123.11966},{"lat":49.27818,"lng":-123.11337}],"name":"rs_dGeoFence_Library : rs_dGeoFence_Library_evt"}], "1229":[{"type":2,"points":[{"lat":49.2597801948,"lng":-122.878012314},{"lat":49.2424982841,"lng":-122.851612294}],"name":"1229 circular disallowed burnaby : Zone - disallowed"}]}, "polygonZones":[{"key":"1 Z_POLY_Frank : Lougheed Mall","points":[{"lat":49.25281,"lng":-122.89886},{"lat":49.24939,"lng":-122.90349},{"lat":49.24625,"lng":-122.89826},{"lat":49.24816,"lng":-122.8907},{"lat":49.25281,"lng":-122.89886}]},{"key":"1 Z_POLY_Frank : FM Parents","points":[{"lat":49.22468,"lng":-123.04151},{"lat":49.22378,"lng":-123.04391},{"lat":49.22243,"lng":-123.04366},{"lat":49.22176,"lng":-123.04237},{"lat":49.22176,"lng":-123.04057},{"lat":49.22221,"lng":-123.03885},{"lat":49.22327,"lng":-123.03885},{"lat":49.22468,"lng":-123.04151}]},{"key":"1 Z_POLY_Frank : HOME","points":[{"lat":49.24804,"lng":-122.83637},{"lat":49.24799,"lng":-122.83285},{"lat":49.24524,"lng":-122.83277},{"lat":49.24508,"lng":-122.83586},{"lat":49.24804,"lng":-122.83637}]}]
 	});
+    
 
 	
 	/*
