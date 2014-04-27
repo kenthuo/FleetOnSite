@@ -236,7 +236,19 @@ ContigoMap.prototype = {
                         strokeColor: locationPois.route[i].color,
                         strokeOpacity: 1.0,
                         strokeWeight: 1,
-                        path: locationPois.route[i].path
+                        path: locationPois.route[i].segment,
+                        icons: [{
+                            icon: {
+                                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                                strokeColor: 'black',
+                                strokeOpacity: 1.0,
+                                strokeWeight: 1.0,
+                                fillColor: 'yellow',
+                                fillOpacity: 1.0,
+                                scale: 4
+                            },
+                            offset: '50%'
+                        }]
                     }
                 });
             }
@@ -259,7 +271,6 @@ ContigoMap.prototype = {
         var routes = new Array();
 	    for (var x in beaconItems) {
 	        //var beaconId = x; // 3994
-            var path = new Array();
 	        var locatePoints = beaconItems[x].locatePoints;
 	        var isPointsConnected = beaconItems[x].isPointsConnected;
 	        var showInputOutputColor = beaconItems[x].showInputOutputColor;
@@ -279,6 +290,7 @@ ContigoMap.prototype = {
 	        }
 	        
 	        for (var i = initialIndex; i < szLocatePoints; i++) {
+                var segment = new Array();
 	        	var currentPoint = locatePoints[i];
 	            var icon = currentPoint.icon;
 	            var label = currentPoint.label;
@@ -339,30 +351,26 @@ ContigoMap.prototype = {
                 }
                 
                 if (isPointsConnected) {
-                    path.push([coord.lat, coord.lng]);
+                    segment.push([coord.lat, coord.lng]);
                     // change the color of line segment of the route log if the showInputOutputColor flag is turned on
-                    if (showInputOutputColor) {
-                        var nextPoint = null;
-	                	var nextCoord = null;
-                        lineColor = lineColor.replace("0x", "#"); // convert from flash color to html color
-	                	if (i != szLocatePoints - 1) {
-							// not last point
-							nextPoint = locatePoints[i + 1];
-							nextCoord = nextPoint.coord;
-                            if (nextPoint) {
-                                path.push([nextCoord.lat, nextCoord.lng]);
-                                routes.push({"color": lineColor, "path": path});
-                                path = new Array();
+                    var nextPoint = null;
+                    var nextCoord = null;
+                    lineColor = lineColor.replace("0x", "#"); // convert from flash color to html color
+                    if (i != szLocatePoints - 1) {
+                        // not last point
+                        nextPoint = locatePoints[i + 1];
+                        nextCoord = nextPoint.coord;
+                        if (nextPoint) {
+                            segment.push([nextCoord.lat, nextCoord.lng]);
+                            if (showInputOutputColor) {
+                                routes.push({"color": lineColor, "segment": segment});
+                            } else {
+                                routes.push({"color": DEFAULT_ROUTE_COLOR, "segment": segment});
                             }
-						}
-                    }	
+                        }
+                    }
                 }
 	        } // for (var i = 0; i < szLocatePoints; i++)
-            
-            if (isPointsConnected && !showInputOutputColor) {
-                routes.push({"color": DEFAULT_ROUTE_COLOR, "path": path});
-            }
-
 	    } // for (var x in beaconItems)
 	    return {"marker": markers, "coc": cocs, "route": routes};
 	},
