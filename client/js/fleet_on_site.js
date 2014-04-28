@@ -133,7 +133,7 @@ ContigoMap.prototype = {
 		var self = this;
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function(){
-                self.clear(["marker", "circle", "polyline"]);
+                self.clear(["marker", "circle", "polyline", "rectangle"]);
                 self.contextMenu.close();
             });
 		this.contextMenu.add("Zoom in", "zoomIn", 
