@@ -165,5 +165,37 @@ $(document).ready(function() {
     //map.sendPoints(poiCollection);
     
     //map.drawCircle(49.233528, -123.01985, 678);
-    map.drawRectangle(49.25646, -123.11819, 49.26358, -123.13330);
+    //map.drawRectangle(49.25646, -123.11819, 49.26358, -123.13330);
+    
+    
+    var coord0 = new Coordinate({lat: 49.28676, lng:-123.13015});
+	var coord1 = new Coordinate({lat: 49.28049, lng:-123.14105});
+	var coord2 = new Coordinate({lat: 49.27953, lng:-123.12431});
+	var coord3 = new Coordinate({lat: 49.28676, lng:-123.13015});
+	var coordsArray0 = [coord0,coord1,coord2,coord3];
+	var params0 = {key: "Zone1", coords: coordsArray0};
+	var polygon0 = new PolygonZone(params0);
+
+	var coord0 = new Coordinate({lat: 49.28681, lng:-123.11461});
+	var coord1 = new Coordinate({lat: 49.28194, lng:-123.11925});
+	var coord2 = new Coordinate({lat: 49.27897, lng:-123.10946});
+	var coord3 = new Coordinate({lat: 49.28177, lng:-123.10397});
+	var coord4 = new Coordinate({lat: 49.28681, lng:-123.11461});
+	var coordsArray1 = [coord0,coord1,coord2,coord3,coord4];
+	var params1 = {key: "Zone2", coords: coordsArray1};
+	var polygon1 = new PolygonZone(params1);
+
+	var coord0 = new Coordinate({lat: 49.28614, lng:-123.09006});
+	var coord1 = new Coordinate({lat: 49.28037, lng:-123.09642});
+	var coord2 = new Coordinate({lat: 49.27897, lng:-123.08715});
+	var coord3 = new Coordinate({lat: 49.28222, lng:-123.07891});
+	var coord4 = new Coordinate({lat: 49.28776, lng:-123.08028});
+	var coord5 = new Coordinate({lat: 49.28614, lng:-123.09006});
+	var coordsArray2 = [coord0,coord1,coord2,coord3,coord4,coord5];
+	var params2 = {key: "Zone3", coords: coordsArray2};
+	var polygon2 = new PolygonZone(params2);
+
+	var polygonZoneCollection = [polygon0,polygon1,polygon2];
+	map.drawPolygonZones({polygonZones: polygonZoneCollection});
+    
 });

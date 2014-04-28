@@ -52,7 +52,10 @@ var TAG_GROUP_CIRCLE_ZONE = "group_circle_zone";
  * The tag for all of rectangle zones.
  */
 var TAG_GROUP_RECTANGLE_ZONE = "group_rectangle_zone";
-
+/**
+ * The tag for all of polygon zones.
+ */
+var TAG_GROUP_POLYGON_ZONE = "group_polygon_zone";
 var DEFAULT_ROUTE_COLOR = "#FF0000";
 
 var ICON_HOST_PATH = "icons/";
@@ -133,7 +136,7 @@ ContigoMap.prototype = {
 		var self = this;
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function(){
-                self.clear(["marker", "circle", "polyline", "rectangle"]);
+                self.clear(["marker", "circle", "polyline", "rectangle", "polygon"]);
                 self.contextMenu.close();
             });
 		this.contextMenu.add("Zoom in", "zoomIn", 
@@ -790,7 +793,65 @@ ContigoMap.prototype = {
                 callback: function() {}
            }
         }, "autofit");
-    },    
+    },
+    
+    /**
+     * Draw an array of polygonal overlays on the map.
+	 *
+	 * @param polygonZoneCollection an array of polygon information.
+	 *        {polygonZones: [{key: name1, points: [{lat: lat1, lng: lng1}, {lat: lat2, lng: lng2}, ...]}, ...]}
+	 */
+	drawPolygonZones : function(polygonZoneCollection) {
+        var szPolygons = 0;
+        var polygons = new Array();
+        if (polygonZoneCollection) {
+			var polygonZones = polygonZoneCollection.polygonZones;
+            if (polygonZones) {
+            	szPolygons = polygonZones.length;
+                for (var i = 0; i < szPolygons; i++) {
+            		var polygonInfo =  polygonZones[i];
+                    var zoneName = polygonInfo.key;
+                    var vertices = new Array();
+                    for (var j = 0; j < polygonInfo.points.length; j++) {
+                    	var point = polygonInfo.points[j];
+                    	vertices.push([polygonInfo.points[j].lat, polygonInfo.points[j].lng]);
+                    }
+
+                    var polygon = {
+                    	tag: [TAG_GROUP_POLYGON_ZONE],
+                		options: {
+                    		paths: vertices,
+                    		fillColor: "#C80000",
+                    		fillOpacity: 0.18,
+                    		strokeColor: "#F00000",
+                    		strokeOpacity: 0.8,
+                    		strokeWeight: 2,
+                    		editable: true,
+                    		draggable: true
+                		},
+                		events: {
+                    		mouseup: function(polygon) {
+                    			var paths = polygon.getPaths();
+                        		console.log(paths);
+                    		},
+                    		dragend: function(polygon) {
+                        		var paths = polygon.getPaths();
+                        		console.log(paths);
+                    		}
+                		},
+                		callback: function() {}
+                    };
+		            polygons.push(polygon);
+	            }
+
+                this.map.gmap3({
+					polygon: {
+                		values: polygons}
+					}, "autofit");
+            }
+        }
+        return szPolygons;
+	},    
     
     /**
      * Clear objects in the groups on the map.
