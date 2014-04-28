@@ -36,3 +36,36 @@ body {
 	padding: 1px 0;
 	margin: 0;
 }
+
+.marker_infowindow .job_description, .marker_infowindow .job_location {
+	padding: 2px 0 5px 0;
+}
+.marker_infowindow .job_details, .marker_infowindow .job_toolbar, .marker_infowindow .dispatch_toolbar {
+	margin: 2px 0 5px 0;
+}
+.address_toolbar {
+	margin: 5px 0 5px 0;
+}
+.marker_infowindow .dispatch_toolbar a img, .infoWindowImg {
+	text-decoration: none;
+	border: 0 none;
+	width: 103px;
+	height: 20px;	
+}
+.marker_infowindow .job_description_title, .marker_infowindow .job_location_title, .marker_infowindow .job_landmark {
+	font-weight: bold;
+}
+.marker_infowindow .job_details {
+	border-spacing: 0;
+	border-collapse: collapse;
+}
+.marker_infowindow .job_details tr {
+	line-height: 10px;
+}
+.marker_infowindow .job_details td {
+	vertical-align: top;
+}
+.marker_infowindow .job_details_title {
+	width: 30px;
+	height: 10px;
+}

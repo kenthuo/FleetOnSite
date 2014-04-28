@@ -36,6 +36,18 @@ var TAG_GROUP_LOCATION = "group_location";
  * The tag for all of circle of certainty.
  */
 var TAG_GROUP_COC = "group_coc";
+/**
+ * The tag for all of landmark markers.
+ */
+var TAG_GROUP_LANDMARK = "group_landmark";
+/**
+ * The tag for all of job markers.
+ */
+var TAG_GROUP_JOB = "group_job";
+/**
+ * The tag for all of circle zones.
+ */
+var TAG_GROUP_CIRCLE_ZONE = "group_circle_zone";
 
 var DEFAULT_ROUTE_COLOR = "#FF0000";
 
@@ -45,6 +57,12 @@ var NUMBERS_ICON_HOST_PATH = "icons/numbers/";
 
 var IMG_HOST_PATH = "images/";
 
+function ContigoMarkers(markers, cocs, routes) {
+    this.markers = markers ? markers : new Array();
+    this.cocs = cocs ? cocs : new Array();
+    this.routes = routes ? routes : new Array();
+}
+
 function ContigoMap() {
     this.map = null;
     this.contextMenu = null;
@@ -52,8 +70,6 @@ function ContigoMap() {
     this.isMetric = false;
     this.currentLocateFilterMode = LOCATES_SHOW_ALL;
     this.currentCocMode = COC_SHOW_ALL;
-    this.m1 = null;
-    this.m2 = null;
 }
 
 ContigoMap.prototype = {
@@ -110,28 +126,28 @@ ContigoMap.prototype = {
 	 * Add menu item to the context menu.
 	 */
 	initContextMenu: function() {
-		var that = this;
+		var self = this;
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function(){
-                that.clear(["marker", "circle", "polyline"]);
-                that.contextMenu.close();
+                self.clear(["marker", "circle", "polyline"]);
+                self.contextMenu.close();
             });
 		this.contextMenu.add("Zoom in", "zoomIn", 
 			function() {
-				var map = that.map.gmap3("get");
+				var map = self.map.gmap3("get");
 				map.setZoom(map.getZoom() + 1);
-				that.contextMenu.close();
+				self.contextMenu.close();
 			});
-		that.contextMenu.add("Zoom out", "zoomOut",
+		self.contextMenu.add("Zoom out", "zoomOut",
 			function() {
-				var map = that.map.gmap3("get");
+				var map = self.map.gmap3("get");
 				map.setZoom(map.getZoom() - 1);
-				that.contextMenu.close();
+				self.contextMenu.close();
 			});
 		this.contextMenu.add("Center here", "centerHere", 
 			function() {
-				that.map.gmap3("get").setCenter(that.current.latLng);
-				that.contextMenu.close();
+				self.map.gmap3("get").setCenter(self.current.latLng);
+				self.contextMenu.close();
 			});
 	},
 	
@@ -163,19 +179,22 @@ ContigoMap.prototype = {
     },
     
     refreshMap: function(poiCollection) {
+        var mapMarkers = new Array();
         var landmarks = poiCollection.landmarks;
 	    var beaconItems = poiCollection.beaconItems;
 	    var jobCollection = poiCollection.jobs;    
 	    var measurementUnit = poiCollection.measurementUnit;
 	    this.isMetric = (measurementUnit && measurementUnit.toLowerCase() == "m") ? true : false;
         
-        var locationPois = this.buildLocationPois(beaconItems, this.isMetric);
-	    //var landmarkMarkers = this.buildLandmarkMarkers(landmarks, this.isMetric);
-	    //var jobMarkers = this.buildJobMarkers(jobCollection, this.isMetric);
+        var locationMarkers = this.buildLocationMarkers(beaconItems, this.isMetric);
+	    var landmarkMarkers = this.buildLandmarkMarkers(landmarks, this.isMetric);
+	    var jobMarkers = this.buildJobMarkers(jobCollection, this.isMetric);
+        mapMarkers = locationMarkers.markers.concat(landmarkMarkers.markers);
+        mapMarkers = mapMarkers.concat(jobMarkers.markers);
 	    var mapObjects = {};
-	    if (locationPois.marker.length) {
+	    if (mapMarkers.length) {
 	    	mapObjects["marker"] = {
-                values: locationPois.marker,
+                values: mapMarkers,
                 options:{
                     draggable: false
                 },
@@ -221,22 +240,22 @@ ContigoMap.prototype = {
             }
 	    }
 	    
-	    if (locationPois.coc.length > 0) {
+	    if (locationMarkers.cocs.length > 0) {
 	    	mapObjects["circle"] = {
-	    		values: locationPois.coc
+	    		values: locationMarkers.cocs
 	    	}
 	    }
 	    
-	    if (locationPois.route.length > 0) {
+	    if (locationMarkers.routes.length > 0) {
             mapObjects["polyline"] = {};
             mapObjects["polyline"]["values"] = new Array();
-            for (var i = 0; i < locationPois.route.length; i++) {
+            for (var i = 0; i < locationMarkers.routes.length; i++) {
                 mapObjects["polyline"]["values"].push({
                     options: {
-                        strokeColor: locationPois.route[i].color,
+                        strokeColor: locationMarkers.routes[i].color,
                         strokeOpacity: 1.0,
                         strokeWeight: 1,
-                        path: locationPois.route[i].segment,
+                        path: locationMarkers.routes[i].segment,
                         icons: [{
                             icon: {
                                 path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
@@ -264,11 +283,11 @@ ContigoMap.prototype = {
 	 * 
 	 * @returns a list of definition of location markers and a list of definition of CoCs (circle of certainty)
 	 */
-	buildLocationPois : function(beaconItems, isMetric) {
-		var self = this;
-	    var markers = new Array();
-        var cocs = new Array();
-        var routes = new Array();
+	buildLocationMarkers : function(beaconItems, isMetric) {
+		var self = this, 
+            markers = new Array(),
+            cocs = new Array(),
+            routes = new Array();
 	    for (var x in beaconItems) {
 	        //var beaconId = x; // 3994
 	        var locatePoints = beaconItems[x].locatePoints;
@@ -325,9 +344,9 @@ ContigoMap.prototype = {
                     var marker = {
                     	tag: [label, TAG_GROUP_LOCATION],
                         latLng: [coord.lat, coord.lng], 
-                        data: infoContent,
-                        
+                        data: infoContent,                        
                         options: {
+                            title: label,
                             icon: {url: this.constructMarkerIconName(icon, numberLabel)},
                             labelAnchor: new google.maps.Point(10, -2),
                             labelClass: "labels",
@@ -363,16 +382,16 @@ ContigoMap.prototype = {
                         if (nextPoint) {
                             segment.push([nextCoord.lat, nextCoord.lng]);
                             if (showInputOutputColor) {
-                                routes.push({"color": lineColor, "segment": segment});
+                                routes.push({color: lineColor, segment: segment});
                             } else {
-                                routes.push({"color": DEFAULT_ROUTE_COLOR, "segment": segment});
+                                routes.push({color: DEFAULT_ROUTE_COLOR, segment: segment});
                             }
                         }
                     }
                 }
 	        } // for (var i = 0; i < szLocatePoints; i++)
 	    } // for (var x in beaconItems)
-	    return {"marker": markers, "coc": cocs, "route": routes};
+	    return new ContigoMarkers(markers, cocs, routes);
 	},
     
 	/**
@@ -483,6 +502,258 @@ ContigoMap.prototype = {
 	},
     
     /**
+	 * Convert from a list of contigo's landmark poi objects into landmark marker objects.
+	 * 
+	 * @param landmarks a list of landmarks
+	 * @param is metric system applied
+	 * 
+	 * @returns a list of definition of landmark markers
+	 */
+	buildLandmarkMarkers : function(landmarks, isMetric) {
+		var self = this,
+            markers = new Array();
+		for (var x in landmarks) {
+			var icon = landmarks[x].icon;
+			var coord = landmarks[x].coord;
+			var label = landmarks[x].label;
+			var category = landmarks[x].category;
+			var userNote = landmarks[x].userNote;
+			var lmkAddress = landmarks[x].lmkAddress;
+			var content = landmarks[x].content;
+			var numberLabel = landmarks[x].numberLabel;
+			var dispatch = landmarks[x].dispatch;
+			
+			if (category) {
+				label += " (" + category + ")";
+			}
+			if (label) {
+                var infoContent = this.buildLmkInfoWindowContents(label, userNote, lmkAddress, content, dispatch);
+                var marker = {
+                    tag: [label, TAG_GROUP_LANDMARK],
+                    latLng: [coord.lat, coord.lng], 
+                    data: infoContent,    
+                    options: {
+                        title: label,
+                        icon: {url: this.constructMarkerIconName(icon, numberLabel)},
+                        labelAnchor: new google.maps.Point(10, -2),
+                        labelClass: "labels",
+                        labelStyle: {opacity: 0.75},
+                        labelContent: label}};
+                markers.push(marker);
+			}				
+		}
+		
+		return new ContigoMarkers(markers);
+	},
+    
+	/**
+	 * Creates and returns the string to be used in a landmark marker's info window.
+	 *
+	 * @param label
+	 * @param userNote
+	 * @param lmkAddress
+	 * @param content
+	 * @param dispatch   
+	 *
+	 * @return string the content of landmark's InfoWindow
+	 */
+	buildLmkInfoWindowContents : function(label, userNote, lmkAddress, content, dispatch) {
+	  
+	    var infoContent = "<div class='marker_infowindow'>";
+	    infoContent += "<div class='marker_infowindow_title'>" + label + "</div>";
+	    
+	    // dispatch toolbar
+		if (dispatch) {
+			var type = dispatch.type;
+			var id = dispatch.id;
+			infoContent += "<div class='dispatch_toolbar'>";
+			var landmarkInfo = id.split("|"); // 11903|1008 Homer Street, Vancouver, BC, Canada, V6B 2X1|49.27727|-123.12019|407|1008 Homer Street
+			var landmarkId = landmarkInfo[0];
+			infoContent += "<div><a href='#' id='sendjob_" + type + "_" + landmarkId + "'><img src='" + ICON_HOST_PATH + "send_job.png'></a></div>";
+			infoContent += "</div>";
+		}
+	    if (userNote || lmkAddress || content) {
+			infoContent += "<div class='landmark_info'>";
+			// user note
+			infoContent += (userNote) ? this.createMarkerInfoWindowPara(userNote) : "";
+	    
+			// landmark's address
+			infoContent += (lmkAddress) ? this.createMarkerInfoWindowPara(lmkAddress) : "";
+	    
+			// landmark's content
+			infoContent += (content) ? this.createMarkerInfoWindowPara(content) : "";
+			infoContent += "<br></div>";
+	    }
+	    infoContent += "</div>";
+		return infoContent;	    
+	},
+
+    /**
+	 * Convert from a list of contigo's job poi objects into job marker objects.
+	 * 
+	 * @param jobCollection a list of jobs
+	 * @param is metric system applied
+	 * 
+	 * @returns a list of definition of job markers
+	 */
+	buildJobMarkers : function(jobCollection, isMetric) {
+		var self = this,
+            markers = new Array();
+		for (var beaconId in jobCollection) {
+			var jobs = jobCollection[beaconId];
+			var szJobs = jobs.length;
+			for (var i = 0; i < szJobs; i++) {
+				var job = jobs[i];
+				var jobId = job.id;
+				var icon = job.icon;
+				var coord = job.coord;					
+				var label = job.label;
+				var description = job.description;
+				var landmark = job.landmark;
+				var destination = job.destination;
+				var priority = job.priority;
+				var status = job.status;
+				var sentTimestamp = job.sentTimestamp;
+				var ackTimestamp = job.ackTimestamp;
+				var etaTimestamp = job.etaTimestamp;
+				var doneTimestamp = job.doneTimestamp;
+				var deletedTimestamp = job.deletedTimestamp;
+				var deletedBy = job.deletedBy;
+				var numberLabel = job.numberLabel;
+				var isDeleted = (deletedTimestamp) ? true : false;
+				var isDone = (status && status.toLowerCase() == "done") ? true : false;
+	            
+				if (label) {
+                    var infoContent = this.buildJobInfoWindowContents(
+		            		beaconId, jobId, label, description, landmark, destination, 
+		            		priority, status, sentTimestamp, ackTimestamp, 
+		            		etaTimestamp, doneTimestamp, deletedTimestamp, 
+		            		deletedBy, isDeleted, isDone);
+                    var marker = {
+                    	tag: [label, TAG_GROUP_JOB],
+                        latLng: [coord.lat, coord.lng], 
+                        data: infoContent,                        
+                        options: {
+                            title: label,
+                            icon: {url: this.constructMarkerIconName(icon, numberLabel)},
+                            labelAnchor: new google.maps.Point(10, -2),
+                            labelClass: "labels",
+                            labelStyle: {opacity: 0.75},
+                            labelContent: label}};
+		            markers.push(marker);
+				}
+			}				
+		}
+		return new ContigoMarkers(markers);
+	},
+    
+    /**
+	 * Creates and returns the string to be used in a job marker's info window.
+	 *
+	 * @param beaconId
+	 * @param jobId
+	 * @param label
+	 * @param description
+	 * @param landmark
+	 * @param destination
+	 * @param landmark
+	 * @param priority
+	 * @param status
+	 * @param sentTimestamp
+	 * @param ackTimestamp
+	 * @param etaTimestamp
+	 * @param doneTimestamp
+	 * @param deletedTimestamp
+	 * @param deletedBy
+	 * @param isDeleted
+	 * @param isDone   
+	 *
+	 * @return string the content of job's InfoWindow
+	 */
+	buildJobInfoWindowContents : function(beaconId, jobId, label, description, landmark, destination, 
+    		priority, status, sentTimestamp, ackTimestamp, 
+    		etaTimestamp, doneTimestamp, deletedTimestamp, 
+    		deletedBy, isDeleted, isDone) {	
+
+		var jobDescription = jobLocation = jobDetails = "";
+	    var infoContent = "<div class='marker_infowindow'>";
+	    infoContent += "<div class='marker_infowindow_title'>" + label + "</div>";
+	    
+	    jobDescription = "<div class='job_description'>";
+		jobDescription += "<div class='job_description_title'>Job Description:</div>";
+		jobDescription += "<div class='job_description_content'>" + description + "</div>";
+		jobDescription += "</div>";
+		
+		jobLocation = "<div class='job_location'>";
+		jobLocation += "<div class='job_location_title'>Job Location:</div>";
+		jobLocation += ((landmark) ? "<div clas='job_landmark'>(" + landmark + ")</div>" : "");
+		jobLocation += "<div class='job_destination'>" + destination + "</div>";
+		jobLocation += "</div>";
+		
+		jobDetails = "<table class='job_details'>";
+		jobDetails += "<tr><td class='job_details_title'>Priority</td><td>" + ((priority == -1) ? "-" : priority) + "</td></tr>";
+		jobDetails += "<tr><td class='job_details_title'>Status:</td><td>" + ((status) ? status : "-") + "</td></tr>";
+		jobDetails += "<tr><td class='job_details_title'>Sent:</td><td>" + ((sentTimestamp) ? sentTimestamp : "-") + "</td></tr>";
+		jobDetails += "<tr><td class='job_details_title'>Ack'd:</td><td>" + ((ackTimestamp) ? ackTimestamp : "-") + "</td></tr>";
+		jobDetails += "<tr><td class='job_details_title'>ETA:</td><td>" + ((etaTimestamp) ? etaTimestamp : "-") + "</td></tr>";
+		jobDetails += (isDone) ? "<tr><td class='job_details_title'>Done:</td><td>" + doneTimestamp + "</td></tr>" : "";
+		jobDetails += (isDeleted) ? "<tr><td class='job_details_title'>Deleted:</td><td>" + ((deletedTimestamp) ? deletedTimestamp : "") + " " + ((deletedBy) ? deletedBy : "") + "</td></tr>" : "";
+		jobDetails += "</table>";
+		
+		infoContent += jobDescription + jobLocation + jobDetails;
+			    
+	    infoContent += "<div class='job_toolbar'>";
+	    infoContent += "<input id='delete_job_" + beaconId + "_" + jobId + "' type='button' class='job_button' value='delete' />&nbsp;";
+	    infoContent += "<input id='reorder_job_" + beaconId + "_" + jobId + "' type='button' class='job_button button_reorder_job' value='reorder'" + ((isDeleted || isDone) ? " disabled='disabled'" : "") + " />&nbsp;";
+	    infoContent += "<input id='reassign_job_" + beaconId + "_" + jobId + "' type='button' class='job_button button_reassign_job' value='reassign'" + ((!isDeleted && isDone) ? " disabled='disabled'" : "") + " />";
+	    infoContent += "</div>";
+		infoContent += "</div>";
+		return infoContent;	    
+	},
+    
+    /**
+     * Draw a circle overlay on the map.
+     *
+     * @param lat   The latitude of the centre coordinate, in decimal degrees.
+     * @param lng   The longitude of the centre coordinate, in decimal degrees.
+     * @param radius The radius of the circle, in metres.
+     */
+    drawCircle : function(lat, lng, radius) {    
+        this.map.gmap3({
+            circle:{
+                tag: [TAG_GROUP_CIRCLE_ZONE],
+                options:{
+                    center: [lat, lng],
+                    radius: radius,
+                    fillColor: "#C80000",
+                    fillOpacity: 0.18,
+                    strokeColor: "#F00000",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    editable: true,
+                    draggable: true
+                },
+                events: {
+                    dragend: function(circle) {
+                        var center = circle.center;
+                        var radius = circle.radius;
+                        log(center);
+                        log(radius);
+                    },
+                    radius_changed: function(circle) {
+                        var center = circle.center;
+                        var radius = circle.radius;
+                        log(center);
+                        log(radius);
+                    }
+                },
+                callback: function() {
+                }
+           }
+        }, "autofit");
+    },
+    
+    /**
      * Clear objects in the groups on the map.
      *
      * @param groups a list of groups
@@ -496,75 +767,3 @@ ContigoMap.prototype = {
         });
     }
 }
-
-$(document).ready(function() {
-    var map = new ContigoMap();
-    map.init();
-    
-    
-    var locatePoint_786_1 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27700, lng: -123.11995}), eventType: "Locate", address: new Address({street: "380 Nelson St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 05:46:38PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "8", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePoint_786_2 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27715, lng: -123.12038}), eventType: "Low Battery", address: new Address({street: "1021 Homer St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B 0A3", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 06:28:06PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "12", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePoint_786_3 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27715, lng: -123.12038}), eventType: "Locate", address: new Address({street: "1021 Homer St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B 0A3", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 07:27:57PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "10", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePoint_786_4 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27715, lng: -123.12038}), eventType: "Locate", address: new Address({street: "1021 Homer St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B 0A3", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 07:35:14PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "20", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePoint_786_5 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27715, lng: -123.12038}), eventType: "Locate", address: new Address({street: "1021 Homer St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B 0A3", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 08:05:01PM EDT <br>(GPS Age: 0h 05m 01s)", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "10", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePoint_786_6 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27732, lng: -123.11997}), eventType: "Low Battery", address: new Address({street: "393 Nelson St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 08:09:46PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "5", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePoint_786_7 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27732, lng: -123.11997}), eventType: "Locate", address: new Address({street: "393 Nelson St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/21/2012 01:36:59PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "30", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePoint_786_8 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27732, lng: -123.11997}), eventType: "Motion Detection", address: new Address({street: "393 Nelson St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/21/2012 02:17:24PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "15", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePoint_786_9 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27732, lng: -123.11997}), eventType: "Motion Detection", address: new Address({street: "393 Nelson St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/21/2012 02:44:58PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePoint_786_10 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27732, lng: -123.11997}), eventType: "Locate", address: new Address({street: "393 Nelson St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/21/2012 05:29:17PM EDT <br>(GPS Age: 2h 43m 17s)", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "12", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePoint_786_11 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27732, lng: -123.11997}), eventType: "Locate", address: new Address({street: "393 Nelson St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/21/2012 05:29:20PM EDT <br>(GPS Age: 2h 43m 20s)", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "8", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePoint_786_12 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27732, lng: -123.11997}), eventType: "Locate", address: new Address({street: "393 Nelson St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/21/2012 05:29:23PM EDT <br>(GPS Age: 2h 43m 23s)", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "10", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePoint_786_13 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27697, lng: -123.11990}), eventType: "Low Battery", address: new Address({street: "1021 Hamilton St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B 5T4", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/21/2012 05:33:59PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "20", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
-	var locatePointsArray = [locatePoint_786_1, locatePoint_786_2, locatePoint_786_3, locatePoint_786_4, locatePoint_786_5, locatePoint_786_6, locatePoint_786_7, locatePoint_786_8, locatePoint_786_9, locatePoint_786_10, locatePoint_786_11, locatePoint_786_12, locatePoint_786_13];
-	var beaconItem = new ContigoBeaconItem({locatePoints: locatePointsArray, isPointsConnected: true, showInputOutputColor: false});
-	var landmarkArray = [];
-	var beaconPointsArray = {};
-	beaconPointsArray["786"] = beaconItem;
-	var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, measurementUnit: 'm', "zones":{"47":[{"type":1,"points":[{"lat":49.28061,"lng":-123.11966},{"lat":49.27818,"lng":-123.11337}],"name":"rs_dGeoFence_Library : rs_dGeoFence_Library_evt"}], "1229":[{"type":2,"points":[{"lat":49.2597801948,"lng":-122.878012314},{"lat":49.2424982841,"lng":-122.851612294}],"name":"1229 circular disallowed burnaby : Zone - disallowed"}]}, "polygonZones":[{"key":"1 Z_POLY_Frank : Lougheed Mall","points":[{"lat":49.25281,"lng":-122.89886},{"lat":49.24939,"lng":-122.90349},{"lat":49.24625,"lng":-122.89826},{"lat":49.24816,"lng":-122.8907},{"lat":49.25281,"lng":-122.89886}]},{"key":"1 Z_POLY_Frank : FM Parents","points":[{"lat":49.22468,"lng":-123.04151},{"lat":49.22378,"lng":-123.04391},{"lat":49.22243,"lng":-123.04366},{"lat":49.22176,"lng":-123.04237},{"lat":49.22176,"lng":-123.04057},{"lat":49.22221,"lng":-123.03885},{"lat":49.22327,"lng":-123.03885},{"lat":49.22468,"lng":-123.04151}]},{"key":"1 Z_POLY_Frank : HOME","points":[{"lat":49.24804,"lng":-122.83637},{"lat":49.24799,"lng":-122.83285},{"lat":49.24524,"lng":-122.83277},{"lat":49.24508,"lng":-122.83586},{"lat":49.24804,"lng":-122.83637}]}]
-	});
-    
-
-	
-	/*
-	var landmark_only = new ContigoLmkPoi({icon: new Icon({name: "LM00001", width: 16, height: 16}),label: "Office", coord: new Coordinate({lat: 49.277265, lng: -123.120191}),lmkAddress: "1008 Homer Street, Vancouver, BC, CANADA, V6B 2X1",content: "You are my sunshine.",category: "Company"});
-        var landmarkArray = [landmark_only];
-        var beaconPointsArray = {};
-        var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray});
-	*/
-	
-	/*
-	var beaconPointsArray = {};
-	var jobsArray = {};
-	var locatePoint_23060_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB01329", width: 20, height: 20}), label: "G2", coord: new Coordinate({lat: 51.03710, lng: -113.99893}), eventType: "Locate", address: new Address({street: "17 Ave Se", city: "Calgary", county: "", state: "AB", postalCode: "T2B", country: "CANADA"}), stopDuration: "", speed: "62kph", direction: "E", timestamp: "02/10/2012 11:19:43AM MST ", landmark: "HICKSVILLE GARAGE", circleCertaintyRadius: "", status: "Disconnected", userNote: "", driverID: "Hedis", driverStatus: "On Duty", beaconID: "48275", guardianID: "23060", ioprt1Scenario: "ioprt1Scenario", ioprt2Scenario: "ioprt1Scenario", lineColor: "", dispatch: new Dispatch({type: "driver", id: "23060"}) });
-	var locatePointsArray_23060 = [locatePoint_23060_1];
-	var beaconItem_23060 = new ContigoBeaconItem({locatePoints: locatePointsArray_23060, isPointsConnected: true});
-	beaconPointsArray["23060"] = beaconItem_23060;
-	var locatePoint_23063_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB01329", width: 20, height: 20}), label: "G2", coord: new Coordinate({lat: 51.07770, lng: -113.99357}), eventType: "Ignition Off", address: new Address({street: "2906 Sunridge Blvd Ne", city: "Calgary", county: "", state: "AB", postalCode: "T1Y 6G2", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "10/18/2012 12:17:04PM MDT ", landmark: "", circleCertaintyRadius: "", status: "Disconnected", userNote: "", driverID: "Syeda", driverStatus: "On Duty", beaconID: "48275", guardianID: "23063", ioprt1Scenario: "", ioprt2Scenario: "", lineColor: "", dispatch: new Dispatch({type: "driver", id: "23063"}) });
-	var locatePointsArray_23063 = [locatePoint_23063_1];
-	var beaconItem_23063 = new ContigoBeaconItem({locatePoints: locatePointsArray_23063, isPointsConnected: true});
-	beaconPointsArray["23063"] = beaconItem_23063;
-	var locatePoint_23116_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB01307", width: 16, height: 16}), label: "Karly", coord: new Coordinate({lat: 51.04932, lng: -114.10918}), eventType: "Ignition Off", address: new Address({street: "2148 Brownsea Dr Nw", city: "Calgary", county: "", state: "AB", postalCode: "T2N 3G9", country: "CANADA"}), stopDuration: "STOP: 0h 47m 00s", speed: "", direction: "", timestamp: "11/23/2012 03:29:51PM PST ", landmark: "(Scouts) ", circleCertaintyRadius: "", status: "Disconnected", userNote: "", driverID: "Catd", driverStatus: "On Duty", beaconID: "51840", guardianID: "23116", ioprt1Scenario: "", ioprt2Scenario: "", lineColor: "", dispatch: new Dispatch({type: "driver", id: "23116"}) });
-	var locatePointsArray_23116 = [locatePoint_23116_1];
-	var beaconItem_23116 = new ContigoBeaconItem({locatePoints: locatePointsArray_23116, isPointsConnected: true});
-	beaconPointsArray["23116"] = beaconItem_23116;
-	var landmarkArray = [];
-	var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
-	*/
-	
-	/*
-	var locatePoint_42219_495 = new ContigoBeaconPoi({icon: new Icon({name: "aux_OFF_16x16", width: 16, height: 16}), label: "A-103", coord: new Coordinate({lat: 40.58332, lng: -74.08545}), eventType: "2_off", address: new Address({street: "495 Seaview Ave", city: "Staten Island", county: "Richmond", state: "NY", postalCode: "10305", country: "US"}), stopDuration: "", speed: "", direction: "", timestamp: "10/29/2012 09:21:26PM EDT ", landmark: "(SIUH) ", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "42219", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor: "0x000000" });
-	var locatePoint_42219_496 = new ContigoBeaconPoi({icon: new Icon({name: "aux1_ON_16x16", width: 16, height: 16}), label: "A-103", coord: new Coordinate({lat: 40.68330, lng: -75.48548}), eventType: "1_off", address: new Address({street: "495 Seaview Ave", city: "Staten Island", county: "Richmond", state: "NY", postalCode: "10305", country: "US"}), stopDuration: "", speed: "", direction: "", timestamp: "10/29/2012 09:33:47PM EDT ", landmark: "(SIUH) ", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "42219", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor: "0xBE53B4" });
-	var locatePoint_42219_497 = new ContigoBeaconPoi({icon: new Icon({name: "aux_OFF_16x16", width: 16, height: 16}), label: "A-103", coord: new Coordinate({lat: 40.59330, lng: -76.09548}), eventType: "1_on", address: new Address({street: "495 Seaview Ave", city: "Staten Island", county: "Richmond", state: "NY", postalCode: "10305", country: "US"}), stopDuration: "", speed: "", direction: "", timestamp: "10/29/2012 09:33:49PM EDT ", landmark: "(SIUH) ", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "42219", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor: "0x000000" });
-	var locatePoint_42219_498 = new ContigoBeaconPoi({icon: new Icon({name: "aux1_ON_16x16", width: 16, height: 16}), label: "A-103", coord: new Coordinate({lat: 40.88330, lng: -72.18548}), eventType: "1_off", address: new Address({street: "495 Seaview Ave", city: "Staten Island", county: "Richmond", state: "NY", postalCode: "10305", country: "US"}), stopDuration: "", speed: "", direction: "", timestamp: "10/29/2012 09:35:31PM EDT ", landmark: "(SIUH) ", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "42219", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor: "0xBE53B4" });
-	var locatePoint_42219_499 = new ContigoBeaconPoi({icon: new Icon({name: "aux12_ON_16x16", width: 16, height: 16}), label: "A-103", coord: new Coordinate({lat: 41.58330, lng: -74.07548}), eventType: "2_on", address: new Address({street: "495 Seaview Ave", city: "Staten Island", county: "Richmond", state: "NY", postalCode: "10305", country: "US"}), stopDuration: "", speed: "", direction: "", timestamp: "10/29/2012 09:35:48PM EDT ", landmark: "(SIUH) ", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "42219", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor: "0x247513" });
-	var locatePoint_42219_500 = new ContigoBeaconPoi({icon: new Icon({name: "aux2_ON_16x16", width: 16, height: 16}), label: "A-103", coord: new Coordinate({lat: 42.78330, lng: -73.29548}), eventType: "1_on", address: new Address({street: "495 Seaview Ave", city: "Staten Island", county: "Richmond", state: "NY", postalCode: "10305", country: "US"}), stopDuration: "", speed: "", direction: "", timestamp: "10/29/2012 09:35:48PM EDT ", landmark: "(SIUH) ", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "42219", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor: "0x0000FF" });
-	var locatePointsArray = [locatePoint_42219_495, locatePoint_42219_496, locatePoint_42219_497, locatePoint_42219_498, locatePoint_42219_499, locatePoint_42219_500];
-	var beaconItem = new ContigoBeaconItem({locatePoints: locatePointsArray, isPointsConnected: true, showInputOutputColor: true});
-	var landmarkArray = [];
-	var beaconPointsArray = {};
-	beaconPointsArray["42219"] = beaconItem;
-	var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, measurementUnit: 'ft'});
-	*/
-	
-    map.sendPoints(poiCollection);
-});
