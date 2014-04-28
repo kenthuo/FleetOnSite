@@ -48,6 +48,10 @@ var TAG_GROUP_JOB = "group_job";
  * The tag for all of circle zones.
  */
 var TAG_GROUP_CIRCLE_ZONE = "group_circle_zone";
+/**
+ * The tag for all of rectangle zones.
+ */
+var TAG_GROUP_RECTANGLE_ZONE = "group_rectangle_zone";
 
 var DEFAULT_ROUTE_COLOR = "#FF0000";
 
@@ -712,10 +716,10 @@ ContigoMap.prototype = {
 	},
     
     /**
-     * Draw a circle overlay on the map.
+     * Draw a circular overlay on the map.
      *
-     * @param lat   The latitude of the centre coordinate, in decimal degrees.
-     * @param lng   The longitude of the centre coordinate, in decimal degrees.
+     * @param lat The latitude of the centre coordinate, in decimal degrees.
+     * @param lng The longitude of the centre coordinate, in decimal degrees.
      * @param radius The radius of the circle, in metres.
      */
     drawCircle : function(lat, lng, radius) {    
@@ -737,21 +741,56 @@ ContigoMap.prototype = {
                     dragend: function(circle) {
                         var center = circle.center;
                         var radius = circle.radius;
-                        log(center);
-                        log(radius);
+                        console.log(center);
+                        console.log(radius);
                     },
                     radius_changed: function(circle) {
                         var center = circle.center;
                         var radius = circle.radius;
-                        log(center);
-                        log(radius);
+                        console.log(center);
+                        console.log(radius);
                     }
                 },
-                callback: function() {
-                }
+                callback: function() {}
            }
         }, "autofit");
     },
+    
+    /**
+     * Draws a rectangular overlay on the map.
+     *
+     * @param lat1 The latitude of the first coordinate, in decimal degrees.
+     * @param lng2 The longitude of the first coordinate, in decimal degrees.
+     * @param lat1 The latitude of the second coordinate, in decimal degrees.
+     * @param lng2 The longitude of the second coordinate, in decimal degrees.
+     */ 
+    drawRectangle : function(lat1, lng1, lat2, lng2) {    
+        this.map.gmap3({
+            rectangle: {
+                tag: [TAG_GROUP_RECTANGLE_ZONE],
+                options: {
+                    bounds: {n: lat1, e: lng1, s: lat2, w: lng2},
+                    fillColor: "#C80000",
+                    fillOpacity: 0.18,
+                    strokeColor: "#F00000",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    editable: true,
+                    draggable: true
+                },
+                events: {
+                    bounds_changed: function(rectangle) {
+                        var bounds = rectangle.bounds;
+                        var ne = bounds.getNorthEast();
+                        var sw = bounds.getSouthWest();
+                        console.log(ne);
+                        console.log(sw);
+                    }
+                },
+                callback: function() {}
+           }
+        }, "autofit");
+    },    
     
     /**
      * Clear objects in the groups on the map.

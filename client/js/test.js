@@ -164,5 +164,6 @@ $(document).ready(function() {
     
     //map.sendPoints(poiCollection);
     
-    map.drawCircle(49.233528, -123.01985, 678);
+    //map.drawCircle(49.233528, -123.01985, 678);
+    map.drawRectangle(49.25646, -123.11819, 49.26358, -123.13330);
 });
