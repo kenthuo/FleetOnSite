@@ -51,6 +51,10 @@
 	background-image: url(../images/here.png);
 }
 
+#gmap3-menu .item.viewAddress {
+	background-image: url(../images/address.png);
+}
+
 #gmap3-menu .item.hover {
 	background-color: #d6e9f8;
 }

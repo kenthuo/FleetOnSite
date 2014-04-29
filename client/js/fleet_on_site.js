@@ -56,6 +56,10 @@ var TAG_GROUP_RECTANGLE_ZONE = "group_rectangle_zone";
  * The tag for all of polygon zones.
  */
 var TAG_GROUP_POLYGON_ZONE = "group_polygon_zone";
+/**
+ * The tag for all of address markers.
+ */
+var TAG_GROUP_ADDRESS = "group_address";
 var DEFAULT_ROUTE_COLOR = "#FF0000";
 
 var ICON_HOST_PATH = "icons/";
@@ -73,10 +77,11 @@ function ContigoMarkers(markers, cocs, routes) {
 function ContigoMap() {
     this.map = null;
     this.contextMenu = null;
-    this.current = null; // current click event (used to save as start / end position)
+    this.current = null; // current click event
     this.isMetric = false;
     this.currentLocateFilterMode = LOCATES_SHOW_ALL;
     this.currentCocMode = COC_SHOW_ALL;
+    this.geocoder = new google.maps.Geocoder();
 }
 
 ContigoMap.prototype = {
@@ -148,7 +153,7 @@ ContigoMap.prototype = {
             });               
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function(){
-                self.clear(["marker", "circle", "polyline", "rectangle", "polygon"]);
+                self.clear({name: ["marker", "circle", "polyline", "rectangle", "polygon"]});
                 self.contextMenu.close();
             });
 		this.contextMenu.add("Zoom in", "zoomIn", 
@@ -202,7 +207,7 @@ ContigoMap.prototype = {
     			});
 				self.contextMenu.close();
 			});
-		this.contextMenu.add("Hide CoC", "hideCoC", 
+		this.contextMenu.add("Hide CoC", "hideCoC separator", 
 			function() {
 				$(self.map).gmap3({
 					get: {
@@ -217,6 +222,49 @@ ContigoMap.prototype = {
         				}
       				}
     			});
+				self.contextMenu.close();
+			});
+		this.contextMenu.add("View Address", "viewAddress", 
+			function() {
+				self.clear({tag: [TAG_GROUP_ADDRESS]});
+				self.geocoder.geocode({'latLng': self.current.latLng}, function(results, status) {
+					if (status == google.maps.GeocoderStatus.OK) {
+						if (results[0]) {
+							self.map.gmap3({
+            					marker: {
+                					tag: [TAG_GROUP_ADDRESS],
+                					latLng: self.current.latLng,
+                					options: {
+                    					icon: ICON_HOST_PATH + "red_dot.png"
+                					},
+                					callback: function(marker) {
+           								var infowindow = $(self.map).gmap3({get:{name:"infowindow"}});
+           								if (infowindow){
+											infowindow.open(self.map.gmap3("get"), marker);
+											infowindow.setContent(results[0].formatted_address);
+										} else {
+											$(self.map).gmap3({
+												infowindow:{
+													anchor:marker, 
+													options:{content: results[0].formatted_address},
+													events:{
+														closeclick: function(infowindow){
+															self.clear({tag: [TAG_GROUP_ADDRESS]});
+														}
+													}
+												}
+											});
+										}
+									}
+           						}
+							});
+      					} else {
+        					alert('No results found');
+      					}
+    				} else {
+      					alert('Geocoder failed due to: ' + status);
+    				}
+  				});
 				self.contextMenu.close();
 			});
 	},
@@ -949,11 +997,27 @@ ContigoMap.prototype = {
      * @param groups a list of groups
      */
     clear : function(groups) {
-        this.map.gmap3({
-            clear: {
-                name: groups,
-                all: true
-            }
-        });
+    	if (groups.id) {
+    		this.map.gmap3({
+            	clear: {
+                	id: groups.id,
+            	}
+        	});
+    	} else if (groups.name) {
+    		this.map.gmap3({
+            	clear: {
+                	name: groups.name,
+                	all: true
+            	}
+        	});
+    	} else if (groups.tag) {
+    		this.map.gmap3({
+            	clear: {
+                	tag: groups.tag,
+                	all: true
+            	}
+        	});
+    	}
+        
     }
 }
