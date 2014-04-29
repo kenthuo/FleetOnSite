@@ -134,6 +134,18 @@ ContigoMap.prototype = {
 	 */
 	initContextMenu: function() {
 		var self = this;
+        this.contextMenu.add("Draw Circle", "drawCircle", 
+            function(){
+                self.contextMenu.close();
+            });
+        this.contextMenu.add("Draw Rectangle", "drawRectangle", 
+            function(){
+                self.contextMenu.close();
+            });
+        this.contextMenu.add("Draw Polygon", "drawPolygon", 
+            function(){
+                self.contextMenu.close();
+            });               
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function(){
                 self.clear(["marker", "circle", "polyline", "rectangle", "polygon"]);
@@ -725,7 +737,7 @@ ContigoMap.prototype = {
      * @param lng The longitude of the centre coordinate, in decimal degrees.
      * @param radius The radius of the circle, in metres.
      */
-    drawCircle : function(lat, lng, radius) {    
+    drawCircle : function(lat, lng, radius) {
         this.map.gmap3({
             circle:{
                 tag: [TAG_GROUP_CIRCLE_ZONE],
@@ -752,6 +764,15 @@ ContigoMap.prototype = {
                         var radius = circle.radius;
                         console.log(center);
                         console.log(radius);
+                    },
+                    rightclick: function(circle, event) {
+                        var contextMenu = new Gmap3Menu($(this).gmap3());
+                        contextMenu.add("Delete", "clearMarker", 
+                            function(){
+                                circle.setMap(null);
+                                contextMenu.close();
+                            });
+                        contextMenu.open(event);                        
                     }
                 },
                 callback: function() {}
@@ -788,6 +809,15 @@ ContigoMap.prototype = {
                         var sw = bounds.getSouthWest();
                         console.log(ne);
                         console.log(sw);
+                    },
+                    rightclick: function(rectangle, event) {
+                        var contextMenu = new Gmap3Menu($(this).gmap3());
+                        contextMenu.add("Delete", "clearMarker", 
+                            function(){
+                                rectangle.setMap(null);
+                                contextMenu.close();
+                            });
+                        contextMenu.open(event);                        
                     }
                 },
                 callback: function() {}
@@ -837,7 +867,16 @@ ContigoMap.prototype = {
                     		dragend: function(polygon) {
                         		var paths = polygon.getPaths();
                         		console.log(paths);
-                    		}
+                    		},
+                            rightclick: function(polygon, event) {
+                                var contextMenu = new Gmap3Menu($(this).gmap3());
+                                contextMenu.add("Delete", "clearMarker", 
+                                function(){
+                                    polygon.setMap(null);
+                                    contextMenu.close();
+                                });
+                                contextMenu.open(event);                        
+                            }
                 		},
                 		callback: function() {}
                     };

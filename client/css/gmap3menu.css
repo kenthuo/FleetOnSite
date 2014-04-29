@@ -23,6 +23,18 @@
 	background-position: 4px center;
 }
 
+#gmap3-menu .item.drawCircle {
+	background-image: url(../images/circle.png);
+}
+
+#gmap3-menu .item.drawRectangle {
+	background-image: url(../images/rectangle.png);
+}
+
+#gmap3-menu .item.drawPolygon {
+	background-image: url(../images/polygon.png);
+}
+
 #gmap3-menu .item.clearMarker {
 	background-image: url(../images/eraser.png);
 }
