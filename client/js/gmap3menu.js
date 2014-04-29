@@ -59,12 +59,16 @@ function Gmap3Menu($div) {
 		);
      
 		// change the offset to get the menu visible (#menu width & height must be defined in CSS to use this simple code)
-		if (event.pixel.y + $menu.height() > $div.height()) {
-			offset.y = -$menu.height();
-		}
-		if (event.pixel.x + $menu.width() > $div.width()){
-			offset.x = -$menu.width();
-		}
+        if(event.pixel){
+            if (event.pixel.y + $menu.height() > $div.height()) {
+                offset.y = -$menu.height();
+            }
+        }
+        if(event.pixel){
+            if (event.pixel.x + $menu.width() > $div.width()){
+                offset.x = -$menu.width();
+            }
+        }
 
     	// use menu as overlay
     	$div.gmap3({
