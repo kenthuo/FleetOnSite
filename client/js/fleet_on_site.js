@@ -163,9 +163,60 @@ ContigoMap.prototype = {
 				map.setZoom(map.getZoom() - 1);
 				self.contextMenu.close();
 			});
-		this.contextMenu.add("Center here", "centerHere", 
+		this.contextMenu.add("Center here", "centerHere separator", 
 			function() {
 				self.map.gmap3("get").setCenter(self.current.latLng);
+				self.contextMenu.close();
+			});
+		this.contextMenu.add("Show All CoCs", "showAllCoC", 
+			function() {
+				$(self.map).gmap3({
+					get: {
+						name: "circle",
+						tag: TAG_GROUP_COC,
+						all: true,
+						callback: function(circles) {
+							$.each(circles, function(i, circle){
+								circle.setVisible(true);
+							});
+							
+        				}
+      				}
+    			});
+				self.contextMenu.close();
+			});
+		this.contextMenu.add("Show Last CoC", "showLastCoC", 
+			function() {
+				$(self.map).gmap3({
+					get: {
+						name: "circle",
+						tag: TAG_GROUP_COC,
+						all: true,
+						callback: function(circles) {
+							$.each(circles, function(i, circle){
+								circle.setVisible(i == circles.length - 1);
+							});
+							
+        				}
+      				}
+    			});
+				self.contextMenu.close();
+			});
+		this.contextMenu.add("Hide CoC", "hideCoC", 
+			function() {
+				$(self.map).gmap3({
+					get: {
+						name: "circle",
+						tag: TAG_GROUP_COC,
+						all: true,
+						callback: function(circles) {
+							$.each(circles, function(i, circle){
+								circle.setVisible(false);
+							});
+							
+        				}
+      				}
+    			});
 				self.contextMenu.close();
 			});
 	},

@@ -2,7 +2,7 @@ $(document).ready(function() {
     var map = new ContigoMap();
     map.init();
     
-    /*
+    
     var locatePoint_786_1 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27700, lng: -123.11995}), eventType: "Locate", address: new Address({street: "380 Nelson St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 05:46:38PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "8", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
 	var locatePoint_786_2 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27715, lng: -123.12038}), eventType: "Low Battery", address: new Address({street: "1021 Homer St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B 0A3", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 06:28:06PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "12", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
 	var locatePoint_786_3 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27715, lng: -123.12038}), eventType: "Locate", address: new Address({street: "1021 Homer St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B 0A3", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 07:27:57PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "10", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
@@ -23,7 +23,7 @@ $(document).ready(function() {
 	beaconPointsArray["786"] = beaconItem;
 	var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, measurementUnit: 'm', "zones":{"47":[{"type":1,"points":[{"lat":49.28061,"lng":-123.11966},{"lat":49.27818,"lng":-123.11337}],"name":"rs_dGeoFence_Library : rs_dGeoFence_Library_evt"}], "1229":[{"type":2,"points":[{"lat":49.2597801948,"lng":-122.878012314},{"lat":49.2424982841,"lng":-122.851612294}],"name":"1229 circular disallowed burnaby : Zone - disallowed"}]}, "polygonZones":[{"key":"1 Z_POLY_Frank : Lougheed Mall","points":[{"lat":49.25281,"lng":-122.89886},{"lat":49.24939,"lng":-122.90349},{"lat":49.24625,"lng":-122.89826},{"lat":49.24816,"lng":-122.8907},{"lat":49.25281,"lng":-122.89886}]},{"key":"1 Z_POLY_Frank : FM Parents","points":[{"lat":49.22468,"lng":-123.04151},{"lat":49.22378,"lng":-123.04391},{"lat":49.22243,"lng":-123.04366},{"lat":49.22176,"lng":-123.04237},{"lat":49.22176,"lng":-123.04057},{"lat":49.22221,"lng":-123.03885},{"lat":49.22327,"lng":-123.03885},{"lat":49.22468,"lng":-123.04151}]},{"key":"1 Z_POLY_Frank : HOME","points":[{"lat":49.24804,"lng":-122.83637},{"lat":49.24799,"lng":-122.83285},{"lat":49.24524,"lng":-122.83277},{"lat":49.24508,"lng":-122.83586},{"lat":49.24804,"lng":-122.83637}]}]
 	});
-    */
+    
 
 	
     /*
@@ -162,12 +162,12 @@ $(document).ready(function() {
     var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
 	*/
     
-    //map.sendPoints(poiCollection);
+    map.sendPoints(poiCollection);
     
     //map.drawCircle(49.233528, -123.01985, 678);
     //map.drawRectangle(49.25646, -123.11819, 49.26358, -123.13330);
     
-    
+    /*
     var coord0 = new Coordinate({lat: 49.28676, lng:-123.13015});
 	var coord1 = new Coordinate({lat: 49.28049, lng:-123.14105});
 	var coord2 = new Coordinate({lat: 49.27953, lng:-123.12431});
@@ -197,5 +197,5 @@ $(document).ready(function() {
 
 	var polygonZoneCollection = [polygon0,polygon1,polygon2];
 	map.drawPolygonZones({polygonZones: polygonZoneCollection});
-    
+    */
 });
