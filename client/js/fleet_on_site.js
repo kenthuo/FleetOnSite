@@ -269,7 +269,8 @@ ContigoMap.prototype = {
 			});
 		self.contextMenu.add("Best Fit", "bestFit",
 			function() {
-				$(self.map).gmap3("autofit");
+				//$(self.map).gmap3("autofit");
+                self.bestFit();
 				self.contextMenu.close();
 			});
 	},
@@ -1023,6 +1024,58 @@ ContigoMap.prototype = {
             	}
         	});
     	}
-        
+    },
+    
+    /**
+     * Fit all of markers, polylines, circles, polygons to be visible on the map.
+     */
+    bestFit : function() {
+        //  Create a new viewpoint bound
+        var bounds = new google.maps.LatLngBounds();
+        $(this.map).gmap3({
+            get: {
+                name: "marker",
+				all: true,
+				callback: function(markers) {
+					$.each(markers, function(i, marker){
+						bounds = bounds.extend(marker.getPosition());
+					});		
+        		}
+      		}
+    	});        
+        $(this.map).gmap3({
+            get: {
+                name: "circle",
+				all: true,
+				callback: function(circles) {
+					$.each(circles, function(i, circle){
+						bounds = bounds.union(circle.getBounds());
+					});		
+        		}
+      		}
+    	});
+        $(this.map).gmap3({
+            get: {
+                name: "rectangle",
+				all: true,
+				callback: function(rectangles) {
+					$.each(rectangles, function(i, rectangle){
+						bounds = bounds.union(rectangle.getBounds());
+					});		
+        		}
+      		}
+    	});
+        $(this.map).gmap3({
+            get: {
+                name: "polygon",
+				all: true,
+				callback: function(polygons) {
+					$.each(polygons, function(i, polygon){
+						bounds = bounds.union(polygon.getBounds());
+					});		
+        		}
+      		}
+    	});
+        this.map.gmap3("get").fitBounds(bounds);        
     }
 }

@@ -106,3 +106,17 @@ function Util() {
 	Util.isMobile = isMobile;
     Util.toUTC = toUTC;
 })();
+
+// extend polygon of Gmap V3 with getBounds method
+(function(){
+	var PROTO = google.maps.Polygon.prototype;
+    
+    function getBounds(){
+        var bounds = new google.maps.LatLngBounds();
+        this.getPath().forEach(function(element,index){bounds.extend(element)})
+        return bounds;
+    }
+    
+    // exports
+	PROTO.getBounds = getBounds;
+})();
