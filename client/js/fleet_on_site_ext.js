@@ -118,5 +118,7 @@ function Util() {
     }
     
     // exports
-	PROTO.getBounds = getBounds;
+    if (!google.maps.Polygon.prototype.getBounds) {
+        PROTO.getBounds = getBounds;
+    }
 })();
