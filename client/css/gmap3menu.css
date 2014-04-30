@@ -55,6 +55,10 @@
 	background-image: url(../images/address.png);
 }
 
+#gmap3-menu .item.bestFit {
+	background-image: url(../images/best_fit.gif);
+}
+
 #gmap3-menu .item.hover {
 	background-color: #d6e9f8;
 }

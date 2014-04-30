@@ -267,6 +267,11 @@ ContigoMap.prototype = {
   				});
 				self.contextMenu.close();
 			});
+		self.contextMenu.add("Best Fit", "bestFit",
+			function() {
+				$(self.map).gmap3("autofit");
+				self.contextMenu.close();
+			});
 	},
 	
 	/**
