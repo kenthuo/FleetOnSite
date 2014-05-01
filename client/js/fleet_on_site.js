@@ -83,6 +83,7 @@ function ContigoMap() {
     this.currentCocMode = COC_SHOW_ALL;
     this.geocoder = new google.maps.Geocoder();
     this.showMarkerLabel = true;
+    this.showTraffic = false;
 }
 
 ContigoMap.prototype = {
@@ -140,6 +141,7 @@ ContigoMap.prototype = {
 	 */
 	initContextMenu: function() {
 		var self = this;
+		/*
         this.contextMenu.add("Draw Circle", "drawCircle", 
             function(){
                 self.contextMenu.close();
@@ -151,7 +153,19 @@ ContigoMap.prototype = {
         this.contextMenu.add("Draw Polygon", "drawPolygon", 
             function(){
                 self.contextMenu.close();
-            });               
+            }); 
+        */ 
+        this.contextMenu.add("Traffic", "traffic", 
+            function(){
+            	if (self.showTraffic) {
+            		self.clear({name: ["trafficlayer"]});
+            		self.showTraffic = false;
+            	} else {
+            		$(self.map).gmap3({trafficlayer: {}});
+            		self.showTraffic = true;
+            	}
+                self.contextMenu.close();
+            });              
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function(){
                 self.clear({name: ["marker", "circle", "polyline", "rectangle", "polygon"]});

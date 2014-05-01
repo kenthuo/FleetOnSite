@@ -35,6 +35,10 @@
 	background-image: url(../images/polygon.png);
 }
 
+#gmap3-menu .item.traffic {
+	background-image: url(../images/traffic.png);
+}
+
 #gmap3-menu .item.clearMarker {
 	background-image: url(../images/eraser.png);
 }
