@@ -82,6 +82,7 @@ function ContigoMap() {
     this.currentLocateFilterMode = LOCATES_SHOW_ALL;
     this.currentCocMode = COC_SHOW_ALL;
     this.geocoder = new google.maps.Geocoder();
+    this.showMarkerLabel = true;
 }
 
 ContigoMap.prototype = {
@@ -465,17 +466,30 @@ ContigoMap.prototype = {
 		                            status, userNote, driverID, driverStatus, beaconID,
 		                            guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, 
 		                            dispatch, isMetric);
-                    var marker = {
-                    	tag: [label, TAG_GROUP_LOCATION],
-                        latLng: [coord.lat, coord.lng], 
-                        data: infoContent,                        
-                        options: {
-                            title: label,
-                            icon: {url: this.constructMarkerIconName(icon, numberLabel)},
-                            labelAnchor: new google.maps.Point(10, -2),
-                            labelClass: "labels",
-                            labelStyle: {opacity: 0.75},
-                            labelContent: label}};
+                    var marker = null;
+                    if (this.showMarkerLabel) {
+                        marker = {
+                            tag: [label, TAG_GROUP_LOCATION],
+                            latLng: [coord.lat, coord.lng], 
+                            data: infoContent,                        
+                            options: {
+                                title: label,
+                                icon: {url: this.constructMarkerIconName(icon, numberLabel)},
+                                labelAnchor: new google.maps.Point(10, -2),
+                                labelClass: "labels",
+                                labelStyle: {opacity: 0.75},
+                                labelContent: label}};
+                    } else {
+                        marker = {
+                            tag: [label, TAG_GROUP_LOCATION],
+                            latLng: [coord.lat, coord.lng], 
+                            data: infoContent,                        
+                            options: {
+                                title: label,
+                                icon: {url: this.constructMarkerIconName(icon, numberLabel)}
+                            }
+                        };                    
+                    }
 		            markers.push(marker);
 	            }
                 circleCertaintyRadius = parseInt(circleCertaintyRadius, 10);
@@ -1077,5 +1091,9 @@ ContigoMap.prototype = {
       		}
     	});
         this.map.gmap3("get").fitBounds(bounds);        
+    },
+    
+    setShowMarkerLabel : function(showMarkerLabel) {
+        this.showMarkerLabel = showMarkerLabel;
     }
 }
