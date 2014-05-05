@@ -69,21 +69,23 @@ var NUMBERS_ICON_HOST_PATH = "icons/numbers/";
 var IMG_HOST_PATH = "images/";
 
 function ContigoMarkers(markers, cocs, routes) {
-    this.markers = markers ? markers : new Array();
-    this.cocs = cocs ? cocs : new Array();
-    this.routes = routes ? routes : new Array();
+    this.markers = markers ? markers : new Array(); // an array of markers
+    this.cocs = cocs ? cocs : new Array(); // circle of certainty for each marker
+    this.routes = routes ? routes : new Array(); // routes to connect markers
 }
 
-function ContigoMap() {
-    this.map = null;
-    this.contextMenu = null;
-    this.current = null; // current click event
-    this.isMetric = false;
+function ContigoMap(mapId) {
+    this.mapId = mapId ? mapId : 'map'; // the identity of the DOM element to hold the map
+    this.map = null; // the google map object
+    this.canvas = null; // the canvas object of a map
+    this.contextMenu = null; // the context menu of a map
+    this.currentClickEvent = null;
+    this.isMetric = false; // to use metric system to show information on the map or not
     this.currentLocateFilterMode = LOCATES_SHOW_ALL;
     this.currentCocMode = COC_SHOW_ALL;
     this.geocoder = new google.maps.Geocoder();
-    this.showMarkerLabel = true;
-    this.showTraffic = false;
+    this.withLabel = true; // with lable for markers
+    this.withTraffic = false; // with traffic layer on the map
 }
 
 ContigoMap.prototype = {
@@ -92,14 +94,14 @@ ContigoMap.prototype = {
 	 * also initialize the context menu.
 	 */
 	init: function() {
-		var that = this;
-		this.map = $('#map');
-		this.contextMenu = new Gmap3Menu(this.map);
+		var $this = this;
+		this.canvas = $('#' + this.mapId);
+		this.contextMenu = new Gmap3Menu(this.canvas);
 		this.initContextMenu();
-        this.map.gmap3({
+        this.canvas.gmap3({
             defaults:{ 
                 classes:{
-                    Marker: MarkerWithLabel
+                    Marker: MarkerWithLabel // use MarkerWithLabel class to allow to show lable with marker
                 }
             },
             map: {
@@ -117,30 +119,30 @@ ContigoMap.prototype = {
                 },
                 events:{
                 	rightclick: function(map, event) {
-						that.current = event;
-						that.contextMenu.open(that.current);
+						$this.currentClickEvent = event;
+						$this.contextMenu.open(event);
 					},
 					click: function() {
-						that.contextMenu.close();
+						$this.contextMenu.close();
 					},
 					dragstart: function() {
-						that.contextMenu.close();
+						$this.contextMenu.close();
 					},
 					zoom_changed: function() {
-						that.contextMenu.close();
+						$this.contextMenu.close();
 					}
 				}
             }
         });
-        this.initCentralMap();
-
+        this.map = this.canvas.gmap3("get");
+        this.markCenter();
 	},
 	
 	/**
 	 * Add menu item to the context menu.
 	 */
 	initContextMenu: function() {
-		var self = this;
+		var $this = this;
 		/*
         this.contextMenu.add("Draw Circle", "drawCircle", 
             function(){
@@ -156,43 +158,40 @@ ContigoMap.prototype = {
             }); 
         */ 
         this.contextMenu.add("Traffic", "traffic", 
-            function(){
-            	if (self.showTraffic) {
-            		self.clear({name: ["trafficlayer"]});
-            		self.showTraffic = false;
+            function() {
+            	if ($this.withTraffic) {
+            		$this.clear({name: ["trafficlayer"]});
+            		$this.withTraffic = false;
             	} else {
-            		$(self.map).gmap3({trafficlayer: {}});
-            		self.showTraffic = true;
+            		$this.canvas.gmap3("trafficlayer");
+            		$this.withTraffic = true;
             	}
-                self.contextMenu.close();
+                $this.contextMenu.close();
             });              
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function(){
-                self.clear({name: ["marker", "circle", "polyline", "rectangle", "polygon"]});
-                self.contextMenu.close();
+                $this.clear({name: ["marker", "circle", "polyline", "rectangle", "polygon"]});
+                $this.contextMenu.close();
             });
 		this.contextMenu.add("Zoom in", "zoomIn", 
 			function() {
-				var map = self.map.gmap3("get");
-				map.setZoom(map.getZoom() + 1);
-				self.contextMenu.close();
+				$this.map.setZoom($this.map.getZoom() + 1);
+				$this.contextMenu.close();
 			});
-		self.contextMenu.add("Zoom out", "zoomOut",
+		this.contextMenu.add("Zoom out", "zoomOut",
 			function() {
-				var map = self.map.gmap3("get");
-				map.setZoom(map.getZoom() - 1);
-				self.contextMenu.close();
+				$this.map.setZoom($this.map.getZoom() - 1);
+				$this.contextMenu.close();
 			});
 		this.contextMenu.add("Center here", "centerHere separator", 
 			function() {
-				self.map.gmap3("get").setCenter(self.current.latLng);
-				self.contextMenu.close();
+				$this.map.setCenter($this.currentClickEvent.latLng);
+				$this.contextMenu.close();
 			});
 		this.contextMenu.add("Show All CoCs", "showAllCoC", 
 			function() {
-				$(self.map).gmap3({
+				$($this.canvas).gmap3({
 					get: {
-						name: "circle",
 						tag: TAG_GROUP_COC,
 						all: true,
 						callback: function(circles) {
@@ -203,68 +202,66 @@ ContigoMap.prototype = {
         				}
       				}
     			});
-				self.contextMenu.close();
+				$this.contextMenu.close();
 			});
 		this.contextMenu.add("Show Last CoC", "showLastCoC", 
 			function() {
-				$(self.map).gmap3({
+				$($this.canvas).gmap3({
 					get: {
-						name: "circle",
 						tag: TAG_GROUP_COC,
 						all: true,
 						callback: function(circles) {
-							$.each(circles, function(i, circle){
+							$.each(circles, function(i, circle) {
 								circle.setVisible(i == circles.length - 1);
 							});
 							
         				}
       				}
     			});
-				self.contextMenu.close();
+				$this.contextMenu.close();
 			});
 		this.contextMenu.add("Hide CoC", "hideCoC separator", 
 			function() {
-				$(self.map).gmap3({
+				$($this.canvas).gmap3({
 					get: {
-						name: "circle",
 						tag: TAG_GROUP_COC,
 						all: true,
 						callback: function(circles) {
-							$.each(circles, function(i, circle){
+							$.each(circles, function(i, circle) {
 								circle.setVisible(false);
 							});
 							
         				}
       				}
     			});
-				self.contextMenu.close();
+				$this.contextMenu.close();
 			});
 		this.contextMenu.add("View Address", "viewAddress", 
 			function() {
-				self.clear({tag: [TAG_GROUP_ADDRESS]});
-				self.geocoder.geocode({'latLng': self.current.latLng}, function(results, status) {
+				$this.clear({tag: TAG_GROUP_ADDRESS});
+				$this.geocoder.geocode({'latLng': $this.currentClickEvent.latLng}, function(results, status) {
 					if (status == google.maps.GeocoderStatus.OK) {
 						if (results[0]) {
-							self.map.gmap3({
+							$this.canvas.gmap3({
             					marker: {
-                					tag: [TAG_GROUP_ADDRESS],
-                					latLng: self.current.latLng,
+                					tag: TAG_GROUP_ADDRESS,
+                					latLng: $this.currentClickEvent.latLng,
                 					options: {
                     					icon: ICON_HOST_PATH + "red_dot.png"
                 					},
                 					callback: function(marker) {
-           								var infowindow = $(self.map).gmap3({get:{name:"infowindow"}});
+           								var infowindow = $this.canvas.gmap3({get:{name:"infowindow"}});
            								if (infowindow){
-											infowindow.open(self.map.gmap3("get"), marker);
+											infowindow.open($this.map, marker);
 											infowindow.setContent(results[0].formatted_address);
 										} else {
-											$(self.map).gmap3({
-												infowindow:{
-													anchor:marker, 
-													options:{content: results[0].formatted_address},
-													events:{
-														closeclick: function(infowindow){
-															self.clear({tag: [TAG_GROUP_ADDRESS]});
+											$this.canvas.gmap3({
+												infowindow: {
+													anchor: marker, 
+													options: {content: results[0].formatted_address},
+													events: {
+														closeclick: function(infowindow) {
+															$this.clear({tag: TAG_GROUP_ADDRESS});
 														}
 													}
 												}
@@ -280,30 +277,29 @@ ContigoMap.prototype = {
       					alert('Geocoder failed due to: ' + status);
     				}
   				});
-				self.contextMenu.close();
+				$this.contextMenu.close();
 			});
-		self.contextMenu.add("Best Fit", "bestFit",
+		this.contextMenu.add("Best Fit", "bestFit",
 			function() {
-				//$(self.map).gmap3("autofit");
-                self.bestFit();
-				self.contextMenu.close();
+                $this.bestFit();
+				$this.contextMenu.close();
 			});
 	},
 	
 	/**
 	 * Show a cross-hair image to represent the center of the map.
 	 */
-	initCentralMap: function() {
+	markCenter: function() {
         var marker = new google.maps.Marker({
-			map: this.map.gmap3("get"),
+			map: this.map,
 			 icon: new google.maps.MarkerImage(
 			 	ICON_HOST_PATH + 'crosshair.png', 
 			 	null, 
 			 	null, 
 			 	new google.maps.Point(20, 20)), // crosshair.png is 41x41
-			shape: {coords: [0,0,0,0], type: 'rect'}
+			shape: {coords: [0, 0, 0, 0], type: 'rect'}
 		});
-		marker.bindTo('position', this.map.gmap3("get"), 'center');
+		marker.bindTo('position', this.map, 'center');
 	},
     
     /**
@@ -317,6 +313,11 @@ ContigoMap.prototype = {
         this.refreshMap(poiCollection);
     },
     
+	/**
+	 * Refresh the map.
+	 * 
+	 * @param poiCollection
+	 */    
     refreshMap: function(poiCollection) {
         var mapMarkers = new Array();
         var landmarks = poiCollection.landmarks;
@@ -331,58 +332,33 @@ ContigoMap.prototype = {
         mapMarkers = locationMarkers.markers.concat(landmarkMarkers.markers);
         mapMarkers = mapMarkers.concat(jobMarkers.markers);
 	    var mapObjects = {};
-	    if (mapMarkers.length) {
+	    if (mapMarkers.length > 0) {
 	    	mapObjects["marker"] = {
                 values: mapMarkers,
-                options:{
+                options: {
                     draggable: false
                 },
-                events:{
-                	click: function(marker, event, context){
-						var map = $(this).gmap3("get"),
-            			infowindow = $(this).gmap3({get:{name:"infowindow"}});
-            			if (infowindow){
-              				infowindow.open(map, marker);
+                events: {
+                	click: function(marker, event, context) {
+            			var infowindow = $(this).gmap3({get:{name:"infowindow"}});
+            			if (infowindow) {
+              				infowindow.open(marker.getMap(), marker);
               				infowindow.setContent(context.data);
             			} else {
               				$(this).gmap3({
-                				infowindow:{
-                  					anchor:marker,
-                  					options:{content: context.data}
+                				infowindow: {
+                  					anchor: marker,
+                  					options: {content: context.data}
                 				}
               				});
               			}
             		}
-            		/*,
-                    mouseover: function(marker, event, context){
-                        var map = $(this).gmap3("get"),
-                        infowindow = $(this).gmap3({get:{name:"infowindow"}});
-                        if (infowindow){
-                            infowindow.open(map, marker);
-                            infowindow.setContent(context.tag[0]);
-                        } else {
-                            $(this).gmap3({
-                                infowindow:{
-                                    anchor:marker, 
-                                    options:{content: context.tag[0]}
-                                }
-                            });
-                        }
-                    },
-                    mouseout: function(){
-                        var infowindow = $(this).gmap3({get:{name:"infowindow"}});
-                        if (infowindow){
-                            infowindow.close();
-                        }
-                    }*/
                 }
             }
 	    }
 	    
 	    if (locationMarkers.cocs.length > 0) {
-	    	mapObjects["circle"] = {
-	    		values: locationMarkers.cocs
-	    	}
+	    	mapObjects["circle"] = {values: locationMarkers.cocs};
 	    }
 	    
 	    if (locationMarkers.routes.length > 0) {
@@ -393,7 +369,7 @@ ContigoMap.prototype = {
                     options: {
                         strokeColor: locationMarkers.routes[i].color,
                         strokeOpacity: 1.0,
-                        strokeWeight: 1,
+                        strokeWeight: 2,
                         path: locationMarkers.routes[i].segment,
                         icons: [{
                             icon: {
@@ -412,9 +388,10 @@ ContigoMap.prototype = {
             }
 	    }
 	    
-        this.map.gmap3(mapObjects, "autofit");
+        this.canvas.gmap3(mapObjects, "autofit");
     },
-    	/**
+    
+    /**
 	 * Convert from a list of contigo's location poi objects into marker and circle objects.
 	 * 
 	 * @param beaconItems a list of beacon items
@@ -428,7 +405,6 @@ ContigoMap.prototype = {
             cocs = new Array(),
             routes = new Array();
 	    for (var x in beaconItems) {
-	        //var beaconId = x; // 3994
 	        var locatePoints = beaconItems[x].locatePoints;
 	        var isPointsConnected = beaconItems[x].isPointsConnected;
 	        var showInputOutputColor = beaconItems[x].showInputOutputColor;
@@ -481,7 +457,7 @@ ContigoMap.prototype = {
 		                            guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, 
 		                            dispatch, isMetric);
                     var marker = null;
-                    if (this.showMarkerLabel) {
+                    if (this.withLabel) {
                         marker = {
                             tag: [label, TAG_GROUP_LOCATION],
                             latLng: [coord.lat, coord.lng], 
@@ -506,6 +482,7 @@ ContigoMap.prototype = {
                     }
 		            markers.push(marker);
 	            }
+                
                 circleCertaintyRadius = parseInt(circleCertaintyRadius, 10);
                 if (circleCertaintyRadius > 0) {
                     if (this.currentCocMode == COC_SHOW_ALL || this.currentCocMode == COC_SHOW_LAST && i == szLocatePoints - 1) {
@@ -513,7 +490,7 @@ ContigoMap.prototype = {
                             tag: [TAG_GROUP_COC],
                             options: {
                                 center: [coord.lat, coord.lng],
-                                radius : parseInt(circleCertaintyRadius, 10),
+                                radius : circleCertaintyRadius,
                                 fillColor : "#C80000",
                                 strokeWeight: 1,
                                 strokeColor : "#F00000"}};
@@ -871,9 +848,9 @@ ContigoMap.prototype = {
      * @param radius The radius of the circle, in metres.
      */
     drawCircle : function(lat, lng, radius) {
-        this.map.gmap3({
+        this.canvas.gmap3({
             circle:{
-                tag: [TAG_GROUP_CIRCLE_ZONE],
+                tag: TAG_GROUP_CIRCLE_ZONE,
                 options:{
                     center: [lat, lng],
                     radius: radius,
@@ -889,14 +866,10 @@ ContigoMap.prototype = {
                     dragend: function(circle) {
                         var center = circle.center;
                         var radius = circle.radius;
-                        console.log(center);
-                        console.log(radius);
                     },
                     radius_changed: function(circle) {
                         var center = circle.center;
                         var radius = circle.radius;
-                        console.log(center);
-                        console.log(radius);
                     },
                     rightclick: function(circle, event) {
                         var contextMenu = new Gmap3Menu($(this).gmap3());
@@ -922,9 +895,9 @@ ContigoMap.prototype = {
      * @param lng2 The longitude of the second coordinate, in decimal degrees.
      */ 
     drawRectangle : function(lat1, lng1, lat2, lng2) {    
-        this.map.gmap3({
+        this.canvas.gmap3({
             rectangle: {
-                tag: [TAG_GROUP_RECTANGLE_ZONE],
+                tag: TAG_GROUP_RECTANGLE_ZONE,
                 options: {
                     bounds: {n: lat1, e: lng1, s: lat2, w: lng2},
                     fillColor: "#C80000",
@@ -940,13 +913,11 @@ ContigoMap.prototype = {
                         var bounds = rectangle.bounds;
                         var ne = bounds.getNorthEast();
                         var sw = bounds.getSouthWest();
-                        console.log(ne);
-                        console.log(sw);
                     },
                     rightclick: function(rectangle, event) {
                         var contextMenu = new Gmap3Menu($(this).gmap3());
                         contextMenu.add("Delete", "clearMarker", 
-                            function(){
+                            function() {
                                 rectangle.setMap(null);
                                 contextMenu.close();
                             });
@@ -963,6 +934,7 @@ ContigoMap.prototype = {
 	 *
 	 * @param polygonZoneCollection an array of polygon information.
 	 *        {polygonZones: [{key: name1, points: [{lat: lat1, lng: lng1}, {lat: lat2, lng: lng2}, ...]}, ...]}
+     * @return the number of polygons
 	 */
 	drawPolygonZones : function(polygonZoneCollection) {
         var szPolygons = 0;
@@ -981,7 +953,7 @@ ContigoMap.prototype = {
                     }
 
                     var polygon = {
-                    	tag: [TAG_GROUP_POLYGON_ZONE],
+                    	tag: TAG_GROUP_POLYGON_ZONE,
                 		options: {
                     		paths: vertices,
                     		fillColor: "#C80000",
@@ -995,19 +967,19 @@ ContigoMap.prototype = {
                 		events: {
                     		mouseup: function(polygon) {
                     			var paths = polygon.getPaths();
-                        		console.log(paths);
+                        		//console.log(paths);
                     		},
                     		dragend: function(polygon) {
                         		var paths = polygon.getPaths();
-                        		console.log(paths);
+                        		//console.log(paths);
                     		},
                             rightclick: function(polygon, event) {
                                 var contextMenu = new Gmap3Menu($(this).gmap3());
                                 contextMenu.add("Delete", "clearMarker", 
-                                function(){
-                                    polygon.setMap(null);
-                                    contextMenu.close();
-                                });
+                                    function() {
+                                        polygon.setMap(null);
+                                        contextMenu.close();
+                                    });
                                 contextMenu.open(event);                        
                             }
                 		},
@@ -1016,41 +988,27 @@ ContigoMap.prototype = {
 		            polygons.push(polygon);
 	            }
 
-                this.map.gmap3({
-					polygon: {
-                		values: polygons}
-					}, "autofit");
+                this.canvas.gmap3({polygon: {values: polygons}}, "autofit");
             }
         }
         return szPolygons;
 	},    
     
     /**
-     * Clear objects in the groups on the map.
+     * Clear objects in the groups on the map based on id, name, or tag in the groups.
+     * id: string or array of string,
+     * name: string or array of string,
+     * tag: boolean, string, or array of string
      *
      * @param groups a list of groups
      */
     clear : function(groups) {
     	if (groups.id) {
-    		this.map.gmap3({
-            	clear: {
-                	id: groups.id,
-            	}
-        	});
+    		this.canvas.gmap3({clear: {id: groups.id}});
     	} else if (groups.name) {
-    		this.map.gmap3({
-            	clear: {
-                	name: groups.name,
-                	all: true
-            	}
-        	});
+    		this.canvas.gmap3({clear: {name: groups.name}});
     	} else if (groups.tag) {
-    		this.map.gmap3({
-            	clear: {
-                	tag: groups.tag,
-                	all: true
-            	}
-        	});
+    		this.canvas.gmap3({clear: {tag: groups.tag}});
     	}
     },
     
@@ -1060,7 +1018,7 @@ ContigoMap.prototype = {
     bestFit : function() {
         //  Create a new viewpoint bound
         var bounds = new google.maps.LatLngBounds();
-        $(this.map).gmap3({
+        this.canvas.gmap3({
             get: {
                 name: "marker",
 				all: true,
@@ -1071,7 +1029,7 @@ ContigoMap.prototype = {
         		}
       		}
     	});        
-        $(this.map).gmap3({
+        this.canvas.gmap3({
             get: {
                 name: "circle",
 				all: true,
@@ -1082,7 +1040,7 @@ ContigoMap.prototype = {
         		}
       		}
     	});
-        $(this.map).gmap3({
+        this.canvas.gmap3({
             get: {
                 name: "rectangle",
 				all: true,
@@ -1093,7 +1051,7 @@ ContigoMap.prototype = {
         		}
       		}
     	});
-        $(this.map).gmap3({
+        this.canvas.gmap3({
             get: {
                 name: "polygon",
 				all: true,
@@ -1104,10 +1062,15 @@ ContigoMap.prototype = {
         		}
       		}
     	});
-        this.map.gmap3("get").fitBounds(bounds);        
+        this.map.fitBounds(bounds);        
     },
     
-    setShowMarkerLabel : function(showMarkerLabel) {
-        this.showMarkerLabel = showMarkerLabel;
+    /**
+     * Set withLabel property.
+     *
+     * @param withLabel
+     */
+    setWithLabel : function(withLabel) {
+        this.withLabel = withLabel;
     }
 }
