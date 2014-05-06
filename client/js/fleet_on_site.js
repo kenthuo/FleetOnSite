@@ -1,65 +1,25 @@
-/**
- * Constant indicating the current filter mode for beacon locate points is
- * set to show all.
- */
-var LOCATES_SHOW_ALL = "locates_all";
-/**
- * Constant indicating the current filter mode for beacon locate points is
- * set to show only the three most recent points.
- */
-var LOCATES_SHOW_LAST_THREE = "locates_show_last_three";
-/**
- * Constant indicating the current filter mode for beacon locate points is
- * set to show only the most recent point.
- */
-var LOCATES_SHOW_LAST = "locates_show_last";
-/**
- * Constant indicating that the current CoC filter mode is set show CoCs
- * only on the last point for each beacon on the map.
- */
-var COC_SHOW_LAST = "coc_show_last";
-/**
- * Constant indicating that the current CoC filter mode is set show CoCs
- * for all points on the map.
- */
-var COC_SHOW_ALL = "coc_show_all";
-/**
- * Constant indicating that the current CoC filter mode is set show no CoCs
- * on the map.
- */
-var COC_SHOW_NONE = "coc_show_none";
-/**
- * The tag for all of location markers.
- */
-var TAG_GROUP_LOCATION = "group_location";
-/**
- * The tag for all of circle of certainty.
- */
-var TAG_GROUP_COC = "group_coc";
-/**
- * The tag for all of landmark markers.
- */
-var TAG_GROUP_LANDMARK = "group_landmark";
-/**
- * The tag for all of job markers.
- */
-var TAG_GROUP_JOB = "group_job";
-/**
- * The tag for all of circle zones.
- */
-var TAG_GROUP_CIRCLE_ZONE = "group_circle_zone";
-/**
- * The tag for all of rectangle zones.
- */
-var TAG_GROUP_RECTANGLE_ZONE = "group_rectangle_zone";
-/**
- * The tag for all of polygon zones.
- */
-var TAG_GROUP_POLYGON_ZONE = "group_polygon_zone";
-/**
- * The tag for all of address markers.
- */
-var TAG_GROUP_ADDRESS = "group_address";
+var LOCATE_MODE = {
+	ALL: 0, // show all points for each beacon on the map
+	LAST3: 1, // show the last 3 points for each beacon on the map 
+	LAST: 2 // show the last point for each beacon on the map 
+}
+var COC_MODE = {
+	LAST: 0, // show CoCs only on the last point for each beacon on the map
+	ALL: 1, // show CoCs on all of points for each beacon on the map
+	NONE: 2 // // show no CoC of every point for each beacon on the map
+}
+
+var TAG_GROUP = {
+	LOCATION: "tg_location", // The tag for all of location markers
+	COC: "tg_coc", // The tag for all of circle of certainty
+	LANDMARK: "tg_landmark", // The tag for all of landmark markers
+	JOB: "tg_job", // The tag for all of job markers.
+	CIRCLE_ZONE: "tg_circle_zone", // The tag for all of circle zones
+	RECTANGLE_ZONE: "tg_group_rectangle_zone", // The tag for all of rectangle zones
+	POLYGON_ZONE: "tg_polygon_zone", // The tag for all of polygon zones
+	ADDRESS: "tg_address" // The tag for all of address markers
+};
+
 var DEFAULT_ROUTE_COLOR = "#FF0000";
 
 var ICON_HOST_PATH = "icons/";
@@ -69,9 +29,9 @@ var NUMBERS_ICON_HOST_PATH = "icons/numbers/";
 var IMG_HOST_PATH = "images/";
 
 function ContigoMarkers(markers, cocs, routes) {
-    this.markers = markers ? markers : new Array(); // an array of markers
-    this.cocs = cocs ? cocs : new Array(); // circle of certainty for each marker
-    this.routes = routes ? routes : new Array(); // routes to connect markers
+    this.markers = markers ? markers : []; // an array of markers
+    this.cocs = cocs ? cocs : []; // circle of certainty for each marker
+    this.routes = routes ? routes : []; // routes to connect markers
 }
 
 function ContigoMap(mapId) {
@@ -81,11 +41,12 @@ function ContigoMap(mapId) {
     this.contextMenu = null; // the context menu of a map
     this.currentClickEvent = null;
     this.isMetric = false; // to use metric system to show information on the map or not
-    this.currentLocateFilterMode = LOCATES_SHOW_ALL;
-    this.currentCocMode = COC_SHOW_ALL;
+    this.currentLocateFilterMode = LOCATE_MODE.ALL;
+    this.currentCocMode = COC_MODE.ALL;
     this.geocoder = new google.maps.Geocoder();
     this.withLabel = true; // with lable for markers
     this.withTraffic = false; // with traffic layer on the map
+    this.poiCollection = null;
 }
 
 ContigoMap.prototype = {
@@ -143,20 +104,21 @@ ContigoMap.prototype = {
 	 */
 	initContextMenu: function() {
 		var $this = this;
-		/*
-        this.contextMenu.add("Draw Circle", "drawCircle", 
-            function(){
-                self.contextMenu.close();
+        this.contextMenu.add("Show All Locates", "showAllLocate", 
+            function() {
+            	$this.filterLocatePoints(LOCATE_MODE.ALL);
+                $this.contextMenu.close();
             });
-        this.contextMenu.add("Draw Rectangle", "drawRectangle", 
-            function(){
-                self.contextMenu.close();
+        this.contextMenu.add("Show Last 3 Locates", "showLast3Locate", 
+            function() {
+            	$this.filterLocatePoints(LOCATE_MODE.LAST3);
+                $this.contextMenu.close();
             });
-        this.contextMenu.add("Draw Polygon", "drawPolygon", 
-            function(){
-                self.contextMenu.close();
-            }); 
-        */ 
+        this.contextMenu.add("Show Last Locate", "showLastLocate", 
+            function() {
+            	$this.filterLocatePoints(LOCATE_MODE.LAST);
+                $this.contextMenu.close();
+            });
         this.contextMenu.add("Traffic", "traffic", 
             function() {
             	if ($this.withTraffic) {
@@ -190,83 +152,37 @@ ContigoMap.prototype = {
 			});
 		this.contextMenu.add("Show All CoCs", "showAllCoC", 
 			function() {
-				$($this.canvas).gmap3({
-					get: {
-						tag: TAG_GROUP_COC,
-						all: true,
-						callback: function(circles) {
-							$.each(circles, function(i, circle){
-								circle.setVisible(true);
-							});
-							
-        				}
-      				}
-    			});
+				$this.filterCoCs(COC_MODE.ALL);
 				$this.contextMenu.close();
 			});
 		this.contextMenu.add("Show Last CoC", "showLastCoC", 
 			function() {
-				$($this.canvas).gmap3({
-					get: {
-						tag: TAG_GROUP_COC,
-						all: true,
-						callback: function(circles) {
-							$.each(circles, function(i, circle) {
-								circle.setVisible(i == circles.length - 1);
-							});
-							
-        				}
-      				}
-    			});
+				$this.filterCoCs(COC_MODE.LAST);
 				$this.contextMenu.close();
 			});
 		this.contextMenu.add("Hide CoC", "hideCoC separator", 
 			function() {
-				$($this.canvas).gmap3({
-					get: {
-						tag: TAG_GROUP_COC,
-						all: true,
-						callback: function(circles) {
-							$.each(circles, function(i, circle) {
-								circle.setVisible(false);
-							});
-							
-        				}
-      				}
-    			});
+				$this.filterCoCs(COC_MODE.NONE);
 				$this.contextMenu.close();
 			});
 		this.contextMenu.add("View Address", "viewAddress", 
 			function() {
-				$this.clear({tag: TAG_GROUP_ADDRESS});
+				$this.clear({tag: TAG_GROUP.ADDRESS});
 				$this.geocoder.geocode({'latLng': $this.currentClickEvent.latLng}, function(results, status) {
 					if (status == google.maps.GeocoderStatus.OK) {
 						if (results[0]) {
 							$this.canvas.gmap3({
             					marker: {
-                					tag: TAG_GROUP_ADDRESS,
+                					tag: TAG_GROUP.ADDRESS,
                 					latLng: $this.currentClickEvent.latLng,
                 					options: {
                     					icon: ICON_HOST_PATH + "red_dot.png"
                 					},
                 					callback: function(marker) {
-           								var infowindow = $this.canvas.gmap3({get:{name:"infowindow"}});
-           								if (infowindow){
-											infowindow.open($this.map, marker);
-											infowindow.setContent(results[0].formatted_address);
-										} else {
-											$this.canvas.gmap3({
-												infowindow: {
-													anchor: marker, 
-													options: {content: results[0].formatted_address},
-													events: {
-														closeclick: function(infowindow) {
-															$this.clear({tag: TAG_GROUP_ADDRESS});
-														}
-													}
-												}
-											});
-										}
+                						$this.showInfoWindow(
+                							marker, 
+                							results[0].formatted_address, 
+                							function() {$this.clear({tag: TAG_GROUP.ADDRESS});})
 									}
            						}
 							});
@@ -310,16 +226,18 @@ ContigoMap.prototype = {
      *                      the map.
      */    
     sendPoints: function(poiCollection) {
+    	this.poiCollection = poiCollection;
         this.refreshMap(poiCollection);
     },
     
 	/**
-	 * Refresh the map.
+	 * Refresh the map. Clear all objects before showing.
 	 * 
 	 * @param poiCollection
 	 */    
     refreshMap: function(poiCollection) {
-        var mapMarkers = new Array();
+    	var $this = this;
+        var mapMarkers = [];
         var landmarks = poiCollection.landmarks;
 	    var beaconItems = poiCollection.beaconItems;
 	    var jobCollection = poiCollection.jobs;    
@@ -332,6 +250,8 @@ ContigoMap.prototype = {
         mapMarkers = locationMarkers.markers.concat(landmarkMarkers.markers);
         mapMarkers = mapMarkers.concat(jobMarkers.markers);
 	    var mapObjects = {};
+	    this.clearAll();
+	    
 	    if (mapMarkers.length > 0) {
 	    	mapObjects["marker"] = {
                 values: mapMarkers,
@@ -340,18 +260,7 @@ ContigoMap.prototype = {
                 },
                 events: {
                 	click: function(marker, event, context) {
-            			var infowindow = $(this).gmap3({get:{name:"infowindow"}});
-            			if (infowindow) {
-              				infowindow.open(marker.getMap(), marker);
-              				infowindow.setContent(context.data);
-            			} else {
-              				$(this).gmap3({
-                				infowindow: {
-                  					anchor: marker,
-                  					options: {content: context.data}
-                				}
-              				});
-              			}
+                		$this.showInfoWindow(marker, context.data);
             		}
                 }
             }
@@ -363,7 +272,7 @@ ContigoMap.prototype = {
 	    
 	    if (locationMarkers.routes.length > 0) {
             mapObjects["polyline"] = {};
-            mapObjects["polyline"]["values"] = new Array();
+            mapObjects["polyline"]["values"] = [];
             for (var i = 0; i < locationMarkers.routes.length; i++) {
                 mapObjects["polyline"]["values"].push({
                     options: {
@@ -388,7 +297,8 @@ ContigoMap.prototype = {
             }
 	    }
 	    
-        this.canvas.gmap3(mapObjects, "autofit");
+        this.canvas.gmap3(mapObjects);
+        this.bestFit();
     },
     
     /**
@@ -400,10 +310,9 @@ ContigoMap.prototype = {
 	 * @returns a list of definition of location markers and a list of definition of CoCs (circle of certainty)
 	 */
 	buildLocationMarkers : function(beaconItems, isMetric) {
-		var self = this, 
-            markers = new Array(),
-            cocs = new Array(),
-            routes = new Array();
+		var markers = [],
+            cocs = [],
+            routes = [];
 	    for (var x in beaconItems) {
 	        var locatePoints = beaconItems[x].locatePoints;
 	        var isPointsConnected = beaconItems[x].isPointsConnected;
@@ -424,7 +333,7 @@ ContigoMap.prototype = {
 	        }
 	        
 	        for (var i = initialIndex; i < szLocatePoints; i++) {
-                var segment = new Array();
+                var segment = [];
 	        	var currentPoint = locatePoints[i];
 	            var icon = currentPoint.icon;
 	            var label = currentPoint.label;
@@ -459,7 +368,7 @@ ContigoMap.prototype = {
                     var marker = null;
                     if (this.withLabel) {
                         marker = {
-                            tag: [label, TAG_GROUP_LOCATION],
+                            tag: [label, TAG_GROUP.LOCATION],
                             latLng: [coord.lat, coord.lng], 
                             data: infoContent,                        
                             options: {
@@ -474,7 +383,7 @@ ContigoMap.prototype = {
                                 labelContent: label}};
                     } else {
                         marker = {
-                            tag: [label, TAG_GROUP_LOCATION],
+                            tag: [label, TAG_GROUP.LOCATION],
                             latLng: [coord.lat, coord.lng], 
                             data: infoContent,                        
                             options: {
@@ -491,9 +400,9 @@ ContigoMap.prototype = {
                 
                 circleCertaintyRadius = parseInt(circleCertaintyRadius, 10);
                 if (circleCertaintyRadius > 0) {
-                    if (this.currentCocMode == COC_SHOW_ALL || this.currentCocMode == COC_SHOW_LAST && i == szLocatePoints - 1) {
+                    if (this.currentCocMode == COC_MODE.ALL || this.currentCocMode == COC_MODE.LAST && i == szLocatePoints - 1) {
                         var circle = {
-                            tag: [TAG_GROUP_COC],
+                            tag: TAG_GROUP.COC,
                             options: {
                                 center: [coord.lat, coord.lng],
                                 radius : circleCertaintyRadius,
@@ -537,7 +446,6 @@ ContigoMap.prototype = {
 	 * @returns
 	 */
 	constructMarkerIconName : function(icon, numberLabel) {
-		 
 		 var iconName = ICON_HOST_PATH + "blank.png";
 		 if (icon) {
 			if (numberLabel && numberLabel > 0) {
@@ -546,11 +454,10 @@ ContigoMap.prototype = {
 				iconName = ICON_HOST_PATH + icon.name + ".png";        		
 			}
 		 }
-		 
 		 return iconName;
 	},  
 	
-		/**
+	/**
 	 * Construct the content of InfoWindow for each location Poi object.
 	 * 
 	 * @returns string the content of InfoWindow
@@ -623,11 +530,11 @@ ContigoMap.prototype = {
 	    var initialIndex = 0;
 	    var szLocatePoints = locatePoints.length;
 
-	    if (this.currentLocateFilterMode == LOCATES_SHOW_LAST_THREE) {
+	    if (this.currentLocateFilterMode == LOCATE_MODE.LAST_THREE) {
 	        if (szLocatePoints > 2) {
            	 	initialIndex = szLocatePoints - 3;
 	        }
-	    } else if (this.currentLocateFilterMode == LOCATES_SHOW_LAST) {
+	    } else if (this.currentLocateFilterMode == LOCATE_MODE.SHOW_LAST) {
 	        if (szLocatePoints > 0) {
 	            initialIndex = szLocatePoints - 1;
 	        }
@@ -645,8 +552,7 @@ ContigoMap.prototype = {
 	 * @returns a list of definition of landmark markers
 	 */
 	buildLandmarkMarkers : function(landmarks, isMetric) {
-		var self = this,
-            markers = new Array();
+		var markers = [];
 		for (var x in landmarks) {
 			var icon = landmarks[x].icon;
 			var coord = landmarks[x].coord;
@@ -664,7 +570,7 @@ ContigoMap.prototype = {
 			if (label) {
                 var infoContent = this.buildLmkInfoWindowContents(label, userNote, lmkAddress, content, dispatch);
                 var marker = {
-                    tag: [label, TAG_GROUP_LANDMARK],
+                    tag: [label, TAG_GROUP.LANDMARK],
                     latLng: [coord.lat, coord.lng], 
                     data: infoContent,    
                     options: {
@@ -732,8 +638,7 @@ ContigoMap.prototype = {
 	 * @returns a list of definition of job markers
 	 */
 	buildJobMarkers : function(jobCollection, isMetric) {
-		var self = this,
-            markers = new Array();
+		var markers = [];
 		for (var beaconId in jobCollection) {
 			var jobs = jobCollection[beaconId];
 			var szJobs = jobs.length;
@@ -765,7 +670,7 @@ ContigoMap.prototype = {
 		            		etaTimestamp, doneTimestamp, deletedTimestamp, 
 		            		deletedBy, isDeleted, isDone);
                     var marker = {
-                    	tag: [label, TAG_GROUP_JOB],
+                    	tag: [label, TAG_GROUP.JOB],
                         latLng: [coord.lat, coord.lng], 
                         data: infoContent,                        
                         options: {
@@ -845,6 +750,73 @@ ContigoMap.prototype = {
 		infoContent += "</div>";
 		return infoContent;	    
 	},
+	
+	/**
+	 * Show InfoWindow of a marker on the map
+	 *
+	 * @param marker
+	 * @param content
+	 * @param onClose a callback function when user clicks close(x) icon
+	 */
+	showInfoWindow: function(marker, content, onClose) {
+		var infowindow = this.canvas.gmap3({get:{name:"infowindow"}});
+		if (infowindow) {
+			infowindow.open(marker.getMap(), marker);
+			infowindow.setContent(content);
+		} else {
+			this.canvas.gmap3({
+				infowindow: {
+					anchor: marker,
+					options: {content: content},
+					events: {
+						closeclick: function(infowindow) {
+							if (typeof onClose == "function") {
+								onClose.call();
+							}
+						}
+					}
+				}
+			});
+		}
+	},
+	
+	/**
+	 * Filters locate markers on the map, based on the mode selected
+	 * from the JavaScript layer.
+	 *
+	 * @param mode  If the mode is 1, all locate points are shown for each 
+	 *              beacon.  If the mode is 2, only the last three most recent
+	 *              points are shown.  If the mode is 3, only the most recent
+	 *              point is shown.  By default, all locate points are shown.
+	 */
+	filterLocatePoints : function(mode) {
+	    if (this.poiCollection) {
+	        this.currentLocateFilterMode = mode;
+	        this.refreshMap(this.poiCollection);
+	    }
+	},
+	
+	/**
+	 * Changes the current Circle of Certainty (CoC) filter mode, and forces a
+	 * redraw based on the new filter mode at the current zoom level.
+	 *
+	 * @param mode  The mode, as a Number, where 1 = "most recent point only",
+	 *              2 = "all points", and 3 = "no points".
+	 */
+	filterCoCs : function(mode) {
+		this.currentCocMode = mode.NONE; break;
+		this.canvas.gmap3({
+			get: {
+				tag: TAG_GROUP.COC,
+				all: true,
+				callback: function(circles) {
+					$.each(circles, function(i, circle) {
+						circle.setVisible((mode == COC_MODE.LAST) ? (i == circles.length - 1) : (mode == COC_MODE.ALL ? true : false));
+					});	
+        		}
+      		}
+    	});
+	},
     
     /**
      * Draw a circular overlay on the map.
@@ -856,7 +828,7 @@ ContigoMap.prototype = {
     drawCircle : function(lat, lng, radius) {
         this.canvas.gmap3({
             circle:{
-                tag: TAG_GROUP_CIRCLE_ZONE,
+                tag: TAG_GROUP.CIRCLE_ZONE,
                 options:{
                     center: [lat, lng],
                     radius: radius,
@@ -903,7 +875,7 @@ ContigoMap.prototype = {
     drawRectangle : function(lat1, lng1, lat2, lng2) {    
         this.canvas.gmap3({
             rectangle: {
-                tag: TAG_GROUP_RECTANGLE_ZONE,
+                tag: TAG_GROUP.RECTANGLE_ZONE,
                 options: {
                     bounds: {n: lat1, e: lng1, s: lat2, w: lng2},
                     fillColor: "#C80000",
@@ -944,7 +916,7 @@ ContigoMap.prototype = {
 	 */
 	drawPolygonZones : function(polygonZoneCollection) {
         var szPolygons = 0;
-        var polygons = new Array();
+        var polygons = [];
         if (polygonZoneCollection) {
 			var polygonZones = polygonZoneCollection.polygonZones;
             if (polygonZones) {
@@ -952,14 +924,14 @@ ContigoMap.prototype = {
                 for (var i = 0; i < szPolygons; i++) {
             		var polygonInfo =  polygonZones[i];
                     var zoneName = polygonInfo.key;
-                    var vertices = new Array();
+                    var vertices = [];
                     for (var j = 0; j < polygonInfo.points.length; j++) {
                     	var point = polygonInfo.points[j];
                     	vertices.push([polygonInfo.points[j].lat, polygonInfo.points[j].lng]);
                     }
 
                     var polygon = {
-                    	tag: TAG_GROUP_POLYGON_ZONE,
+                    	tag: TAG_GROUP.POLYGON_ZONE,
                 		options: {
                     		paths: vertices,
                     		fillColor: "#C80000",
@@ -998,7 +970,14 @@ ContigoMap.prototype = {
             }
         }
         return szPolygons;
-	},    
+	},
+	
+	/**
+	 * Clear all of objects on the map.
+	 */
+	clearAll: function() {
+		this.clear({name: ["marker", "polyline", "circle", "rectangle", "polygon"]});
+	},
     
     /**
      * Clear objects in the groups on the map based on id, name, or tag in the groups.
@@ -1019,55 +998,29 @@ ContigoMap.prototype = {
     },
     
     /**
-     * Fit all of markers, polylines, circles, polygons to be visible on the map.
+     * Fit all of markers, rectangles, circles, polygons to be visible on the map.
      */
     bestFit : function() {
         //  Create a new viewpoint bound
         var bounds = new google.maps.LatLngBounds();
-        this.canvas.gmap3({
-            get: {
-                name: "marker",
-				all: true,
-				callback: function(markers) {
-					$.each(markers, function(i, marker){
-						bounds = bounds.extend(marker.getPosition());
-					});		
-        		}
-      		}
-    	});        
-        this.canvas.gmap3({
-            get: {
-                name: "circle",
-				all: true,
-				callback: function(circles) {
-					$.each(circles, function(i, circle){
-						bounds = bounds.union(circle.getBounds());
-					});		
-        		}
-      		}
-    	});
-        this.canvas.gmap3({
-            get: {
-                name: "rectangle",
-				all: true,
-				callback: function(rectangles) {
-					$.each(rectangles, function(i, rectangle){
-						bounds = bounds.union(rectangle.getBounds());
-					});		
-        		}
-      		}
-    	});
-        this.canvas.gmap3({
-            get: {
-                name: "polygon",
-				all: true,
-				callback: function(polygons) {
-					$.each(polygons, function(i, polygon){
-						bounds = bounds.union(polygon.getBounds());
-					});		
-        		}
-      		}
-    	});
+        var shapeTypes = ["marker", "circle", "rectangle", "polygon"];
+        for (var i = 0; i < shapeTypes.length; i++) {
+        	this.canvas.gmap3({
+            	get: {
+                	name: shapeTypes[i],
+					all: true,
+					callback: function(shapes) {
+						$.each(shapes, function(j, shape) {
+							if (shapeTypes[i] == "marker") {
+								bounds = bounds.extend(shape.getPosition());
+							} else {
+								bounds = bounds.union(shape.getBounds());
+							}
+						});		
+        			}
+      			}
+    		});
+        }
         this.map.fitBounds(bounds);        
     },
     
