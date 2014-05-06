@@ -464,7 +464,10 @@ ContigoMap.prototype = {
                             data: infoContent,                        
                             options: {
                                 title: label,
-                                icon: {url: this.constructMarkerIconName(icon, numberLabel)},
+                                icon: {
+                                	url: this.constructMarkerIconName(icon, numberLabel),
+                                	anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2)),
+                                },
                                 labelAnchor: new google.maps.Point(10, -2),
                                 labelClass: "labels",
                                 labelStyle: {opacity: 0.75},
@@ -476,7 +479,10 @@ ContigoMap.prototype = {
                             data: infoContent,                        
                             options: {
                                 title: label,
-                                icon: {url: this.constructMarkerIconName(icon, numberLabel)}
+                                icon: {
+                                	anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2)),
+                                	url: this.constructMarkerIconName(icon, numberLabel)
+                                	}
                             }
                         };                    
                     }
