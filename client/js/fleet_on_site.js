@@ -28,6 +28,10 @@ var NUMBERS_ICON_HOST_PATH = "icons/numbers/";
 
 var IMG_HOST_PATH = "images/";
 
+var DEFAULT = {CENTER_COORDINATE: new google.maps.LatLng(48.16700, -100.16700), ZOOM_LEVEL: 4};
+
+var CENTER_ICON = {url: ICON_HOST_PATH + 'crosshair.png', width: 41, height: 41}
+
 function ContigoMarkers(markers, cocs, routes) {
     this.markers = markers ? markers : []; // an array of markers
     this.cocs = cocs ? cocs : []; // circle of certainty for each marker
@@ -67,8 +71,8 @@ ContigoMap.prototype = {
             },
             map: {
                 options: {
-                    center: [48.16700, -100.16700],
-                    zoom: 3,
+                    center: DEFAULT.CENTER_COORDINATE,
+                    zoom: DEFAULT.ZOOM_LEVEL,
                     mapTypeId: google.maps.MapTypeId.ROADMAP,
                     mapTypeControl: true,
                     mapTypeControlOptions: {
@@ -132,7 +136,7 @@ ContigoMap.prototype = {
             });              
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function(){
-                $this.clear({name: ["marker", "circle", "polyline", "rectangle", "polygon"]});
+                $this.reset(true);
                 $this.contextMenu.close();
             });
 		this.contextMenu.add("Zoom in", "zoomIn", 
@@ -209,10 +213,10 @@ ContigoMap.prototype = {
         var marker = new google.maps.Marker({
 			map: this.map,
 			 icon: new google.maps.MarkerImage(
-			 	ICON_HOST_PATH + 'crosshair.png', 
+			 	CENTER_ICON.url, 
 			 	null, 
 			 	null, 
-			 	new google.maps.Point(20, 20)), // crosshair.png is 41x41
+			 	new google.maps.Point(Math.floor(CENTER_ICON.width / 2), Math.floor(CENTER_ICON.height / 2))),
 			shape: {coords: [0, 0, 0, 0], type: 'rect'}
 		});
 		marker.bindTo('position', this.map, 'center');
@@ -250,7 +254,7 @@ ContigoMap.prototype = {
         mapMarkers = locationMarkers.markers.concat(landmarkMarkers.markers);
         mapMarkers = mapMarkers.concat(jobMarkers.markers);
 	    var mapObjects = {};
-	    this.clearAll();
+	    this.reset(false);
 	    
 	    if (mapMarkers.length > 0) {
 	    	mapObjects["marker"] = {
@@ -973,10 +977,15 @@ ContigoMap.prototype = {
 	},
 	
 	/**
-	 * Clear all of objects on the map.
+	 * Clear all of objects on the map, and empty the poi collection.
 	 */
-	clearAll: function() {
+	reset: function(backToDefault) {
+		this.poiCollection = {};
 		this.clear({name: ["marker", "polyline", "circle", "rectangle", "polygon"]});
+		if (backToDefault) {
+			this.map.setCenter(DEFAULT.CENTER_COORDINATE);
+			this.map.setZoom(DEFAULT.ZOOM_LEVEL);
+		}
 	},
     
     /**
