@@ -82,7 +82,7 @@ ContigoMap.prototype = {
                     scrollwheel: true,
                     streetViewControl: true
                 },
-                events:{
+                events: {
                 	rightclick: function(map, event) {
 						$this.currentClickEvent = event;
 						$this.contextMenu.open(event);
@@ -108,7 +108,41 @@ ContigoMap.prototype = {
 	 */
 	initContextMenu: function() {
 		var $this = this;
-        this.contextMenu.add("Show All Locates", "showAllLocate", 
+        this.contextMenu.add("Draw Circle", "drawCircle", 
+            function() {
+                $this.canvas.gmap3({
+                    map: {
+                        events: {
+                            click: function(sender, event, context) {                              
+                                $this.recenter(event.latLng);
+                                $this.drawCircle(event.latLng.lat(), event.latLng.lng(), 50);
+                            }                        
+                        }
+                    }
+                });
+                $this.reset(false);
+                $this.contextMenu.close();
+            });
+        this.contextMenu.add("Draw Rectangle", "drawRectangle", 
+            function() {
+                $this.canvas.gmap3({
+                    map: {
+                        events: {
+                            click: function(sender, event, context) {
+                                var latitude1  = event.latLng.lat()  - 0.01000;
+                                var longitude1 = event.latLng.lng() + 0.01000;
+                                var latitude2  = event.latLng.lat()  + 0.01000;
+                                var longitude2 = event.latLng.lng() - 0.01000;
+                                $this.recenter(event.latLng);
+                                $this.drawRectangle(latitude1, longitude1, latitude2, longitude2);
+                            }                        
+                        }
+                    }
+                });
+                $this.reset(false);
+                $this.contextMenu.close();
+            });           
+        this.contextMenu.add("Show All Locates", "showAllLocate separator", 
             function() {
             	$this.filterLocatePoints(LOCATE_MODE.ALL);
                 $this.contextMenu.close();
@@ -135,7 +169,7 @@ ContigoMap.prototype = {
                 $this.contextMenu.close();
             });              
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
-            function(){
+            function() {
                 $this.reset(true);
                 $this.contextMenu.close();
             });
@@ -808,7 +842,7 @@ ContigoMap.prototype = {
 	 *              2 = "all points", and 3 = "no points".
 	 */
 	filterCoCs : function(mode) {
-		this.currentCocMode = mode.NONE; break;
+		this.currentCocMode = mode;
 		this.canvas.gmap3({
 			get: {
 				tag: TAG_GROUP.COC,
@@ -974,6 +1008,18 @@ ContigoMap.prototype = {
             }
         }
         return szPolygons;
+	},
+    
+    /**
+	 * Center the map to a particular latitude/longitude.
+	 * 
+	 * @param latLng the lat/lng of a point
+	 */
+	recenter : function (latLng) {
+	    if (latLng) {
+	        this.map.setCenter(latLng);
+            this.map.setZoom(17);
+	    }
 	},
 	
 	/**
