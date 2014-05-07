@@ -129,10 +129,10 @@ ContigoMap.prototype = {
                     map: {
                         events: {
                             click: function(sender, event, context) {
-                                var latitude1  = event.latLng.lat()  - 0.01000;
-                                var longitude1 = event.latLng.lng() + 0.01000;
-                                var latitude2  = event.latLng.lat()  + 0.01000;
-                                var longitude2 = event.latLng.lng() - 0.01000;
+                                var latitude1  = event.latLng.lat()  - 0.00100;
+                                var longitude1 = event.latLng.lng() + 0.00100;
+                                var latitude2  = event.latLng.lat()  + 0.00100;
+                                var longitude2 = event.latLng.lng() - 0.00100;
                                 $this.recenter(event.latLng);
                                 $this.drawRectangle(latitude1, longitude1, latitude2, longitude2);
                             }                        
@@ -141,8 +141,28 @@ ContigoMap.prototype = {
                 });
                 $this.reset(false);
                 $this.contextMenu.close();
-            });           
-        this.contextMenu.add("Show All Locates", "showAllLocate separator", 
+            });
+        this.contextMenu.add("Draw Polygon", "drawPolygon separator", 
+            function() {
+                $this.canvas.gmap3({
+                    map: {
+                        events: {
+                            click: function(sender, event, context) {
+                            	//{polygonZones: [{key: name1, points: [{lat: lat1, lng: lng1}, {lat: lat2, lng: lng2}, ...]}, ...]}
+                                var latitude1  = event.latLng.lat()  - 0.00100;
+                                var longitude1 = event.latLng.lng() + 0.00100;
+                                var latitude2  = event.latLng.lat()  + 0.00100;
+                                var longitude2 = event.latLng.lng() - 0.00100;
+                                $this.recenter(event.latLng);
+                                $this.drawPolygon(latitude1, longitude1, latitude2, longitude2);
+                            }                        
+                        }
+                    }
+                });
+                $this.reset(false);
+                $this.contextMenu.close();
+            });        
+        this.contextMenu.add("Show All Locates", "showAllLocate", 
             function() {
             	$this.filterLocatePoints(LOCATE_MODE.ALL);
                 $this.contextMenu.close();
