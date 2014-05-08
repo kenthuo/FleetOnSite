@@ -129,12 +129,12 @@ ContigoMap.prototype = {
                     map: {
                         events: {
                             click: function(sender, event, context) {
-                                var latitude1  = event.latLng.lat()  - 0.00100;
-                                var longitude1 = event.latLng.lng() + 0.00100;
-                                var latitude2  = event.latLng.lat()  + 0.00100;
-                                var longitude2 = event.latLng.lng() - 0.00100;
-                                $this.recenter(event.latLng);
-                                $this.drawRectangle(latitude1, longitude1, latitude2, longitude2);
+                            	var center = event.latLng;
+                            	var spherical = google.maps.geometry.spherical;
+                            	var northernWest = spherical.computeOffset(center, 50, -45);
+								var southernEast = spherical.computeOffset(center, 50, 135);
+                                $this.recenter(center);
+                                $this.drawRectangle(northernWest.lat(), northernWest.lng(), southernEast.lat(), southernEast.lng());
                             }                        
                         }
                     }
@@ -926,8 +926,8 @@ ContigoMap.prototype = {
      * Draws a rectangular overlay on the map.
      *
      * @param lat1 The latitude of the first coordinate, in decimal degrees.
-     * @param lng2 The longitude of the first coordinate, in decimal degrees.
-     * @param lat1 The latitude of the second coordinate, in decimal degrees.
+     * @param lng1 The longitude of the first coordinate, in decimal degrees.
+     * @param lat2 The latitude of the second coordinate, in decimal degrees.
      * @param lng2 The longitude of the second coordinate, in decimal degrees.
      */ 
     drawRectangle : function(lat1, lng1, lat2, lng2) {    
