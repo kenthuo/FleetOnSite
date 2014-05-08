@@ -110,10 +110,14 @@ ContigoMap.prototype = {
 		var $this = this;
         this.contextMenu.add("Draw Circle", "drawCircle", 
             function() {
+                $this.map.unbind("click");
                 $this.canvas.gmap3({
                     map: {
                         events: {
-                            click: function(sender, event, context) {                              
+                            // on clicking, draw a pre-defined circle with 
+                            // the clicking point as the center, and 50 meters as radius
+                            click: function(sender, event, context) {
+                                $this.reset(false);
                                 $this.recenter(event.latLng);
                                 $this.drawCircle(event.latLng.lat(), event.latLng.lng(), 50);
                             }                        
@@ -125,16 +129,20 @@ ContigoMap.prototype = {
             });
         this.contextMenu.add("Draw Rectangle", "drawRectangle", 
             function() {
+                $this.map.unbind("click");
                 $this.canvas.gmap3({
                     map: {
                         events: {
+                            // on clicking, draw a pre-defined rectangle with 
+                            // the clicking point as the center, and 100 meters as diagonal
                             click: function(sender, event, context) {
                             	var center = event.latLng;
                             	var spherical = google.maps.geometry.spherical;
                             	var northernWest = spherical.computeOffset(center, 50, -45);
 								var southernEast = spherical.computeOffset(center, 50, 135);
+                                $this.reset(false);
                                 $this.recenter(center);
-                                $this.drawRectangle(northernWest.lat(), northernWest.lng(), southernEast.lat(), southernEast.lng());
+                                $this.drawRectangle(southernEast.lat(), southernEast.lng(), northernWest.lat(), northernWest.lng());
                             }                        
                         }
                     }
@@ -147,14 +155,18 @@ ContigoMap.prototype = {
                 $this.canvas.gmap3({
                     map: {
                         events: {
+                            // on clicking, draw a pre-defined equilateral triangle (minimal polygon) with 
+                            // the clicking point as the center, and 50 meters as distance to each vertex
                             click: function(sender, event, context) {
                             	//{polygonZones: [{key: name1, points: [{lat: lat1, lng: lng1}, {lat: lat2, lng: lng2}, ...]}, ...]}
-                                var latitude1  = event.latLng.lat()  - 0.00100;
-                                var longitude1 = event.latLng.lng() + 0.00100;
-                                var latitude2  = event.latLng.lat()  + 0.00100;
-                                var longitude2 = event.latLng.lng() - 0.00100;
-                                $this.recenter(event.latLng);
-                                $this.drawPolygon(latitude1, longitude1, latitude2, longitude2);
+                                var center = event.latLng;
+                                var spherical = google.maps.geometry.spherical;
+                                var pointA = spherical.computeOffset(center, 50, 0);
+                                var pointB = spherical.computeOffset(center, 50, 120);
+                                var pointC = spherical.computeOffset(center, 50, -120);
+                                $this.reset(false);
+                                $this.recenter(center);
+                                $this.drawPolygon({polygonZones: [{key: "key", points: [{lat: pointA.lat(), lng: pointA.lng()}, {lat: pointB.lat(), lng: pointB.lng()}, {lat: pointC.lat(), lng: pointC.lng()}]}]});
                             }                        
                         }
                     }
@@ -972,7 +984,7 @@ ContigoMap.prototype = {
 	 *        {polygonZones: [{key: name1, points: [{lat: lat1, lng: lng1}, {lat: lat2, lng: lng2}, ...]}, ...]}
      * @return the number of polygons
 	 */
-	drawPolygonZones : function(polygonZoneCollection) {
+	drawPolygon : function(polygonZoneCollection) {
         var szPolygons = 0;
         var polygons = [];
         if (polygonZoneCollection) {
