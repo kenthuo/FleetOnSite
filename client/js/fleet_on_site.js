@@ -32,6 +32,43 @@ var DEFAULT = {CENTER_COORDINATE: new google.maps.LatLng(48.16700, -100.16700), 
 
 var CENTER_ICON = {url: ICON_HOST_PATH + 'crosshair.png', width: 41, height: 41}
 
+function SearchControl(map, str) {
+    var el = document.createElement('div');
+    var wrap = document.createElement('div');
+    var input = document.createElement('input');
+    el.appendChild(wrap);
+    wrap.appendChild(input);
+    $(el).attr('id', 'control');
+    $(input).addClass('ui-bar-d ui-input-text ui-body-null ui-corner-all ui-shadow-inset ui-body-d ui-autocomplete-input');
+    $(input).attr('id', 'places');
+    $(input).val(str);
+
+    //map.gmap('autocomplete', input, function(ui) {
+	//	map.gmap('clear', 'markers');
+    //    map.gmap('set', 'bounds', null);
+    //    map.gmap('placesSearch', { 'location': ui.item.position, 'radius': '5000'/*, 'name': ['store']*/ }, function(results, status) {
+    //        if ( status === 'OK' ) {
+    //            $.each(results, function(i, item) {
+    //                $('#map_canvas').gmap('addMarker', { 'id': item.id, /*'icon': item.icon,*/ 'position': item.geometry.location, 'bounds':true }).click(function() {
+    //                    $('#map_canvas').gmap('openInfoWindow', {'content': '<h4>'+item.name+'</h4>'}, this);
+    //                });
+    //            });
+    //        }
+    //    });
+    //});
+
+    $(input).focus(function() {
+        if ( $(this).val() === str ) {
+            $(this).val('');
+        }
+    }).blur(function() {
+            if ( $(this).val() == '' ) {
+                $(this).val(str);
+            }
+        });
+    return el;
+}
+
 function ContigoMarkers(markers, cocs, routes) {
     this.markers = markers ? markers : []; // an array of markers
     this.cocs = cocs ? cocs : []; // circle of certainty for each marker
@@ -96,9 +133,35 @@ ContigoMap.prototype = {
 					zoom_changed: function() {
 						$this.contextMenu.close();
 					}
-				}
+				},
+				callback: function(result) {
+					if (result) {
+            			var controlDiv = document.createElement('DIV');
+            			controlDiv.style.padding = '5px';
+            			controlDiv.style.width = '100px';
+            			controlDiv.style.height = '50px';
+            			// Set CSS for the control border.
+ 						 var controlUI = document.createElement('div');
+  						controlUI.style.backgroundColor = 'white';
+  						controlUI.style.borderStyle = 'solid';
+  						controlUI.style.borderWidth = '2px';
+  						controlUI.style.cursor = 'pointer';
+  						controlUI.style.textAlign = 'center';
+  						controlUI.title = 'Click to set the map to Home';
+  						controlDiv.appendChild(controlUI);
+  						 // Setup the click event listeners: simply set the map to Chicago.
+  						google.maps.event.addDomListener(controlUI, 'click', function() {
+    					alert(111);
+  						});
+            			//var homeControl = new SearchControl(homeControlDiv, map);
+            			controlDiv.index = 1;
+            			//$this.canvas.gmap('addControl', new PlacesSearchControl('Search places...'), 1);
+            			$this.canvas.gmap3("get").controls[google.maps.ControlPosition.TOP_LEFT].push(new SearchControl($this.canvas.gmap3("get"), 'Search places...'));  
+         			}
+      			}
             }
         });
+
         this.map = this.canvas.gmap3("get");
         this.markCenter();
 	},
