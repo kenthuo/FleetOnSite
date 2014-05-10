@@ -106,13 +106,33 @@ ContigoMap.prototype = {
                         $(searchControl).attr('placeholder', 'Search location...');
                         $(searchControl).attr('autocomplete', 'off');                        
                         $this.canvas.gmap3("get").controls[google.maps.ControlPosition.TOP_LEFT].push(searchControl);
-                        $(searchControl).autocomplete({
-                            source: $this.searchable,
-                            select: function (event, ui) {
-                                $( "#search" ).val( ui.item.label );
-                                return false;
-                            }
-                        });
+                        var searchOrange = $('#search').searchMeme({ onSearch: function (searchText) {
+
+
+                setTimeout(function () {
+alert(111);
+
+                    searchOrange.searchMeme({ searchComplete: true });
+
+
+                    $('#search-results').html("You searched for " + searchOrange.val() + "");
+
+
+                    $('.panel').animate({ 'height': 200 }, 500);
+
+
+                }, 3000);
+
+
+            }
+
+
+            , buttonPlacement: 'left', button: 'orange'
+
+
+            });
+
+
          			}
       			}
             }
