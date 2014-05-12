@@ -89,3 +89,7 @@ body {
 	width: 30px;
 	height: 10px;
 }
+
+.traffic_control_hilite {
+    font-weight: bold;
+}

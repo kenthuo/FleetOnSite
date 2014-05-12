@@ -171,7 +171,7 @@ $(document).ready(function() {
 	var jobsArray = {};
 	var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
     
-    map.setWithLabel(false);
+    map.setWithMarkerLabel(false);
     
     map.sendPoints(poiCollection);
     

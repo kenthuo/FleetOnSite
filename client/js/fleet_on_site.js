@@ -48,10 +48,10 @@ function ContigoMap(mapId) {
     this.currentLocateFilterMode = LOCATE_MODE.ALL;
     this.currentCocMode = COC_MODE.ALL;
     this.geocoder = new google.maps.Geocoder();
-    this.withLabel = true; // with lable for markers
-    this.withTraffic = false; // with traffic layer on the map
+    this.withMarkerLabel = true; // with lable for markers
     this.poiCollection = null;
     this.searchable = [];
+    this.controls = [];
 }
 
 ContigoMap.prototype = {
@@ -77,7 +77,7 @@ ContigoMap.prototype = {
                     mapTypeId: google.maps.MapTypeId.ROADMAP,
                     mapTypeControl: true,
                     mapTypeControlOptions: {
-                        style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+                        style: google.maps.MapTypeControlStyle.DEFAULT 
                     },
                     navigationControl: true,
                     scrollwheel: true,
@@ -99,46 +99,31 @@ ContigoMap.prototype = {
 					}
 				},
 				callback: function(result) {
-					if (result) {
-            			var searchControl = document.createElement('input');
-                        $(searchControl).attr('id', 'search');
-                        $(searchControl).addClass('controls');
-                        $(searchControl).attr('placeholder', 'Search location...');
-                        $(searchControl).attr('autocomplete', 'off');                        
-                        $this.canvas.gmap3("get").controls[google.maps.ControlPosition.TOP_LEFT].push(searchControl);
-                        var searchOrange = $('#search').searchMeme({ onSearch: function (searchText) {
 
-
-                setTimeout(function () {
-alert(111);
-
-                    searchOrange.searchMeme({ searchComplete: true });
-
-
-                    $('#search-results').html("You searched for " + searchOrange.val() + "");
-
-
-                    $('.panel').animate({ 'height': 200 }, 500);
-
-
-                }, 3000);
-
-
-            }
-
-
-            , buttonPlacement: 'left', button: 'orange'
-
-
-            });
-
-
-         			}
       			}
             }
         });
 
         this.map = this.canvas.gmap3("get");
+        this.addControl({
+                position: 'top_right',
+                content: 'Traffic',
+                style: {
+                    margin: '5px',
+                    padding: '1px 6px',
+                    border: 'solid 1px #717B87',
+                    background: '#fff'
+                },
+                events: {
+                    click: function() {
+                        if ($(this).toggleClass("traffic_control_hilite").hasClass("traffic_control_hilite")) {
+                            $this.canvas.gmap3("trafficlayer");
+                        } else {
+                            $this.clear({name: ["trafficlayer"]});
+                        }
+                    }
+                }
+            });
         this.markCenter();
 	},
 	
@@ -227,18 +212,7 @@ alert(111);
             function() {
             	$this.filterLocatePoints(LOCATE_MODE.LAST);
                 $this.contextMenu.close();
-            });
-        this.contextMenu.add("Traffic", "traffic", 
-            function() {
-            	if ($this.withTraffic) {
-            		$this.clear({name: ["trafficlayer"]});
-            		$this.withTraffic = false;
-            	} else {
-            		$this.canvas.gmap3("trafficlayer");
-            		$this.withTraffic = true;
-            	}
-                $this.contextMenu.close();
-            });              
+            });             
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function() {
                 $this.reset(true);
@@ -476,7 +450,7 @@ alert(111);
 		                            dispatch, isMetric);
                     var marker = null;
                     this.searchable.push({label: eventType});
-                    if (this.withLabel) {
+                    if (this.withMarkerLabel) {
                         marker = {
                             tag: [label, TAG_GROUP.LOCATION],
                             latLng: [coord.lat, coord.lng], 
@@ -1152,11 +1126,61 @@ alert(111);
     },
     
     /**
-     * Set withLabel property.
+     * Set withMarkerLabel property.
      *
-     * @param withLabel
+     * @param withMarkerLabel
      */
-    setWithLabel : function(withLabel) {
-        this.withLabel = withLabel;
+    setWithMarkerLabel : function(withMarkerLabel) {
+        this.withMarkerLabel = withMarkerLabel;
+    },
+    
+    /**
+     * Create a DOM element to represent the custom control.
+     *
+     * @param options an object holds related properties of the control.
+     */
+    createControl: function(options) {
+        var control = document.createElement('div');
+        control.style.cursor = 'pointer';
+        if (options.disableDefaultStyles !== true) {
+            control.style.fontFamily = 'Roboto, Arial, sans-serif';
+            control.style.fontSize = '11px';
+            control.style.boxShadow = 'rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px';
+        }
+        for (var option in options.style) {
+            control.style[option] = options.style[option];
+        }
+        if (options.id) {
+            control.id = options.id;
+        }
+        if (options.classes) {
+            control.className = options.classes;
+        }
+        if (options.content) {
+            control.innerHTML = options.content;
+        }
+        for (var event in options.events) {
+            (function(object, name) {
+                google.maps.event.addDomListener(object, name, function() {
+                    options.events[name].apply(this, [this]);
+                });
+            })(control, event);
+        }
+        control.index = 1;
+        return control;
+    },
+    
+    /**
+     * Add custom control to the map. Gmap3 is lack of this feature.
+     *
+     * @param options an object holds related properties of the control.
+     */
+    addControl: function(options) {
+        var position = google.maps.ControlPosition[options.position.toUpperCase()];
+        delete options.position;
+        var control = this.createControl(options);
+        this.controls.push(control);
+        this.map.controls[position].push(control);
+        return control;
     }
 }
