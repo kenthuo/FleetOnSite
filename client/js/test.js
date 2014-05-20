@@ -209,4 +209,8 @@ $(document).ready(function() {
 	var polygonZoneCollection = [polygon0,polygon1,polygon2];
 	map.drawPolygonZones({polygonZones: polygonZoneCollection});
     */
+    
+    $(window).on('resize', function(){
+        map.resize("100%", "100%");
+    });
 });

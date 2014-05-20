@@ -93,3 +93,146 @@ body {
 .traffic_control_hilite {
     font-weight: bold;
 }
+
+.select_dropdown {
+    direction: ltr; 
+    overflow: hidden; 
+    text-align: left; 
+    position: relative; 
+    color: rgb(0, 0, 0); 
+    font-family: Roboto, Arial, sans-serif; 
+    -webkit-user-select: none; 
+    font-size: 11px; 
+    background-color: rgb(255, 255, 255); 
+    padding: 1px 6px; 
+    border-bottom-left-radius: 2px; 
+    border-top-left-radius: 2px; 
+    border-bottom-right-radius: 2px; 
+    border-top-right-radius: 2px; 
+    -webkit-background-clip: padding-box; 
+    background-clip: padding-box; 
+    border: 1px solid rgba(0, 0, 0, 0.14902); 
+    -webkit-box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; 
+    box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; 
+    font-weight: 500;
+}
+
+.select_arrow {
+    -webkit-user-select: none; 
+    border: 0px; 
+    padding: 0px; 
+    margin: -2px 0px 0px; 
+    position: absolute; 
+    right: 6px; 
+    top: 50%; 
+    width: 7px; 
+    height: 4px;
+}
+
+.select_option {
+    color: rgb(86, 86, 86); 
+    font-family: Roboto, Arial, sans-serif; 
+    -webkit-user-select: none; 
+    font-size: 11px; 
+    background-color: rgb(255, 255, 255); 
+    padding: 3px; 
+    font-weight: 500;
+}
+
+.option_separator {
+    margin-top: 1px; 
+    margin-right: 0px; 
+    margin-bottom: 1px; 
+    margin-left: 0px; 
+    border-top-width: 1px; 
+    border-top-style: solid; 
+    border-top-color: rgb(235, 235, 235); 
+}
+
+.options_container {
+    background-color: white; 
+    z-index: -1; 
+    padding-top: 2px; 
+    -webkit-background-clip: padding-box; 
+    background-clip: padding-box; 
+    border-width: 0px 1px 1px; 
+    border-right-style: solid; 
+    border-bottom-style: solid; 
+    border-left-style: solid; 
+    border-right-color: rgba(0, 0, 0, 0.14902); 
+    border-bottom-color: rgba(0, 0, 0, 0.14902); 
+    border-left-color: rgba(0, 0, 0, 0.14902); 
+    -webkit-box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; 
+    box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; 
+    position: relative; 
+    text-align: left; 
+    display: none;
+}
+.select_checkbox_option {
+    color: rgb(0, 0, 0); 
+    font-family: Roboto, Arial, sans-serif; 
+    -webkit-user-select: none; 
+    font-size: 11px; 
+    background-color: rgb(255, 255, 255); 
+    padding: 3px 8px 3px 3px; 
+    direction: ltr; 
+    text-align: left; 
+    white-space: nowrap;
+}
+
+.uncheckbox_span {
+    box-sizing: border-box; 
+    position: relative; 
+    line-height: 0; 
+    font-size: 0px; 
+    margin: 0px 5px 0px 0px; 
+    display: inline-block; 
+    background-color: rgb(255, 255, 255); 
+    border: 1px solid rgb(198, 198, 198); 
+    border-top-left-radius: 1px; 
+    border-top-right-radius: 1px; 
+    border-bottom-right-radius: 1px; 
+    border-bottom-left-radius: 1px; 
+    width: 13px; 
+    height: 13px; 
+    vertical-align: middle;
+}
+
+.uncheckbox_image_container {
+    position: absolute; 
+    left: 1px; 
+    top: -2px; 
+    width: 13px;
+    height: 11px; 
+    overflow-x: hidden; 
+    overflow-y: hidden; 
+    display: none; /*when = block -> this is the "check" symbol*/ 
+}
+
+.uncheckbox_image {
+    position: absolute; 
+    left: -52px; 
+    top: -44px; 
+    -webkit-user-select: none; 
+    border: 0px; 
+    padding: 0px; 
+    margin: 0px; 
+    width: 68px; 
+    height: 67px;
+}
+
+.uncheckbox_label {
+    vertical-align: middle; 
+	cursor: pointer;
+}
+
+#more_control {
+    margin: 5px;
+    z-index: 0;
+    position: absolute;
+    cursor: pointer;
+    text-align: left;
+    right: 0px;
+    width: 150px;
+    top: 0px;
+}

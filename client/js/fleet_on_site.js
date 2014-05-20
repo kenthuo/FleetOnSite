@@ -38,6 +38,120 @@ function ContigoMarkers(markers, cocs, routes) {
     this.routes = routes ? routes : []; // routes to connect markers
 }
 
+function MoreControl(contigoMap) {
+    var liveTrafficOption = contigoMap.createControl({
+        type: "checkbox",
+        position: 'top_right',
+        content: 'Live Traffic',
+        title: 'Show live traffic information',
+        classes: "select_checkbox_option",
+        highlight: true,
+        events: {
+            click: function() {
+                contigoMap.idOptionChecked(this) ? contigoMap.canvas.gmap3("trafficlayer") : contigoMap.clear({name: ["trafficlayer"]});
+            }
+        }    
+    });
+    var bestFitOption = contigoMap.createControl({
+        type: "option",
+        content: 'Best Fit',
+        title: "Best fit",
+        classes: "select_option",
+        highlight: true,
+        events: {
+            click: function() {
+                contigoMap.bestFit();
+            }            
+        }
+    });
+    var centerMapOption = contigoMap.createControl({
+        type: "option",
+        content: 'Center Map',
+        title: "Center map",
+        classes: "select_option",
+        highlight: true,
+        events: {
+            click: function() {
+                alert('Center map');
+            }            
+        }
+    });    
+    var centerLastOption = contigoMap.createControl({
+        type: 'checkbox',
+        id: 'center_last_option',
+        title: 'Center last',
+        content: 'Center Last',
+        classes: 'select_checkbox_option',
+        highlight: true,
+        events: {
+            click: function() {
+                contigoMap.isAutoCenteringActive = contigoMap.idOptionChecked(this);
+            }       
+        }
+    });     
+    var autoBestFitOption = contigoMap.createControl({
+        type: 'checkbox',
+        id: 'auto_best_fit_option',
+        title: 'Auto best fit',
+        content: 'Auto Best Fit',
+        classes: 'select_checkbox_option',
+        highlight: true,
+        events: {
+            click: function() {
+                contigoMap.isAutoBestFitActive = contigoMap.idOptionChecked(this);
+            }       
+        }
+    });
+    var displayItemStatusOption = contigoMap.createControl({
+        type: 'checkbox',
+        id: 'display_item_status_option',
+        title: 'Display item status',
+        content: 'Display Item Status',
+        classes: 'select_checkbox_option',
+        highlight: true,
+        events: {
+            click: function() {
+                contigoMap.isItemStatusActive = contigoMap.idOptionChecked(this);
+            }       
+        }
+    });
+    var options = contigoMap.createControl({
+        classes: "options_container",
+        children: [
+            liveTrafficOption,
+            contigoMap.createControl({
+                classes: "option_separator"
+            }),            
+            centerMapOption,
+            bestFitOption,
+            contigoMap.createControl({
+                classes: "option_separator"
+            }), 
+            centerLastOption,
+            autoBestFitOption,
+            displayItemStatusOption
+        ]
+    });
+    return {
+        id: 'more_control',
+        position: 'top_right',
+        type: "select",
+        content: "More ...",
+        title: "Show more control options",
+        children: [options],
+        highlight: true,
+        events: {
+            click: function() {
+                var optionsContainer = $("#more_control .options_container");
+                optionsContainer.is(":visible")  ? optionsContainer.hide() : optionsContainer.show();
+                setTimeout(function() {
+                    optionsContainer.hide();
+                }, 2000);
+            }
+        }        
+    }
+}
+
 function ContigoMap(mapId) {
     this.mapId = mapId ? mapId : 'map'; // the identity of the DOM element to hold the map
     this.map = null; // the google map object
@@ -47,10 +161,12 @@ function ContigoMap(mapId) {
     this.isMetric = false; // to use metric system to show information on the map or not
     this.currentLocateFilterMode = LOCATE_MODE.ALL;
     this.currentCocMode = COC_MODE.ALL;
+    this.isAutoCenteringActive = false;
+    this.isAutoBestFitActive = false;
+    this.isItemStatusActive = false;
     this.geocoder = new google.maps.Geocoder();
     this.withMarkerLabel = true; // with lable for markers
     this.poiCollection = null;
-    this.searchable = [];
     this.controls = [];
 }
 
@@ -64,6 +180,7 @@ ContigoMap.prototype = {
 		this.canvas = $('#' + this.mapId);
 		this.contextMenu = new Gmap3Menu(this.canvas);
 		this.initContextMenu();
+        
         this.canvas.gmap3({
             defaults:{ 
                 classes:{
@@ -77,7 +194,7 @@ ContigoMap.prototype = {
                     mapTypeId: google.maps.MapTypeId.ROADMAP,
                     mapTypeControl: true,
                     mapTypeControlOptions: {
-                        style: google.maps.MapTypeControlStyle.DEFAULT 
+                        style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
                     },
                     navigationControl: true,
                     scrollwheel: true,
@@ -99,31 +216,12 @@ ContigoMap.prototype = {
 					}
 				},
 				callback: function(result) {
-
+                    // create custom controls on the map
+                    $this.map = $this.canvas.gmap3("get");
+                    $this.addControl(new MoreControl($this));
       			}
             }
         });
-
-        this.map = this.canvas.gmap3("get");
-        this.addControl({
-                position: 'top_right',
-                content: 'Traffic',
-                style: {
-                    margin: '5px',
-                    padding: '1px 6px',
-                    border: 'solid 1px #717B87',
-                    background: '#fff'
-                },
-                events: {
-                    click: function() {
-                        if ($(this).toggleClass("traffic_control_hilite").hasClass("traffic_control_hilite")) {
-                            $this.canvas.gmap3("trafficlayer");
-                        } else {
-                            $this.clear({name: ["trafficlayer"]});
-                        }
-                    }
-                }
-            });
         this.markCenter();
 	},
 	
@@ -309,8 +407,9 @@ ContigoMap.prototype = {
      *                      the map.
      */    
     sendPoints: function(poiCollection) {
-    	this.poiCollection = poiCollection;
         this.refreshMap(poiCollection);
+        // Always store the latest copy
+    	this.poiCollection = poiCollection;
     },
     
 	/**
@@ -333,7 +432,7 @@ ContigoMap.prototype = {
         mapMarkers = locationMarkers.markers.concat(landmarkMarkers.markers);
         mapMarkers = mapMarkers.concat(jobMarkers.markers);
 	    var mapObjects = {};
-	    this.reset(false);
+        this.reset(false);
 	    
 	    if (mapMarkers.length > 0) {
 	    	mapObjects["marker"] = {
@@ -449,7 +548,6 @@ ContigoMap.prototype = {
 		                            guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, 
 		                            dispatch, isMetric);
                     var marker = null;
-                    this.searchable.push({label: eventType});
                     if (this.withMarkerLabel) {
                         marker = {
                             tag: [label, TAG_GROUP.LOCATION],
@@ -614,11 +712,11 @@ ContigoMap.prototype = {
 	    var initialIndex = 0;
 	    var szLocatePoints = locatePoints.length;
 
-	    if (this.currentLocateFilterMode == LOCATE_MODE.LAST_THREE) {
+	    if (this.currentLocateFilterMode == LOCATE_MODE.LAST3) {
 	        if (szLocatePoints > 2) {
            	 	initialIndex = szLocatePoints - 3;
 	        }
-	    } else if (this.currentLocateFilterMode == LOCATE_MODE.SHOW_LAST) {
+	    } else if (this.currentLocateFilterMode == LOCATE_MODE.LAST) {
 	        if (szLocatePoints > 0) {
 	            initialIndex = szLocatePoints - 1;
 	        }
@@ -1072,7 +1170,7 @@ ContigoMap.prototype = {
 	 * Clear all of objects on the map, and empty the poi collection.
 	 */
 	reset: function(backToDefault) {
-		this.poiCollection = {};
+		//this.poiCollection = {};
 		this.clear({name: ["marker", "polyline", "circle", "rectangle", "polygon"]});
 		if (backToDefault) {
 			this.map.setCenter(DEFAULT.CENTER_COORDINATE);
@@ -1099,9 +1197,28 @@ ContigoMap.prototype = {
     },
     
     /**
+	 * Resize the map.
+	 * 
+	 * @param width
+	 * @param height
+	 */
+	resize : function(width, height) {
+        var $this = this;
+		this.canvas.width(width).height(height).gmap3({
+            trigger: {
+                eventName: "resize", 
+                callback: function() {
+                    $this.refreshMap($this.poiCollection);
+                }
+            }
+        });
+	},
+    
+    /**
      * Fit all of markers, rectangles, circles, polygons to be visible on the map.
      */
     bestFit : function() {
+        var $this = this;
         //  Create a new viewpoint bound
         var bounds = new google.maps.LatLngBounds();
         var shapeTypes = ["marker", "circle", "rectangle", "polygon"];
@@ -1112,17 +1229,19 @@ ContigoMap.prototype = {
 					all: true,
 					callback: function(shapes) {
 						$.each(shapes, function(j, shape) {
-							if (shapeTypes[i] == "marker") {
+							if (typeof shape.getPosition == "function") {
+                                // for marker or markerWithLabel
 								bounds = bounds.extend(shape.getPosition());
 							} else {
 								bounds = bounds.union(shape.getBounds());
 							}
-						});		
+						});
+                        $this.map.fitBounds(bounds); 
         			}
       			}
     		});
         }
-        this.map.fitBounds(bounds);        
+       
     },
     
     /**
@@ -1141,24 +1260,86 @@ ContigoMap.prototype = {
      */
     createControl: function(options) {
         var control = document.createElement('div');
-        control.style.cursor = 'pointer';
-        if (options.disableDefaultStyles !== true) {
-            control.style.fontFamily = 'Roboto, Arial, sans-serif';
-            control.style.fontSize = '11px';
-            control.style.boxShadow = 'rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px';
-        }
-        for (var option in options.style) {
-            control.style[option] = options.style[option];
+        var highlightElm = control;
+        switch (options.type) {
+        case "select":
+            var innerContainer = document.createElement('div');
+            innerContainer.className = "select_dropdown";
+            if (options.content) {
+                innerContainer.innerHTML = options.content;
+            }
+            var arrow = document.createElement('img');
+            arrow.src = IMG_HOST_PATH + "arrow-down.png";
+            arrow.className = "select_arrow";
+            innerContainer.appendChild(arrow);
+            control.appendChild(innerContainer);
+            highlightElm = innerContainer;
+            break;
+        case "checkbox":
+            var span = document.createElement('span');
+            span.className = 'uncheckbox_span';
+            span.role = 'checkbox';
+            var checkbox = document.createElement('div');
+            checkbox.className = 'uncheckbox_image_container';
+            //checkbox.id = "uncheckbox_image_container";
+            var image = document.createElement('img');
+            image.className = "uncheckbox_image";
+            image.src = IMG_HOST_PATH + "imgs8.png";
+            var label = document.createElement('label');
+            label.className = 'uncheckbox_label';
+            label.innerHTML = options.content;
+            checkbox.appendChild(image);
+            span.appendChild(checkbox);
+            control.appendChild(span);
+            control.appendChild(label);
+            break;
+        case "option":
+        default:
+            if (options.content) {
+                control.innerHTML = options.content;
+            }
+            break;
         }
         if (options.id) {
             control.id = options.id;
+        }          
+        if (options.children) {
+            for (i = 0; i < options.children.length; i++) {
+                control.appendChild(options.children[i]);
+            }
+        }
+
+        control.style.cursor = 'pointer';
+        for (var option in options.style) {
+            control.style[option] = options.style[option];
+        }
+        if (options.title) {
+            control.title = options.title;
         }
         if (options.classes) {
             control.className = options.classes;
         }
-        if (options.content) {
-            control.innerHTML = options.content;
+        
+        if (options.type == "checkbox") {
+            (function(object, name) {
+                google.maps.event.addDomListener(object, name, function() {
+                    $(checkbox).is(":visible") ? $(checkbox).hide() : $(checkbox).show();
+                });
+            })(control, "click");
         }
+        if (options.highlight == true) {
+            (function(object, name) {
+                google.maps.event.addDomListener(object, name, function() {
+                    $(this).css("background-color", "#EEEEEE");
+                });
+            })(highlightElm, "mouseover");
+            (function(object, name) {
+                google.maps.event.addDomListener(object, name, function() {
+                    $(this).css("background-color", "#FFFFFF");
+                });
+            })(highlightElm, "mouseout");
+        }
+        
         for (var event in options.events) {
             (function(object, name) {
                 google.maps.event.addDomListener(object, name, function() {
@@ -1182,5 +1363,14 @@ ContigoMap.prototype = {
         this.controls.push(control);
         this.map.controls[position].push(control);
         return control;
+    },
+    
+    /**
+     * Detect if the checkbox option in a dropdown menu is checked or not.
+     *
+     * @param checkboxOption a checkbox option object
+     */
+    idOptionChecked: function(checkboxOption) {
+        return $(checkboxOption).find('.uncheckbox_image_container:first').is(':visible');
     }
 }
