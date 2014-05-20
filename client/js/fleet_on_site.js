@@ -143,10 +143,13 @@ function MoreControl(contigoMap) {
         events: {
             click: function() {
                 var optionsContainer = $("#more_control .options_container");
-                optionsContainer.is(":visible")  ? optionsContainer.hide() : optionsContainer.show();
-                setTimeout(function() {
+                optionsContainer.is(":visible")  ? optionsContainer.hide() : optionsContainer.show();          
+                optionsContainer.on('mouseover', function() {
+                    optionsContainer.show();
+                })                
+                optionsContainer.on('mouseout', function() {
                     optionsContainer.hide();
-                }, 2000);
+                })
             }
         }        
     }
