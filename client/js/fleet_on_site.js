@@ -115,6 +115,51 @@ function MoreControl(contigoMap) {
             }       
         }
     });
+    var tabularDataOption = contigoMap.createControl({
+        type: 'checkbox',
+        id: 'tabular_data_option',
+        title: 'Show tabular data',
+        content: 'Tabular Data',
+        classes: 'select_checkbox_option',
+        highlight: true,
+        events: {
+            click: function() {
+                contigoMap.isTabularDataActive = contigoMap.idOptionChecked(this);
+                if (contigoMap.isTabularDataActive) {
+                    contigoMap.canvas.gmap3({
+                        panel: {
+                            options: {
+                                content: 
+                                    '<div id="tabs" style="height:150px;width:100%;">' +
+                                        '<ul>' +
+                                            '<li><a href="#tabs_locate">Locate</a></li>' +
+                                            '<li><a href="#tabs_landmark">Landmark</a></li>' +
+                                            '<li><a href="#tabs_jobs">Job</a></li>' +
+                                        '</ul>' +
+                                        '<div id="tabs_locate">' +
+                                            '<p>Locate data.</p>' +
+                                        '</div>' +
+                                        '<div id="tabs_landmark">' +
+                                            '<p>Landmark data.</p>' +
+                                        '</div>' +
+                                        '<div id="tabs_jobs">' +
+                                            '<p>Job data.</p>' +
+                                        '</div>' +
+                                    '</div>',
+                                bottom: true,
+                                center: true
+                            },
+                            callback: function(result) {
+                                $("#tabs").tabs();
+                            }
+                        }                        
+                    })
+                } else {
+                    contigoMap.clear({name: 'panel'});
+                }
+            }       
+        }
+    });
     var options = contigoMap.createControl({
         classes: "options_container",
         children: [
@@ -129,7 +174,11 @@ function MoreControl(contigoMap) {
             }), 
             centerLastOption,
             autoBestFitOption,
-            displayItemStatusOption
+            displayItemStatusOption,
+            contigoMap.createControl({
+                classes: "option_separator"
+            }),
+            tabularDataOption
         ]
     });
     return {
@@ -167,6 +216,7 @@ function ContigoMap(mapId) {
     this.isAutoCenteringActive = false;
     this.isAutoBestFitActive = false;
     this.isItemStatusActive = false;
+    this.isTabularDataActive = false;
     this.geocoder = new google.maps.Geocoder();
     this.withMarkerLabel = true; // with lable for markers
     this.poiCollection = null;
