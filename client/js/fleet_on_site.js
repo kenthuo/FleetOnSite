@@ -130,15 +130,13 @@ function MoreControl(contigoMap) {
                         panel: {
                             options: {
                                 content: 
-                                    '<div id="tabs" style="height:150px;width:100%;">' +
+                                    '<div id="tabs">' +
                                         '<ul>' +
-                                            '<li><a href="#tabs_locate">Locate</a></li>' +
+                                            '<li><a href="#tabs_locate">Event Location</a></li>' +
                                             '<li><a href="#tabs_landmark">Landmark</a></li>' +
                                             '<li><a href="#tabs_jobs">Job</a></li>' +
                                         '</ul>' +
-                                        '<div id="tabs_locate">' +
-                                            '<p>Locate data.</p>' +
-                                        '</div>' +
+                                        '<div id="tabs_locate"></div>' +
                                         '<div id="tabs_landmark">' +
                                             '<p>Landmark data.</p>' +
                                         '</div>' +
@@ -147,9 +145,67 @@ function MoreControl(contigoMap) {
                                         '</div>' +
                                     '</div>',
                                 bottom: true,
-                                center: true
+                                left: true
                             },
-                            callback: function(result) {
+                            callback: function(panel) {
+                                $(panel).css({width: '100%', height: '200px', bottom: '0px', top: ''});                                
+                                contigoMap.canvas.gmap3({
+                                    get: {
+                                        tag: TAG_GROUP.LOCATION,
+                                        all: true,
+                                        full: true,
+                                        callback: function(markers) {
+                                            var tabularData = "<table id='location_table'>";
+                                            tabularData += "<thead><tr><td></td><td>Date/Time</td><td>Nearest Address</td><td>Event</td><td>Dir</td><td>Speed</td><td>Type/Age</td></tr></thead>";
+                                            tabularData += "<tbody>";
+                                            $.each(markers, function(j, marker) {
+                                                var row = dateTime = eventType = direction = speed = landmark = streetAddr = city = county = country = stateProvince = postalCode = age = address = "";
+                                                var html = $.parseHTML(marker.data)[0];
+                                                $(html).find(".date_time").each(function(i, v) {dateTime = this.innerHTML});
+                                                $(html).find(".landmark").each(function(i, v) {landmark = this.innerHTML});
+                                                $(html).find(".event_type").each(function(i, v) {eventType = this.innerHTML});
+                                                $(html).find(".direction").each(function(i, v) {direction = this.innerHTML});
+                                                $(html).find(".speed").each(function(i, v) {speed = this.innerHTML});
+                                                $(html).find(".street_address").each(function(i, v) {streetAddr = this.innerHTML});
+                                                $(html).find(".city").each(function(i, v) {city = this.innerHTML});
+                                                $(html).find(".county").each(function(i, v) {county = this.innerHTML});
+                                                $(html).find(".country").each(function(i, v) {country = this.innerHTML});
+                                                $(html).find(".state_province").each(function(i, v) {stateProvince = this.innerHTML});
+                                                $(html).find(".postal_code").each(function(i, v) {postalCode = this.innerHTML});
+                                                var dt = dateTime.match(/^(.*)\(GPS Age: (.*)\)$/);
+                                                dateTime = dt ? dt[1] : dateTime;
+                                                age = dt ? (dt[2] ? dt[2] : "") : ""
+                                                if (streetAddr) {
+                                                    address += streetAddr;
+                                                }
+                                                if (city) {
+                                                    address += address ? ", " + city : city;
+                                                }
+                                                if (county) {
+                                                    address += address ? ", " + county : county;
+                                                }
+                                                if (stateProvince) {
+                                                    address += address ? ", " + stateProvince : stateProvince;
+                                                }
+                                                if (country) {
+                                                    address += address ? ", " + country : country;
+                                                }
+                                                if (postalCode) {
+                                                    address += address ? ", " + postalCode : postalCode;
+                                                }
+                                                if (landmark) {
+                                                    address = "<b>" + landmark + "</b>" + address;
+                                                }
+
+                                                row = "<tr><td>[" + (markers.length - j) + "]</td><td>" + dateTime + "</td><td>" + address + "</td><td>" + eventType + "</td><td>" + direction + "</td><td>" + speed + "</td><td>" + age + "</td></tr>";
+                                                tabularData += row;
+                                            });
+                                            tabularData += "</tbody>";
+                                            tabularData += "</table>";
+                                            $("#tabs_locate").prepend(tabularData);
+                                        }
+                                    }
+                                });
                                 $("#tabs").tabs();
                             }
                         }                        
@@ -626,7 +682,7 @@ ContigoMap.prototype = {
                                 icon: {
                                 	anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2)),
                                 	url: this.constructMarkerIconName(icon, numberLabel)
-                                	}
+                                }
                             }
                         };                    
                     }
@@ -705,24 +761,24 @@ ContigoMap.prototype = {
 	    var infoContent = "<div class='marker_infowindow'>";
 	    infoContent += "<div class='marker_infowindow_title'>" + label + "</div>";
 		infoContent += "<div class='event_time'>";
-	    infoContent += this.createMarkerInfoWindowPara(timestamp);
+	    infoContent += this.createMarkerInfoWindowPara("<span class='date_time'>" + timestamp + "</span>");
 
-	    infoContent += (speed) ? this.createMarkerInfoWindowPara(speed + " " + direction) : "";
+	    infoContent += (speed) ? this.createMarkerInfoWindowPara("<span class='speed'>" + speed + "</span> <span class='direction'>" + direction + "</span>") : "";
 		infoContent += "</div>";
 	    infoContent += "<div class='event_location'>";
-	    infoContent += this.createMarkerInfoWindowPara(address.street);
+	    infoContent += this.createMarkerInfoWindowPara("<span class='street_address'>" + address.street + "</span>");
 
 	    var secondAddressLine = "";
 	    var city = address.city;
 	    var county = address.county;
 	    var stateProvince = address.state;
-	    secondAddressLine += (city) ? city : "";
-	    secondAddressLine += (county) ? ((secondAddressLine) ? ", " + county : county) : "";
-	    secondAddressLine += (stateProvince) ? ((secondAddressLine) ? ", " + stateProvince : stateProvince) : "";
-	    secondAddressLine += " " + address.postalCode;
+	    secondAddressLine += (city) ? "<span class='city'>" + city + "</span>" : "";
+	    secondAddressLine += (county) ? ((secondAddressLine) ? ", <span class='county'>" + county + "</span>" : "<span class='county'>" + county + "</span>") : "";
+	    secondAddressLine += (stateProvince) ? ((secondAddressLine) ? ", <span class='state_province'>" + stateProvince + "</span>" : "<span class='state_province'>" + stateProvince + "</span>") : "";
+	    secondAddressLine += " <span class='postal_code'>" + address.postalCode + "</span>";
 	    infoContent += this.createMarkerInfoWindowPara(secondAddressLine);
 
-	    infoContent += this.createMarkerInfoWindowPara(address.country);
+	    infoContent += this.createMarkerInfoWindowPara("<span class='country'>" + address.country + "</span>");
 	    infoContent += (stopDuration) ? this.createMarkerInfoWindowPara(stopDuration) : "";
 
         if (!isMetric) {
@@ -734,11 +790,10 @@ ContigoMap.prototype = {
         }
 
 	    infoContent += (coord && this.latLonDisplayed) ? this.createMarkerInfoWindowPara("Lat/Long: (" + coord.lat + ", " + coord.lng + ")") : "";
-	    infoContent += (eventType) ? this.createMarkerInfoWindowPara("Event Type: " + eventType) : "";
-	    infoContent += (landmark) ? this.createMarkerInfoWindowPara("Landmark: " + landmark) : "";
+	    infoContent += (eventType) ? this.createMarkerInfoWindowPara("Event Type: <span class='event_type'>" + eventType + "</span>") : "";
+	    infoContent += (landmark) ? this.createMarkerInfoWindowPara("Landmark: <span class='landmark'>" + landmark + "</span>") : "";
 	    infoContent += "</div>";
-
-		
+        
 	    infoContent += "</div>";
 		return infoContent;
 	},

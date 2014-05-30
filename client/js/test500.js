@@ -1,7 +1,7 @@
 $(document).ready(function() {
     var map = new ContigoMap();
     map.init();
-    map.setShowMarkerLabel(false);																				
+    map.setWithMarkerLabel(false);																				
 var locatePoint_1988_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00810", width: 16, height: 16}), label: "1988-Steve", coord: new Coordinate({lat: 49.28100, lng: -123.00362}), eventType: "Locate", address: new Address({street: "4486 Hastings St", city: "Burnaby", county: "", state: "BC", postalCode: "V5C", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "04/18/2014 04:39:37PM PDT ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "1988", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "", temperature:  "" });
 
 var locatePoint_1988_2 = new ContigoBeaconPoi({icon: new Icon({name: "GB00810", width: 16, height: 16}), label: "1988-Steve", coord: new Coordinate({lat: 49.28099, lng: -123.00324}), eventType: "Zone", address: new Address({street: "4496 Hastings St", city: "Burnaby", county: "", state: "BC", postalCode: "V5C", country: "CANADA"}), stopDuration: "", speed: "25kph", direction: "E", timestamp: "04/18/2014 04:40:21PM PDT ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "1988", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "", temperature:  "" });
