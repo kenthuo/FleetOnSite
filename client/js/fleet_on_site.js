@@ -208,7 +208,7 @@ function MoreControl(contigoMap) {
                                                 tbody.append(row);
                                                 $(tbody).on("click", "#" + marker.id, function() {
                                                     // due to 'full' property is true, the real marker object is stored in marker.object property
-                                                    contigoMap.showInfoWindow(marker.object, marker.data);
+                                                    google.maps.event.trigger(marker.object, 'click');
                                                 });
                                             });
                                             table.append(tbody);
