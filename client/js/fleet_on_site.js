@@ -804,9 +804,9 @@ ContigoMap.prototype = {
 
         if (coord) {
             if (this.latLonDisplayed) {
-                infoContent += this.createMarkerInfoWindowPara("Lat/Long: (" + "<span class='latitude show'>" + coord.lat + "</span>, <span class='longitude show'>" + coord.lng + "</span>)");
+                infoContent += this.createMarkerInfoWindowPara("<span class='show'>Lat/Long: (" + "<span class='latitude'>" + coord.lat + "</span>, <span class='longitude'>" + coord.lng + "</span>)</span>");
             } else {
-                infoContent += this.createMarkerInfoWindowPara("Lat/Long: (" + "<span class='latitude hide'>" + coord.lat + "</span>, <span class='longitude hide'>" + coord.lng + "</span>)");
+                infoContent += this.createMarkerInfoWindowPara("<span class='hide'>Lat/Long: (" + "<span class='latitude'>" + coord.lat + "</span>, <span class='longitude'>" + coord.lng + "</span>)</span>");
             }
         }
 	    infoContent += (coord && this.latLonDisplayed) ? this.createMarkerInfoWindowPara("Lat/Long: (" + "<span class='latitude'>" + coord.lat + "</span>, <span class='longitude'>" + coord.lng + "</span>)") : "";
