@@ -1074,7 +1074,6 @@ ContigoMap.prototype = {
 			infowindow.open(marker.getMap(), marker);
 			infowindow.setContent(content);
 		} else {
-            console.log(content);
 			this.canvas.gmap3({
 				infowindow: {
 					anchor: marker,
