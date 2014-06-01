@@ -155,11 +155,14 @@ function MoreControl(contigoMap) {
                                         all: true,
                                         full: true,
                                         callback: function(markers) {
-                                            var tabularData = "<table id='location_table'>";
-                                            tabularData += "<thead><tr><td></td><td>Date/Time</td><td>Nearest Address</td><td>Event</td><td>Dir</td><td>Speed</td><td>Type/Age</td></tr></thead>";
-                                            tabularData += "<tbody>";
+                                            var tabularData = "<table id='location_table'></table>";
+                                            var table = $("<table id='location_table'></table>");
+                                            var thead = $("<thead></thead>");
+                                            var tbody = $("<tbody></tbody>");
+                                            thead.append("<tr><td></td><td>Date/Time</td><td>Nearest Address</td><td>Event</td><td>Dir</td><td>Speed</td><td>Type/Age</td></tr>");
+                                            table.append(thead);
                                             $.each(markers, function(j, marker) {
-                                                var row = dateTime = eventType = direction = speed = landmark = streetAddr = city = county = country = stateProvince = postalCode = age = address = "";
+                                                var row = dateTime = eventType = direction = speed = latitude = longitude = landmark = streetAddr = city = county = country = stateProvince = postalCode = age = address = "";
                                                 var html = $.parseHTML(marker.data)[0];
                                                 $(html).find(".date_time").each(function(i, v) {dateTime = this.innerHTML});
                                                 $(html).find(".landmark").each(function(i, v) {landmark = this.innerHTML});
@@ -172,6 +175,8 @@ function MoreControl(contigoMap) {
                                                 $(html).find(".country").each(function(i, v) {country = this.innerHTML});
                                                 $(html).find(".state_province").each(function(i, v) {stateProvince = this.innerHTML});
                                                 $(html).find(".postal_code").each(function(i, v) {postalCode = this.innerHTML});
+                                                $(html).find(".latitude").each(function(i, v) {latitude = this.innerHTML});
+                                                $(html).find(".longitude").each(function(i, v) {longitude = this.innerHTML});
                                                 var dt = dateTime.match(/^(.*)\(GPS Age: (.*)\)$/);
                                                 dateTime = dt ? dt[1] : dateTime;
                                                 age = dt ? (dt[2] ? dt[2] : "") : ""
@@ -193,16 +198,22 @@ function MoreControl(contigoMap) {
                                                 if (postalCode) {
                                                     address += address ? ", " + postalCode : postalCode;
                                                 }
+                                                if (address) {
+                                                    address = "<a id='" + marker.id + "'>" + address + "</a>";
+                                                }
                                                 if (landmark) {
                                                     address = "<b>" + landmark + "</b>" + address;
                                                 }
-
                                                 row = "<tr><td>[" + (markers.length - j) + "]</td><td>" + dateTime + "</td><td>" + address + "</td><td>" + eventType + "</td><td>" + direction + "</td><td>" + speed + "</td><td>" + age + "</td></tr>";
-                                                tabularData += row;
+                                                tbody.append(row);
+                                                $(tbody).on("click", "#" + marker.id, function() {
+                                                    // due to 'full' property is true, the real marker object is stored in marker.object property
+                                                    contigoMap.showInfoWindow(marker.object, marker.data);
+                                                });
                                             });
-                                            tabularData += "</tbody>";
-                                            tabularData += "</table>";
-                                            $("#tabs_locate").prepend(tabularData);
+                                            table.append(tbody);
+                                            $("#tabs_locate").append(table);
+
                                         }
                                     }
                                 });
@@ -659,6 +670,7 @@ ContigoMap.prototype = {
                     var marker = null;
                     if (this.withMarkerLabel) {
                         marker = {
+                            id: TAG_GROUP.LOCATION + "_" + i,
                             tag: [label, TAG_GROUP.LOCATION],
                             latLng: [coord.lat, coord.lng], 
                             data: infoContent,                        
@@ -674,6 +686,7 @@ ContigoMap.prototype = {
                                 labelContent: label}};
                     } else {
                         marker = {
+                            id: TAG_GROUP.LOCATION + "_" + i,
                             tag: [label, TAG_GROUP.LOCATION],
                             latLng: [coord.lat, coord.lng], 
                             data: infoContent,                        
@@ -789,7 +802,14 @@ ContigoMap.prototype = {
             infoContent += (cocValueMetres > 0) ? this.createMarkerInfoWindowPara(cocValueMetres + " m accuracy (radius)") : "";
         }
 
-	    infoContent += (coord && this.latLonDisplayed) ? this.createMarkerInfoWindowPara("Lat/Long: (" + coord.lat + ", " + coord.lng + ")") : "";
+        if (coord) {
+            if (this.latLonDisplayed) {
+                infoContent += this.createMarkerInfoWindowPara("Lat/Long: (" + "<span class='latitude show'>" + coord.lat + "</span>, <span class='longitude show'>" + coord.lng + "</span>)");
+            } else {
+                infoContent += this.createMarkerInfoWindowPara("Lat/Long: (" + "<span class='latitude hide'>" + coord.lat + "</span>, <span class='longitude hide'>" + coord.lng + "</span>)");
+            }
+        }
+	    infoContent += (coord && this.latLonDisplayed) ? this.createMarkerInfoWindowPara("Lat/Long: (" + "<span class='latitude'>" + coord.lat + "</span>, <span class='longitude'>" + coord.lng + "</span>)") : "";
 	    infoContent += (eventType) ? this.createMarkerInfoWindowPara("Event Type: <span class='event_type'>" + eventType + "</span>") : "";
 	    infoContent += (landmark) ? this.createMarkerInfoWindowPara("Landmark: <span class='landmark'>" + landmark + "</span>") : "";
 	    infoContent += "</div>";
@@ -1054,6 +1074,7 @@ ContigoMap.prototype = {
 			infowindow.open(marker.getMap(), marker);
 			infowindow.setContent(content);
 		} else {
+            console.log(content);
 			this.canvas.gmap3({
 				infowindow: {
 					anchor: marker,

@@ -12,13 +12,12 @@ body {
     height: 100% 
 }
 
-#search {
-    width: 200px;
-    background-color: #fff;
-    padding: 0 11px 0 13px;
-    font-size: 15px;
-    font-weight: 300;
-    text-overflow: ellipsis;
+.show {
+    display: initial;
+}
+
+.hide {
+    display: none;
 }
 
 .controls {
@@ -236,25 +235,6 @@ body {
     width: 150px;
     top: 0px;
 }
-/*
-#tabs { 
-    padding: 0px; 
-    background: none; 
-    border-width: 0px; 
-} 
-#tabs .ui-tabs-nav { 
-    padding-left: 0px; 
-    background: transparent; 
-    border-width: 0px 0px 1px 0px; 
-    -moz-border-radius: 0px; 
-    -webkit-border-radius: 0px; 
-    border-radius: 0px; 
-} 
-#tabs .ui-tabs-panel { 
-    background: #f5f3e5 url(../js/jquery-ui-1.10.4/css/smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png) repeat-x scroll 50% top; 
-    border-width: 0px 1px 1px 1px; 
-}
-*/
 
 #tabs {
     font-size: 82.5%;
@@ -265,22 +245,6 @@ body {
     overflow: auto;
 }
 
-#tabs_locate .marker_infowindow p  {
-    display: inline;
-}
-
-#tabs_locate .label {
-    display: none;
-}
-
-#tabs_locate .marker_infowindow {
-    display: table;
-    font-size: 0.8em;
-}
-#tabs_locate  .marker_infowindow_title, #tabs_locate  .event_time, #tabs_locate  .event_location, #tabs_locate  .event_type  {
-    display: table-cell;
-    width: 25%;
-}
 #tabs_locate  .marker_infowindow_title {
     background-color: initial;
 }
@@ -309,4 +273,22 @@ body {
 
 #location_table td {
     padding: 2px 5px;
+}
+
+#location_table a, #location_table a:link {
+    color: #0000ff;
+    text-decoration: none;
+}
+#location_table a:visited {
+    color: #0000ff;
+    text-decoration: none;
+}
+#location_table a:hover {
+    cursor: pointer; 
+    color: #0000ff;
+    text-decoration: underline;
+}
+#location_table a:active {
+    color: #0000ff;
+    text-decoration: underline;
 }
