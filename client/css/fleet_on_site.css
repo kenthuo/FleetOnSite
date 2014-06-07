@@ -240,25 +240,17 @@ body {
     font-size: 82.5%;
 }
 
-#tabs_locate {
+#tabs_locate, #tabs_landmark, #tabs_job {
     height: 130px;
     overflow: auto;
 }
 
-#tabs_locate  .marker_infowindow_title {
-    background-color: initial;
-}
-
-#tabs_locate .marker_infowindow:nth-child(odd) {
-    background: #e0e0e0;
-}
-
-#location_table {
+#location_table, #landmark_table, #job_table {
     border-collapse: collapse;
     width: 100%;
 }
 
-#location_table thead tr {
+#location_table thead tr, #landmark_table thead tr, #job_table thead tr {
     background-color: #cccccc;
     font-family: Verdana, Arial, Helvetica;
     font-weight: bold;
@@ -267,28 +259,28 @@ body {
     border-bottom: 1px solid #999999;
 }
 
-#location_table tbody tr:nth-child(even) {
+#location_table tbody tr:nth-child(even), #landmark_table tbody tr:nth-child(even), #job_table tbody tr:nth-child(even) {
     background: #e0e0e0;
 }
 
-#location_table td {
-    padding: 2px 5px;
+#location_table td, #landmark_table td, #job_table td {
+    padding: 5px 5px;
 }
 
-#location_table a, #location_table a:link {
+#location_table a, #location_table a:link, #landmark_table a, #landmark_table a:link, #job_table a, #job_table a:link {
     color: #0000ff;
     text-decoration: none;
 }
-#location_table a:visited {
+#location_table a:visited, #landmark_table a:visited, #job_table a:visited {
     color: #0000ff;
     text-decoration: none;
 }
-#location_table a:hover {
+#location_table a:hover, #landmark_table a:hover, #job_table a:hover {
     cursor: pointer; 
     color: #0000ff;
     text-decoration: underline;
 }
-#location_table a:active {
+#location_table a:active, #landmark_table a:active, #job_table a:active  {
     color: #0000ff;
     text-decoration: underline;
 }

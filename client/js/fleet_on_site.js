@@ -40,23 +40,23 @@ function ContigoMarkers(markers, cocs, routes) {
 
 function MoreControl(contigoMap) {
     var liveTrafficOption = contigoMap.createControl({
-        type: "checkbox",
+        type: 'checkbox',
         position: 'top_right',
         content: 'Live Traffic',
         title: 'Show live traffic information',
-        classes: "select_checkbox_option",
+        classes: 'select_checkbox_option',
         highlight: true,
         events: {
             click: function() {
-                contigoMap.idOptionChecked(this) ? contigoMap.canvas.gmap3("trafficlayer") : contigoMap.clear({name: ["trafficlayer"]});
+                contigoMap.idOptionChecked(this) ? contigoMap.canvas.gmap3('trafficlayer') : contigoMap.clear({name: ['trafficlayer']});
             }
         }    
     });
     var bestFitOption = contigoMap.createControl({
-        type: "option",
+        type: 'option',
         content: 'Best Fit',
-        title: "Best fit",
-        classes: "select_option",
+        title: 'Best fit',
+        classes: 'select_option',
         highlight: true,
         events: {
             click: function() {
@@ -65,10 +65,10 @@ function MoreControl(contigoMap) {
         }
     });
     var centerMapOption = contigoMap.createControl({
-        type: "option",
+        type: 'option',
         content: 'Center Map',
-        title: "Center map",
-        classes: "select_option",
+        title: 'Center map',
+        classes: 'select_option',
         highlight: true,
         events: {
             click: function() {
@@ -134,15 +134,11 @@ function MoreControl(contigoMap) {
                                         '<ul>' +
                                             '<li><a href="#tabs_locate">Event Location</a></li>' +
                                             '<li><a href="#tabs_landmark">Landmark</a></li>' +
-                                            '<li><a href="#tabs_jobs">Job</a></li>' +
+                                            '<li><a href="#tabs_job">Job</a></li>' +
                                         '</ul>' +
                                         '<div id="tabs_locate"></div>' +
-                                        '<div id="tabs_landmark">' +
-                                            '<p>Landmark data.</p>' +
-                                        '</div>' +
-                                        '<div id="tabs_jobs">' +
-                                            '<p>Job data.</p>' +
-                                        '</div>' +
+                                        '<div id="tabs_landmark"></div>' +
+                                        '<div id="tabs_job"></div>' +
                                     '</div>',
                                 bottom: true,
                                 left: true
@@ -155,65 +151,110 @@ function MoreControl(contigoMap) {
                                         all: true,
                                         full: true,
                                         callback: function(markers) {
-                                            var tabularData = "<table id='location_table'></table>";
-                                            var table = $("<table id='location_table'></table>");
-                                            var thead = $("<thead></thead>");
-                                            var tbody = $("<tbody></tbody>");
-                                            thead.append("<tr><td></td><td>Date/Time</td><td>Nearest Address</td><td>Event</td><td>Dir</td><td>Speed</td><td>Type/Age</td></tr>");
-                                            table.append(thead);
-                                            $.each(markers, function(j, marker) {
-                                                var row = dateTime = eventType = direction = speed = latitude = longitude = landmark = streetAddr = city = county = country = stateProvince = postalCode = age = address = "";
+                                            var locationTable = $("<table id='location_table'></table>");
+                                            var locationThead = $("<thead></thead>").append("<tr>" + _.reduce(["", "Date/Time", "Nearest Address", "Latitude", "Longitude", "Event", "Dir", "Speed", "Type/Age"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
+                                            var locationTbody = $("<tbody></tbody>");
+                                            _.each(markers, function(marker, j) {
+                                                var dateTime = landmark = address = "";
                                                 var html = $.parseHTML(marker.data)[0];
-                                                $(html).find(".date_time").each(function(i, v) {dateTime = this.innerHTML});
-                                                $(html).find(".landmark").each(function(i, v) {landmark = this.innerHTML});
-                                                $(html).find(".event_type").each(function(i, v) {eventType = this.innerHTML});
-                                                $(html).find(".direction").each(function(i, v) {direction = this.innerHTML});
-                                                $(html).find(".speed").each(function(i, v) {speed = this.innerHTML});
-                                                $(html).find(".street_address").each(function(i, v) {streetAddr = this.innerHTML});
-                                                $(html).find(".city").each(function(i, v) {city = this.innerHTML});
-                                                $(html).find(".county").each(function(i, v) {county = this.innerHTML});
-                                                $(html).find(".country").each(function(i, v) {country = this.innerHTML});
-                                                $(html).find(".state_province").each(function(i, v) {stateProvince = this.innerHTML});
-                                                $(html).find(".postal_code").each(function(i, v) {postalCode = this.innerHTML});
-                                                $(html).find(".latitude").each(function(i, v) {latitude = this.innerHTML});
-                                                $(html).find(".longitude").each(function(i, v) {longitude = this.innerHTML});
-                                                var dt = dateTime.match(/^(.*)\(GPS Age: (.*)\)$/);
-                                                dateTime = dt ? dt[1] : dateTime;
-                                                age = dt ? (dt[2] ? dt[2] : "") : ""
-                                                if (streetAddr) {
-                                                    address += streetAddr;
-                                                }
-                                                if (city) {
-                                                    address += address ? ", " + city : city;
-                                                }
-                                                if (county) {
-                                                    address += address ? ", " + county : county;
-                                                }
-                                                if (stateProvince) {
-                                                    address += address ? ", " + stateProvince : stateProvince;
-                                                }
-                                                if (country) {
-                                                    address += address ? ", " + country : country;
-                                                }
-                                                if (postalCode) {
-                                                    address += address ? ", " + postalCode : postalCode;
-                                                }
-                                                if (address) {
-                                                    address = "<a id='" + marker.id + "'>" + address + "</a>";
-                                                }
-                                                if (landmark) {
-                                                    address = "<b>" + landmark + "</b>" + address;
-                                                }
-                                                row = "<tr><td>[" + (markers.length - j) + "]</td><td>" + dateTime + "</td><td>" + address + "</td><td>" + eventType + "</td><td>" + direction + "</td><td>" + speed + "</td><td>" + age + "</td></tr>";
-                                                tbody.append(row);
-                                                $(tbody).on("click", "#" + marker.id, function() {
+                                                landmark = $(html).find(".landmark").html();
+                                                dateTime = $(html).find(".date_time").html().match(/^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}[A|P]M [a-zA-Z]*)(.*\(GPS Age: |)([a-zA-Z0-9 ]+|)(\)|)/); // "08/21/2012 02:17:24PM EDT " || 08/20/2012 08:05:01PM EDT <br>(GPS Age: 0h 05m 01s)
+                                                
+                                                address = _.reduce([
+                                                    $(html).find(".street_address").html(), 
+                                                    $(html).find(".city").html(), 
+                                                    $(html).find(".county").html(), 
+                                                    $(html).find(".state_province").html(), 
+                                                    $(html).find(".country").html(), 
+                                                    $(html).find(".postal_code").html()], function(memo, part) { return memo ? (memo + (part ? ", " + part : "")) : part;}, "");
+
+                                                address = address ? ("<a id='" + marker.id + "'>" + address + "</a>") : "";
+                                                address = landmark ? ("<b>" + landmark + "</b>" + address) : address;
+                                                
+                                                locationTbody.append("<tr>" + _.reduce([
+                                                    "[" + ++j + "]", 
+                                                    dateTime[1], 
+                                                    address,
+                                                    marker.object.getPosition().lat().toFixed(5),
+                                                    marker.object.getPosition().lng().toFixed(5),
+                                                    $(html).find(".event_type").html(), 
+                                                    $(html).find(".direction").html(), 
+                                                    $(html).find(".speed").html(), 
+                                                    dateTime[3]], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
+                                                $(locationTbody).on("click", "#" + marker.id, function() {
                                                     // due to 'full' property is true, the real marker object is stored in marker.object property
                                                     google.maps.event.trigger(marker.object, 'click');
                                                 });
                                             });
-                                            table.append(tbody);
-                                            $("#tabs_locate").append(table);
-
+                                            locationTable.append(locationThead);                                            
+                                            locationTable.append(locationTbody);
+                                            $("#tabs_locate").append(locationTable);                                            
+                                        }
+                                    }
+                                });
+                                contigoMap.canvas.gmap3({
+                                    get: {
+                                        tag: TAG_GROUP.LANDMARK,
+                                        all: true,
+                                        full: true,
+                                        callback: function(landmarks) {
+                                            var landmarkTable = $("<table id='landmark_table'></table>");
+                                            var landmarkThead = $("<thead></thead>").append("<tr>" + _.reduce(["", "Name", "Category", "Address", "Latitude", "Longitude", "Notes"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
+                                            var landmarkTbody = $("<tbody></tbody>");
+                                            _.each(landmarks, function(landmark, j) {
+                                                var html = $.parseHTML(landmark.data)[0], address = "";
+                                                landmarkInfo = landmark.object.title.match(/^(.*)\((.*)\)$/); // "Office (Company)"
+                                                address = $(html).find(".landmark_address").html();
+                                                address = address ? ("<a id='" + landmark.id + "'>" + address + "</a>") : "";
+                                                landmarkTbody.append("<tr>" + _.reduce([
+                                                    "[" + ++j + "]", 
+                                                    landmarkInfo[1], 
+                                                    landmarkInfo[2],
+                                                    address,
+                                                    landmark.object.getPosition().lat().toFixed(5),
+                                                    landmark.object.getPosition().lng().toFixed(5),
+                                                    $(html).find(".landmark_content").html()], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
+                                                $(landmarkTbody).on("click", "#" + landmark.id, function() {
+                                                    // due to 'full' property is true, the real marker object is stored in marker.object property
+                                                    google.maps.event.trigger(landmark.object, 'click');
+                                                });
+                                            });
+                                            landmarkTable.append(landmarkThead);                                            
+                                            landmarkTable.append(landmarkTbody);
+                                            $("#tabs_landmark").append(landmarkTable);  
+                                        }
+                                    }
+                                });
+                                contigoMap.canvas.gmap3({
+                                    get: {
+                                        tag: TAG_GROUP.JOB,
+                                        all: true,
+                                        full: true,
+                                        callback: function(jobs) {
+                                            var jobTable = $("<table id='job_table'></table>");
+                                            var jobThead = $("<thead></thead>").append("<tr>" + _.reduce(["Priority", "Status", "Destination", "Latitude", "Longitude", "Description"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
+                                            var jobTbody = $("<tbody></tbody>");
+                                            _.each(jobs, function(job) {
+                                                var html = $.parseHTML(job.data)[0], destination = "";
+                                                priority = $(html).find(".job_priority").html();
+                                                status = $(html).find(".job_status").html();
+                                                destination = $(html).find(".job_destination").html();
+                                                destination = destination ? ("<a id='" + job.id + "'>" + destination + "</a>") : "";
+                                                jobTbody.append("<tr>" + _.reduce([
+                                                    $(html).find(".job_priority").html(), 
+                                                    $(html).find(".job_status").html(), 
+                                                    destination,
+                                                    job.object.getPosition().lat().toFixed(5),
+                                                    job.object.getPosition().lng().toFixed(5),
+                                                    $(html).find(".job_description_content").html()], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
+                                                $(jobTbody).on("click", "#" + job.id, function() {
+                                                    // due to 'full' property is true, the real marker object is stored in marker.object property
+                                                    google.maps.event.trigger(job.object, 'click');
+                                                });
+                                            });
+                                            jobTable.append(jobThead);                                            
+                                            jobTable.append(jobTbody);
+                                            $("#tabs_job").append(jobTable);  
                                         }
                                     }
                                 });
@@ -280,6 +321,7 @@ function ContigoMap(mapId) {
     this.isMetric = false; // to use metric system to show information on the map or not
     this.currentLocateFilterMode = LOCATE_MODE.ALL;
     this.currentCocMode = COC_MODE.ALL;
+    this.mostRecentLocateCoord = null;
     this.isAutoCenteringActive = false;
     this.isAutoBestFitActive = false;
     this.isItemStatusActive = false;
@@ -539,18 +581,16 @@ ContigoMap.prototype = {
 	 */    
     refreshMap: function(poiCollection) {
     	var $this = this;
-        var mapMarkers = [];
         var landmarks = poiCollection.landmarks;
 	    var beaconItems = poiCollection.beaconItems;
 	    var jobCollection = poiCollection.jobs;    
 	    var measurementUnit = poiCollection.measurementUnit;
-	    this.isMetric = (measurementUnit && measurementUnit.toLowerCase() == "m") ? true : false;
-        
+	    this.isMetric = (measurementUnit && measurementUnit.toLowerCase() == "m") ? true : false;  
         var locationMarkers = this.buildLocationMarkers(beaconItems, this.isMetric);
-	    var landmarkMarkers = this.buildLandmarkMarkers(landmarks, this.isMetric);
-	    var jobMarkers = this.buildJobMarkers(jobCollection, this.isMetric);
-        mapMarkers = locationMarkers.markers.concat(landmarkMarkers.markers);
-        mapMarkers = mapMarkers.concat(jobMarkers.markers);
+        var mapMarkers = locationMarkers.markers.concat(
+            this.buildLandmarkMarkers(landmarks, this.isMetric).markers).concat(
+            this.buildJobMarkers(jobCollection, this.isMetric).markers);
+
 	    var mapObjects = {};
         this.reset(false);
 	    
@@ -575,13 +615,13 @@ ContigoMap.prototype = {
 	    if (locationMarkers.routes.length > 0) {
             mapObjects["polyline"] = {};
             mapObjects["polyline"]["values"] = [];
-            for (var i = 0; i < locationMarkers.routes.length; i++) {
+            _.each(locationMarkers.routes, function(route) {
                 mapObjects["polyline"]["values"].push({
                     options: {
-                        strokeColor: locationMarkers.routes[i].color,
+                        strokeColor: route.color,
                         strokeOpacity: 1.0,
                         strokeWeight: 2,
-                        path: locationMarkers.routes[i].segment,
+                        path: route.segment,
                         icons: [{
                             icon: {
                                 path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
@@ -596,7 +636,7 @@ ContigoMap.prototype = {
                         }]
                     }
                 });
-            }
+            });
 	    }
 	    
         this.canvas.gmap3(mapObjects);
@@ -612,13 +652,11 @@ ContigoMap.prototype = {
 	 * @returns a list of definition of location markers and a list of definition of CoCs (circle of certainty)
 	 */
 	buildLocationMarkers : function(beaconItems, isMetric) {
-		var markers = [],
-            cocs = [],
-            routes = [];
-	    for (var x in beaconItems) {
-	        var locatePoints = beaconItems[x].locatePoints;
-	        var isPointsConnected = beaconItems[x].isPointsConnected;
-	        var showInputOutputColor = beaconItems[x].showInputOutputColor;
+		var $this = this, markers = [], cocs = [], routes = [];
+        _.each(beaconItems, function(beacon) {
+	        var locatePoints = beacon.locatePoints;
+	        var isPointsConnected = beacon.isPointsConnected;
+	        var showInputOutputColor = beacon.showInputOutputColor;
 	        var szLocatePoints = locatePoints.length;
 	        var initialIndex = 0;
 	        var lastIndex = szLocatePoints;
@@ -631,44 +669,43 @@ ContigoMap.prototype = {
                 if (isDescOrder) {
                     locatePoints = locatePoints.reverse();
                 }
-		        initialIndex = this.determineInitialIndex(locatePoints);
+		        initialIndex = $this.determineInitialIndex(locatePoints);
 	        }
 	        
-	        for (var i = initialIndex; i < szLocatePoints; i++) {
+            _.each(locatePoints, function(point, i) {
                 var segment = [];
-	        	var currentPoint = locatePoints[i];
-	            var icon = currentPoint.icon;
-	            var label = currentPoint.label;
-	            var coord = currentPoint.coord;
-	            var eventType = currentPoint.eventType;
-	            var address = currentPoint.address;
-	            var stopDuration = currentPoint.stopDuration;
-	            var speed = currentPoint.speed;
-	            var direction = currentPoint.direction;
-	            var timestamp = currentPoint.timestamp;
-	            var landmark = currentPoint.landmark;
-	            var circleCertaintyRadius = currentPoint.circleCertaintyRadius;
-	            var status = currentPoint.status;
-	            var userNote = currentPoint.userNote;
-	            var driverID = currentPoint.driverID;
-	            var driverStatus = currentPoint.driverStatus;
-	            var beaconID = currentPoint.beaconID;
-	            var guardianID = currentPoint.guardianID;
-	            var ioprt1Scenario = currentPoint.ioprt1Scenario;
-	            var ioprt2Scenario = currentPoint.ioprt2Scenario;
-	            var lineColor = currentPoint.lineColor;
-	            var numberLabel = currentPoint.numberLabel;
-				var dispatch = currentPoint.dispatch;
+	            var icon = point.icon;
+	            var label = point.label;
+	            var coord = point.coord;
+	            var eventType = point.eventType;
+	            var address = point.address;
+	            var stopDuration = point.stopDuration;
+	            var speed = point.speed;
+	            var direction = point.direction;
+	            var timestamp = point.timestamp;
+	            var landmark = point.landmark;
+	            var circleCertaintyRadius = point.circleCertaintyRadius;
+	            var status = point.status;
+	            var userNote = point.userNote;
+	            var driverID = point.driverID;
+	            var driverStatus = point.driverStatus;
+	            var beaconID = point.beaconID;
+	            var guardianID = point.guardianID;
+	            var ioprt1Scenario = point.ioprt1Scenario;
+	            var ioprt2Scenario = point.ioprt2Scenario;
+	            var lineColor = point.lineColor;
+	            var numberLabel = point.numberLabel;
+				var dispatch = point.dispatch;
 
 	            if (label) {
-	            	var infoContent = this.buildLocationInfoWindowContents(
+	            	var infoContent = $this.buildLocationInfoWindowContents(
 		                            label, coord, eventType, address, stopDuration, speed, 
 		                            direction, timestamp, landmark, circleCertaintyRadius, 
 		                            status, userNote, driverID, driverStatus, beaconID,
 		                            guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, 
 		                            dispatch, isMetric);
                     var marker = null;
-                    if (this.withMarkerLabel) {
+                    if ($this.withMarkerLabel) {
                         marker = {
                             id: TAG_GROUP.LOCATION + "_" + i,
                             tag: [label, TAG_GROUP.LOCATION],
@@ -677,7 +714,7 @@ ContigoMap.prototype = {
                             options: {
                                 title: label,
                                 icon: {
-                                	url: this.constructMarkerIconName(icon, numberLabel),
+                                	url: $this.constructMarkerIconName(icon, numberLabel),
                                 	anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2)),
                                 },
                                 labelAnchor: new google.maps.Point(10, -2),
@@ -694,7 +731,7 @@ ContigoMap.prototype = {
                                 title: label,
                                 icon: {
                                 	anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2)),
-                                	url: this.constructMarkerIconName(icon, numberLabel)
+                                	url: $this.constructMarkerIconName(icon, numberLabel)
                                 }
                             }
                         };                    
@@ -704,7 +741,7 @@ ContigoMap.prototype = {
                 
                 circleCertaintyRadius = parseInt(circleCertaintyRadius, 10);
                 if (circleCertaintyRadius > 0) {
-                    if (this.currentCocMode == COC_MODE.ALL || this.currentCocMode == COC_MODE.LAST && i == szLocatePoints - 1) {
+                    if ($this.currentCocMode == COC_MODE.ALL || $this.currentCocMode == COC_MODE.LAST && i == szLocatePoints - 1) {
                         var circle = {
                             tag: TAG_GROUP.COC,
                             options: {
@@ -737,8 +774,8 @@ ContigoMap.prototype = {
                         }
                     }
                 }
-	        } // for (var i = 0; i < szLocatePoints; i++)
-	    } // for (var x in beaconItems)
+	        }); // _.each(locatePoints, function(currentPoint, i)
+	    }); // _.each(beaconItems, function(beacon)
 	    return new ContigoMarkers(markers, cocs, routes);
 	},
     
@@ -752,11 +789,7 @@ ContigoMap.prototype = {
 	constructMarkerIconName : function(icon, numberLabel) {
 		 var iconName = ICON_HOST_PATH + "blank.png";
 		 if (icon) {
-			if (numberLabel && numberLabel > 0) {
-				iconName = NUMBERS_ICON_HOST_PATH + icon.name + "-" + numberLabel + ".png";
-			} else {
-				iconName = ICON_HOST_PATH + icon.name + ".png";        		
-			}
+            iconName = numberLabel && numberLabel > 0 ? NUMBERS_ICON_HOST_PATH + icon.name + "-" + numberLabel + ".png" : ICON_HOST_PATH + icon.name + ".png";
 		 }
 		 return iconName;
 	},  
@@ -769,8 +802,8 @@ ContigoMap.prototype = {
 	buildLocationInfoWindowContents : function(
 	                label, coord, eventType, address, stopDuration, speed, direction, timestamp, landmark,
 	                circleCertaintyRadius, status, userNote, driverID, driverStatus, beaconID,
-	                guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, dispatch, isMetric) {
-
+	                guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, dispatch, isMetric) {        
+                    
 	    var infoContent = "<div class='marker_infowindow'>";
 	    infoContent += "<div class='marker_infowindow_title'>" + label + "</div>";
 		infoContent += "<div class='event_time'>";
@@ -862,37 +895,39 @@ ContigoMap.prototype = {
 	 * @returns a list of definition of landmark markers
 	 */
 	buildLandmarkMarkers : function(landmarks, isMetric) {
+        var $this = this;    
 		var markers = [];
-		for (var x in landmarks) {
-			var icon = landmarks[x].icon;
-			var coord = landmarks[x].coord;
-			var label = landmarks[x].label;
-			var category = landmarks[x].category;
-			var userNote = landmarks[x].userNote;
-			var lmkAddress = landmarks[x].lmkAddress;
-			var content = landmarks[x].content;
-			var numberLabel = landmarks[x].numberLabel;
-			var dispatch = landmarks[x].dispatch;
+        _.each(landmarks, function(landmark, i) {
+			var icon = landmark.icon;
+			var coord = landmark.coord;
+			var label = landmark.label;
+			var category = landmark.category;
+			var userNote = landmark.userNote;
+			var lmkAddress = landmark.lmkAddress;
+			var content = landmark.content;
+			var numberLabel = landmark.numberLabel;
+			var dispatch = landmark.dispatch;
 			
 			if (category) {
 				label += " (" + category + ")";
 			}
 			if (label) {
-                var infoContent = this.buildLmkInfoWindowContents(label, userNote, lmkAddress, content, dispatch);
+                var infoContent = $this.buildLmkInfoWindowContents(label, userNote, lmkAddress, content, dispatch);
                 var marker = {
+                    id: TAG_GROUP.LOCATION + "_" + i,
                     tag: [label, TAG_GROUP.LANDMARK],
                     latLng: [coord.lat, coord.lng], 
                     data: infoContent,    
                     options: {
                         title: label,
-                        icon: {url: this.constructMarkerIconName(icon, numberLabel)},
+                        icon: {url: $this.constructMarkerIconName(icon, numberLabel)},
                         labelAnchor: new google.maps.Point(10, -2),
                         labelClass: "labels",
                         labelStyle: {opacity: 0.75},
                         labelContent: label}};
                 markers.push(marker);
-			}				
-		}
+			}	        
+        });
 		
 		return new ContigoMarkers(markers);
 	},
@@ -926,14 +961,14 @@ ContigoMap.prototype = {
 	    if (userNote || lmkAddress || content) {
 			infoContent += "<div class='landmark_info'>";
 			// user note
-			infoContent += (userNote) ? this.createMarkerInfoWindowPara(userNote) : "";
+			infoContent += (userNote) ? this.createMarkerInfoWindowPara("<span class='user_note'>" + userNote + "</span>") : "";
 	    
 			// landmark's address
-			infoContent += (lmkAddress) ? this.createMarkerInfoWindowPara(lmkAddress) : "";
+			infoContent += (lmkAddress) ? this.createMarkerInfoWindowPara("<span class='landmark_address'>" + lmkAddress + "</span>") : "";
 	    
 			// landmark's content
-			infoContent += (content) ? this.createMarkerInfoWindowPara(content) : "";
-			infoContent += "<br></div>";
+			infoContent += (content) ? this.createMarkerInfoWindowPara("<span class='landmark_content'>" + content + "</span>") : "";
+			infoContent += "</div>";
 	    }
 	    infoContent += "</div>";
 		return infoContent;	    
@@ -948,12 +983,9 @@ ContigoMap.prototype = {
 	 * @returns a list of definition of job markers
 	 */
 	buildJobMarkers : function(jobCollection, isMetric) {
-		var markers = [];
-		for (var beaconId in jobCollection) {
-			var jobs = jobCollection[beaconId];
-			var szJobs = jobs.length;
-			for (var i = 0; i < szJobs; i++) {
-				var job = jobs[i];
+		var $this = this, markers = [];
+        _.each(jobCollection, function(jobs, beaconId) {
+            _.each(jobs, function(job) {
 				var jobId = job.id;
 				var icon = job.icon;
 				var coord = job.coord;					
@@ -974,7 +1006,7 @@ ContigoMap.prototype = {
 				var isDone = (status && status.toLowerCase() == "done") ? true : false;
 	            
 				if (label) {
-                    var infoContent = this.buildJobInfoWindowContents(
+                    var infoContent = $this.buildJobInfoWindowContents(
 		            		beaconId, jobId, label, description, landmark, destination, 
 		            		priority, status, sentTimestamp, ackTimestamp, 
 		            		etaTimestamp, doneTimestamp, deletedTimestamp, 
@@ -985,15 +1017,15 @@ ContigoMap.prototype = {
                         data: infoContent,                        
                         options: {
                             title: label,
-                            icon: {url: this.constructMarkerIconName(icon, numberLabel)},
+                            icon: {url: $this.constructMarkerIconName(icon, numberLabel)},
                             labelAnchor: new google.maps.Point(10, -2),
                             labelClass: "labels",
                             labelStyle: {opacity: 0.75},
                             labelContent: label}};
 		            markers.push(marker);
 				}
-			}				
-		}
+			});				
+		});
 		return new ContigoMarkers(markers);
 	},
     
@@ -1036,13 +1068,13 @@ ContigoMap.prototype = {
 		
 		jobLocation = "<div class='job_location'>";
 		jobLocation += "<div class='job_location_title'>Job Location:</div>";
-		jobLocation += ((landmark) ? "<div clas='job_landmark'>(" + landmark + ")</div>" : "");
+		jobLocation += ((landmark) ? "<div class='job_landmark'>(" + landmark + ")</div>" : "");
 		jobLocation += "<div class='job_destination'>" + destination + "</div>";
 		jobLocation += "</div>";
 		
 		jobDetails = "<table class='job_details'>";
-		jobDetails += "<tr><td class='job_details_title'>Priority</td><td>" + ((priority == -1) ? "-" : priority) + "</td></tr>";
-		jobDetails += "<tr><td class='job_details_title'>Status:</td><td>" + ((status) ? status : "-") + "</td></tr>";
+		jobDetails += "<tr><td class='job_details_title'>Priority</td><td class='job_priority'>" + ((priority == -1) ? "-" : priority) + "</td></tr>";
+		jobDetails += "<tr><td class='job_details_title'>Status:</td><td class='job_status'>" + ((status) ? status : "-") + "</td></tr>";
 		jobDetails += "<tr><td class='job_details_title'>Sent:</td><td>" + ((sentTimestamp) ? sentTimestamp : "-") + "</td></tr>";
 		jobDetails += "<tr><td class='job_details_title'>Ack'd:</td><td>" + ((ackTimestamp) ? ackTimestamp : "-") + "</td></tr>";
 		jobDetails += "<tr><td class='job_details_title'>ETA:</td><td>" + ((etaTimestamp) ? etaTimestamp : "-") + "</td></tr>";
@@ -1080,7 +1112,7 @@ ContigoMap.prototype = {
 					options: {content: content},
 					events: {
 						closeclick: function(infowindow) {
-							if (typeof onClose == "function") {
+                            if (_.isFunction(onClose)) {
 								onClose.call();
 							}
 						}
@@ -1227,19 +1259,15 @@ ContigoMap.prototype = {
 	drawPolygon : function(polygonZoneCollection) {
         var szPolygons = 0;
         var polygons = [];
-        if (polygonZoneCollection) {
+        if (_.isObject(polygonZoneCollection)) {
 			var polygonZones = polygonZoneCollection.polygonZones;
-            if (polygonZones) {
-            	szPolygons = polygonZones.length;
-                for (var i = 0; i < szPolygons; i++) {
-            		var polygonInfo =  polygonZones[i];
-                    var zoneName = polygonInfo.key;
-                    var vertices = [];
-                    for (var j = 0; j < polygonInfo.points.length; j++) {
-                    	var point = polygonInfo.points[j];
-                    	vertices.push([polygonInfo.points[j].lat, polygonInfo.points[j].lng]);
-                    }
-
+            if (_.isArray(polygonZones)) {
+                _.each(polygonZones, function(polygonZone) {
+                    var vertices = _.reduce(polygonZone.points, function(memo, point) {
+                        memo.push(_.values(point));
+                        return memo;
+                    }, []);
+                    
                     var polygon = {
                     	tag: TAG_GROUP.POLYGON_ZONE,
                 		options: {
@@ -1274,8 +1302,10 @@ ContigoMap.prototype = {
                 		callback: function() {}
                     };
 		            polygons.push(polygon);
-	            }
-
+                });
+                
+            	szPolygons = polygonZones.length;
+                
                 this.canvas.gmap3({polygon: {values: polygons}}, "autofit");
             }
         }
@@ -1348,28 +1378,21 @@ ContigoMap.prototype = {
     bestFit : function() {
         var $this = this;
         //  Create a new viewpoint bound
-        var bounds = new google.maps.LatLngBounds();
-        var shapeTypes = ["marker", "circle", "rectangle", "polygon"];
-        for (var i = 0; i < shapeTypes.length; i++) {
-        	this.canvas.gmap3({
-            	get: {
-                	name: shapeTypes[i],
+        var bounds = new google.maps.LatLngBounds();        
+        _.each(["marker", "circle", "rectangle", "polygon"], function(overlay) {
+            $this.canvas.gmap3({
+                get: {
+                	name: overlay,
 					all: true,
 					callback: function(shapes) {
 						$.each(shapes, function(j, shape) {
-							if (typeof shape.getPosition == "function") {
-                                // for marker or markerWithLabel
-								bounds = bounds.extend(shape.getPosition());
-							} else {
-								bounds = bounds.union(shape.getBounds());
-							}
+                            bounds = _.isFunction(shape.getPosition) ? bounds.extend(shape.getPosition()) : bounds.union(shape.getBounds());
 						});
                         $this.map.fitBounds(bounds); 
         			}
       			}
-    		});
-        }
-       
+            });
+        });
     },
     
     /**
@@ -1432,9 +1455,9 @@ ContigoMap.prototype = {
             control.id = options.id;
         }          
         if (options.children) {
-            for (i = 0; i < options.children.length; i++) {
-                control.appendChild(options.children[i]);
-            }
+            _.each(options.children, function(child) {
+                control.appendChild(child);
+            });
         }
 
         control.style.cursor = 'pointer';

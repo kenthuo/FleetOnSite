@@ -1011,5 +1011,7 @@ var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconIt
 
     map.sendPoints(poiCollection);
     
-
+$(window).on('resize', function(){
+        map.resize("100%", "100%");
+    });
 });

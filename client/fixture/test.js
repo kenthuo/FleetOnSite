@@ -2,7 +2,7 @@ $(document).ready(function() {
     var map = new ContigoMap();
     map.init();
     
-    
+    /*
     var locatePoint_786_1 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27700, lng: -123.11995}), eventType: "Locate", address: new Address({street: "380 Nelson St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 05:46:38PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "8", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
 	var locatePoint_786_2 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27715, lng: -123.12038}), eventType: "Low Battery", address: new Address({street: "1021 Homer St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B 0A3", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 06:28:06PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "12", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
 	var locatePoint_786_3 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27715, lng: -123.12038}), eventType: "Locate", address: new Address({street: "1021 Homer St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B 0A3", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 07:27:57PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "10", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
@@ -18,12 +18,13 @@ $(document).ready(function() {
 	var locatePoint_786_13 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27697, lng: -123.11990}), eventType: "Low Battery", address: new Address({street: "1021 Hamilton St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B 5T4", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/21/2012 05:33:59PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "20", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });
 	var locatePointsArray = [locatePoint_786_1, locatePoint_786_2, locatePoint_786_3, locatePoint_786_4, locatePoint_786_5, locatePoint_786_6, locatePoint_786_7, locatePoint_786_8, locatePoint_786_9, locatePoint_786_10, locatePoint_786_11, locatePoint_786_12, locatePoint_786_13];
 	var beaconItem = new ContigoBeaconItem({locatePoints: locatePointsArray, isPointsConnected: true, showInputOutputColor: false});
-	var landmarkArray = [];
+    var landmark_only = new ContigoLmkPoi({icon: new Icon({name: "LM00001", width: 16, height: 16}),label: "Office", coord: new Coordinate({lat: 49.277265, lng: -123.120191}),lmkAddress: "1008 Homer Street, Vancouver, BC, CANADA, V6B 2X1",content: "You are my sunshine.",category: "Company"});
+	var landmarkArray = [landmark_only];
 	var beaconPointsArray = {};
 	beaconPointsArray["786"] = beaconItem;
 	var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, measurementUnit: 'm', "zones":{"47":[{"type":1,"points":[{"lat":49.28061,"lng":-123.11966},{"lat":49.27818,"lng":-123.11337}],"name":"rs_dGeoFence_Library : rs_dGeoFence_Library_evt"}], "1229":[{"type":2,"points":[{"lat":49.2597801948,"lng":-122.878012314},{"lat":49.2424982841,"lng":-122.851612294}],"name":"1229 circular disallowed burnaby : Zone - disallowed"}]}, "polygonZones":[{"key":"1 Z_POLY_Frank : Lougheed Mall","points":[{"lat":49.25281,"lng":-122.89886},{"lat":49.24939,"lng":-122.90349},{"lat":49.24625,"lng":-122.89826},{"lat":49.24816,"lng":-122.8907},{"lat":49.25281,"lng":-122.89886}]},{"key":"1 Z_POLY_Frank : FM Parents","points":[{"lat":49.22468,"lng":-123.04151},{"lat":49.22378,"lng":-123.04391},{"lat":49.22243,"lng":-123.04366},{"lat":49.22176,"lng":-123.04237},{"lat":49.22176,"lng":-123.04057},{"lat":49.22221,"lng":-123.03885},{"lat":49.22327,"lng":-123.03885},{"lat":49.22468,"lng":-123.04151}]},{"key":"1 Z_POLY_Frank : HOME","points":[{"lat":49.24804,"lng":-122.83637},{"lat":49.24799,"lng":-122.83285},{"lat":49.24524,"lng":-122.83277},{"lat":49.24508,"lng":-122.83586},{"lat":49.24804,"lng":-122.83637}]}]
 	});
-    
+    */
 
 	
     /*
@@ -148,7 +149,7 @@ $(document).ready(function() {
     var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray});
     */
     
-    /*
+    
     var beaconPointsArray = {};
     var jobsArray = {};
     var job_1 = new ContigoJobPoi({id: "879", icon: new Icon({name: "job_yellow_deleted", width: 20, height: 20}),label: "dispatchdriver", coord: new Coordinate({lat: 37.40093, lng: -121.89535}),landmark: "", destination: "2030 Fortune Drive, San Jose, CA US", priority: "-1",status: "Acknowledged",sentTimestamp: "11/23/2012 04:06:22PM PST",ackTimestamp: "11/23/2012 04:07:47PM PST",etaTimestamp: "-",doneTimestamp: "-",deletedTimestamp: "11/23/2012 04:08:00PM PST",deletedBy: "by Driver",description: "2030 Fortune Drive, San Jose, CA, 95131, US",numberLabel: ""});
@@ -160,7 +161,7 @@ $(document).ready(function() {
     jobsArray["1422"] = jobs;
     var landmarkArray = [];
     var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
-	*/
+	
     
     /*
     var landmarkArray = [];
@@ -208,7 +209,7 @@ $(document).ready(function() {
 	var polygon2 = new PolygonZone(params2);
 
 	var polygonZoneCollection = [polygon0,polygon1,polygon2];
-	map.drawPolygonZones({polygonZones: polygonZoneCollection});
+	map.drawPolygon({polygonZones: polygonZoneCollection});
     */
     
     $(window).on('resize', function(){
