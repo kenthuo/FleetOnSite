@@ -232,8 +232,16 @@ function ContigoLmkPoi(params) {
  * 19) "guardianID": guardian ID
  * 20) "ioprt1Scenario": Input #1 Scenario
  * 21) "ioprt2Scenario": Input #2 Scenario
- * 22) "lineColor": line segment color for showing input status color of route log
- * 23) "dispatch": information for dispatch
+ * 22) "ioprt3Scenario": Input #3 Scenario
+ * 23) "ioprt4Scenario": Input #4 Scenario
+ * 24) "lineColor": line segment color for showing input status color of route log
+ * 25) "dispatch": information for dispatch
+ * 26) "postedSpeed": string value of posted speed if there is any. (e.g., Posted Speed: 50KPH)
+ * 27) "loginID": login ID for driver with iButton assigned
+ * 28) "driverName": name of driver with iButton assigned
+ * 29) "tripID" : trip ID of the trip in combined trip report
+ * 30) "vehicleStatus": the status of vehicle ("stop", "idle")
+ * 31) "temperature": temperature reading
  * 
  * A default Coordinate is assigned if none is specified.
  */
@@ -262,8 +270,16 @@ function ContigoBeaconPoi(params) {
 		this.guardianID = params.guardianID || "";
 		this.ioprt1Scenario = params.ioprt1Scenario || "";
 		this.ioprt2Scenario = params.ioprt2Scenario || "";
+		this.ioprt3Scenario = params.ioprt3Scenario || "";
+		this.ioprt4Scenario = params.ioprt4Scenario || "";
 		this.lineColor = params.lineColor || "";
 		this.dispatch = params.dispatch || null;
+		this.postedSpeed = params.postedSpeed || "";
+		this.loginID = params.loginID || "";
+		this.driverName = params.driverName || "";		
+		this.tripID = params.tripID || "";
+		this.vehicleStatus = params.vehicleStatus || "";
+		this.temperature = params.temperature || "";
 	}
 }
 

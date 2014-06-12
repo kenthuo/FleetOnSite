@@ -42,6 +42,71 @@ body {
 	box-shadow: 2px 2px 1px #555555;
 }
 
+.item_status_label {
+    position: relative;
+    top: 35px;
+}
+
+.item_status {
+    height: 55px;
+    position: relative;
+}
+
+.stop_status {
+    background-repeat: no-repeat;
+    background-image: url(../images/stop.png);
+}
+
+.idle_status {
+    background-repeat: no-repeat;
+    background-image: url(../images/idle.png);
+}
+
+.move_status {
+    background-repeat: no-repeat;
+    background-image: url(../images/move.png);
+}
+
+.move_to_north {
+	background-repeat: no-repeat;
+	background-image: url(../images/direction/north.png);
+}
+
+.move_to_south {
+    background-repeat: no-repeat;
+    background-image: url(../images/direction/south.png);
+}
+
+.move_to_east {
+    background-repeat: no-repeat;
+    background-image: url(../images/direction/east.png);
+}
+
+.move_to_west {
+    background-repeat: no-repeat;
+    background-image: url(../images/direction/west.png);
+}
+
+.move_to_northeast {
+    background-repeat: no-repeat;
+    background-image: url(../images/direction/northeast.png);
+}
+
+.move_to_northwest {
+    background-repeat: no-repeat;
+    background-image: url(../images/direction/northwest.png);
+}
+
+.move_to_southeast {
+    background-repeat: no-repeat;
+    background-image: url(../images/direction/southeast.png);
+}
+
+.move_to_southwest {
+    background-repeat: no-repeat;
+    background-image: url(../images/direction/southwest.png);
+}
+
 .marker_infowindow .event_time, .marker_infowindow .event_location {
 	padding: 3px 0 3px 0;
 }

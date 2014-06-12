@@ -1,0 +1,402 @@
+@CHARSET "UTF-8";
+body {
+    font-family: Verdana, Arial, Helvetica;
+    font-size: 10px;
+    color: black;
+    background-color: transparent;
+    margin: 2px;
+}
+iframe {
+    height: 0;
+    width: 0;
+    border: none;
+}
+.error {
+    font-size: 12px;
+    display: none;
+}
+#map, #header {
+    position: relative;
+}
+#map_controls {
+    padding-top: 5px;
+}
+#custom_controls {
+    clear: left;
+}
+#default_controls/*, #locates, #coc*/ {
+    margin: 0;
+}
+#termsDisclaimers, #googleEarthExport {
+    list-style: none;
+    margin: 0;
+    padding-bottom: 1px;
+}
+#termsDisclaimers li, #googleEarthExport li {
+    display: inline;
+}
+#termsDisclaimers, #map {
+    float: left;
+}
+#map {
+    clear: left;
+    border: solid 8px #d3d3d3;
+}
+#googleEarthExport {
+    text-align: right;
+    white-space: nowrap;
+}
+#map_controls dl dt, #map_controls dl dd {
+    text-align: center;
+}
+#centre_map dt,
+#centre_map_disabled dt,
+#best_fit dt,
+#clear_zone dt,
+#clear_zone_disabled dt,
+#centre_last dt,
+#auto_best_fit dt,
+#declutter dt,
+#declutter_mapview dt,
+#direction_arrows dt {
+    text-transform: uppercase;
+    font-size: 8px;
+}
+#declutter_beta, declutter_mapview_beta {
+    color: #778899; 
+    font-size: 5px;
+    text-transform: uppercase;
+}
+#centre_map dt, #centre_map_disabled dt, #best_fit dt, #clear_zone dt, #clear_zone_disabled dt, #auto_best_fit dt, 
+#centre_last dt, #declutter dt, #declutter_mapview dt, #direction_arrows dt, .default_controls_label {
+    font-weight: bold;
+}
+.default_controls_label {
+    padding-top: 5px;
+    width: 100px;
+    float: left;
+    display: inline;
+}
+/* Initially, hide all controls, and show whenever necessary */
+#googleEarthExport, #centre_map, #centre_map_disabled, #best_fit,
+#clear_zone, #clear_zone_disabled, #centre_last, #auto_best_fit, 
+#declutter, #declutter_mapview, #direction_arrows, #select_destination_label {
+    display: none;
+}
+
+/* terms/disclaimer */
+.terms_disclaimer {
+    color: #999999;
+    text-decoration: none;
+}
+.table_controls_label {
+    font-weight: bold;
+}
+.poi_rollover, .poi_infowindow {
+    width: 230px;	
+}
+.poi_rollover, .poi_infowindow_title {
+    font: bold 14px Helvetica, Arial, sans-serif;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	-o-text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.poi_rollover {
+	color: #0C82C0;
+}
+.poi_infowindow_title {
+    background-color: #999999;
+	padding: 2px;
+}
+.poi_infowindow .event_time, .poi_infowindow .event_location, .poi_infowindow .event_driver_info {
+	padding: 3px 0 3px 0;
+}
+.poi_infowindow .event_time p, .poi_infowindow .event_location p, .poi_infowindow .event_driver_info p {
+	margin: 0;
+	padding: 1px 0 0 0;
+	font: 12px sans-serif, Helvetica, Arial;
+}
+.poi_infowindow .landmark_info p {
+	margin: 0;
+	padding: 3px 0;
+}
+.poi_infowindow .job_description, .poi_infowindow .job_location {
+	padding: 2px 0 5px 0;
+}
+.poi_infowindow .job_details, .poi_infowindow .job_toolbar, .poi_infowindow .dispatch_toolbar {
+	margin: 2px 0 5px 0;
+}
+.address_toolbar {
+	margin: 5px 0 5px 0;
+}
+.poi_infowindow .dispatch_toolbar a img, .infoWindowImg {
+	text-decoration: none;
+	border: 0 none;
+	width: 103px;
+	height: 20px;	
+}
+.poi_infowindow .job_description_title, .poi_infowindow .job_location_title, .poi_infowindow .job_landmark {
+	font-weight: bold;
+}
+.poi_infowindow .job_details {
+	border-spacing: 0;
+	border-collapse: collapse;
+}
+.poi_infowindow .job_details tr {
+	line-height: 10px;
+}
+.poi_infowindow .job_details td {
+	vertical-align: top;
+}
+.poi_infowindow .job_details_title {
+	width: 30px;
+	height: 10px;
+}
+.polygon_drag_handle .handle {
+	background-position: center top;
+	background-repeat: no-repeat;
+	background-image: url(../img/drag_handle.gif);
+	width: 20px;
+	height: 20px;
+	margin: 0;
+	padding: 0;
+}
+.polygon_drag_handle .label {
+	white-space: nowrap;
+	background-color: #ffffff;
+	font-family: Verdana, Arial, Helvetica;
+	font-size: 10px;
+	font-weight: bold;
+	padding: 2px 2px 4px 2px;
+	border: solid 1px black;
+	box-shadow: 3px 3px 1px #555555;
+}
+
+
+.htmlPoi .poiImg {
+	margin: 0;
+	padding: 0;
+}
+
+.htmlPoi .poiImg_north {
+	background-repeat: no-repeat;
+	background-image: url(../img/direction/north.png);
+	width: 35px;
+	height: 35px;
+	line-height: 35px;
+	text-align: center;
+}
+
+.htmlPoi .poiImg_south {
+    background-repeat: no-repeat;
+    background-image: url(../img/direction/south.png);
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
+
+.htmlPoi .poiImg_east {
+    background-repeat: no-repeat;
+    background-image: url(../img/direction/east.png);
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
+
+.htmlPoi .poiImg_west {
+    background-repeat: no-repeat;
+    background-image: url(../img/direction/west.png);
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
+
+.htmlPoi .poiImg_northeast {
+    background-repeat: no-repeat;
+    background-image: url(../img/direction/northeast.png);
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
+
+.htmlPoi .poiImg_northwest {
+    background-repeat: no-repeat;
+    background-image: url(../img/direction/northwest.png);
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
+
+.htmlPoi .poiImg_southeast {
+    background-repeat: no-repeat;
+    background-image: url(../img/direction/southeast.png);
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
+
+.htmlPoi .poiImg_southwest {
+    background-repeat: no-repeat;
+    background-image: url(../img/direction/southwest.png);
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
+
+.htmlPoi .poiImg_stop {
+    background-repeat: no-repeat;
+    background-image: url(../img/stop.png);
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
+
+.htmlPoi .poiImg_idle {
+    background-repeat: no-repeat;
+    background-image: url(../img/idle.png);
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
+
+.htmlPoi .poiImg_move {
+    background-repeat: no-repeat;
+    background-image: url(../img/move.png);
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
+
+
+.htmlPoi .poiImg_direction_disabled {
+	background-image: url(../img/spacer.gif) !important;
+}
+
+.htmlPoi .direction img {
+	vertical-align: middle;
+}
+
+.htmlPoi .htmlLabel {
+	white-space: nowrap;
+	background-color: #ffffff;
+	font-family: sans-serif, Verdana, Arial, Helvetica;
+	font-size: 10px;
+	font-weight: bold;
+	padding: 1px 1px 2px 1px;
+	border: solid 1px black;
+	box-shadow: 2px 2px 1px #555555;
+	display: inline;
+}
+
+
+.address {
+    font-size: 10px;
+	width: 200px;
+}
+.address .street {
+	font-weight: bold;
+}
+.address .latlng {
+	font-size: 90%;
+}
+.address div {
+	margin: 0px 0 2px 0;
+}
+/* a hack to fix alignment for both viewoptions and traffic controls as resizing window */
+.viewOptionsWrapper, .traffic {
+	top: 0 !important;
+	right: 0 !important;
+}
+/* Custom jquery UI buttons */
+.job_button.ui-state-default, .job_button.ui-widget-content .job_button.ui-state-default, .job_button.ui-widget-header .job_button.ui-state-default { border: 1px solid #407998; background: #004c75 50% 50% repeat-x; font-weight: normal; color: #ffffff; }
+.job_button.ui-state-default a, .job_button.ui-state-default a:link, .job_button.ui-state-default a:visited { color: #ffffff; text-decoration: none; }
+.job_button.ui-state-hover, .job_button.ui-widget-content .job_button.ui-state-hover, .job_button.ui-widget-header .job_button.ui-state-hover, .job_button.ui-state-focus, .job_button.ui-widget-content .job_button.ui-state-focus, .job_button.ui-widget-header .job_button.ui-state-focus { border: 1px solid #407998; background: #407998 50% 50% repeat-x; font-weight: normal; color: #ffffff; }
+.job_button.ui-state-hover a, .job_button.ui-state-hover a:hover { color: #ffffff; text-decoration: none; }
+.job_button.ui-state-active, .job_button.ui-widget-content .job_button.ui-state-active, .job_button.ui-widget-header .job_button.ui-state-active { border: 1px solid #004c75; background: #407998 50% 50% repeat-x; font-weight: normal; color: #ffffff; }
+.job_button.ui-state-active a, .job_button.ui-state-active a:link, .job_button.ui-state-active a:visited { color: #ffffff; text-decoration: none; }
+.job_button.ui-widget :active { outline: none; }
+
+
+/* landmark input form */
+.form_input {  font-family: Verdana, Arial, Helvetica; font-size: 10px; font-style: normal; color: black}
+
+table.landmark_extra_info {
+	margin-top: 3px;
+	padding-bottom: 5px;
+	/*background-color: #ebebeb;*/
+}
+
+.generic_labels {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	font-weight: bold;
+	color: #000000;
+	padding-top: 5px;
+	padding-right: 5px;
+	padding-bottom: 5px;
+	padding-left: 10px;
+}
+
+.generic_body_text {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	font-weight: normal;
+	color: #000000;
+	margin: 0px;
+	padding-top: 5px;
+	padding-right: 5px;
+	padding-bottom: 5px;
+	padding-left: 10px;
+}
+
+.landmark_input_width {
+    width: 98%;
+    _width: 98%; /*IE hacks */
+}
+
+.mrfield { font-face: Tahoma, Arial, Helvetica; color:red; }
+
+.fine_print {
+    font-size: 8px; 
+}
+
+.table_heading_text
+{ 
+	font-family: Verdana, Arial, Helvetica; 
+	font-size: 10px; 
+	font-weight: bold; 
+	color: black
+}
+
+.error_header {
+    color: #ff0000;
+    font-weight: bold;
+}
+
+.confirm_header {
+    color: #076205;
+    font-weight: bold;	
+}
+
+.generic_labels_no_indent {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	font-weight: bold;
+	color: #000000;
+	padding-top: 5px;
+	padding-right: 5px;
+	padding-bottom: 5px;
+	padding-left: 0px;
+}
+

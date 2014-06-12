@@ -156,17 +156,17 @@ function MoreControl(contigoMap) {
                                             var locationTbody = $("<tbody></tbody>");
                                             _.each(markers, function(marker, j) {
                                                 var dateTime = landmark = address = "";
-                                                var html = $.parseHTML(marker.data)[0];
-                                                landmark = $(html).find(".landmark").html();
-                                                dateTime = $(html).find(".date_time").html().match(/^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}[A|P]M [a-zA-Z]*)(.*\(GPS Age: |)([a-zA-Z0-9 ]+|)(\)|)/); // "08/21/2012 02:17:24PM EDT " || 08/20/2012 08:05:01PM EDT <br>(GPS Age: 0h 05m 01s)
+                                                var html = $(marker.data);
+                                                landmark = html.find(".landmark").html();
+                                                dateTime = html.find(".date_time").html().match(/^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}[A|P]M [a-zA-Z]*)(.*\(GPS Age: |)([a-zA-Z0-9 ]+|)(\)|)/); // "08/21/2012 02:17:24PM EDT " || 08/20/2012 08:05:01PM EDT <br>(GPS Age: 0h 05m 01s)
                                                 
                                                 address = _.reduce([
-                                                    $(html).find(".street_address").html(), 
-                                                    $(html).find(".city").html(), 
-                                                    $(html).find(".county").html(), 
-                                                    $(html).find(".state_province").html(), 
-                                                    $(html).find(".country").html(), 
-                                                    $(html).find(".postal_code").html()], function(memo, part) { return memo ? (memo + (part ? ", " + part : "")) : part;}, "");
+                                                    html.find(".street_address").html(), 
+                                                    html.find(".city").html(), 
+                                                    html.find(".county").html(), 
+                                                    html.find(".state_province").html(), 
+                                                    html.find(".country").html(), 
+                                                    html.find(".postal_code").html()], function(memo, part) { return memo ? (memo + (part ? ", " + part : "")) : part;}, "");
 
                                                 address = address ? ("<a id='" + marker.id + "'>" + address + "</a>") : "";
                                                 address = landmark ? ("<b>" + landmark + "</b>" + address) : address;
@@ -177,9 +177,9 @@ function MoreControl(contigoMap) {
                                                     address,
                                                     marker.object.getPosition().lat().toFixed(5),
                                                     marker.object.getPosition().lng().toFixed(5),
-                                                    $(html).find(".event_type").html(), 
-                                                    $(html).find(".direction").html(), 
-                                                    $(html).find(".speed").html(), 
+                                                    html.find(".event_type").html(), 
+                                                    html.find(".direction").html(), 
+                                                    html.find(".speed").html(), 
                                                     dateTime[3]], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
                                                 $(locationTbody).on("click", "#" + marker.id, function() {
                                                     // due to 'full' property is true, the real marker object is stored in marker.object property
@@ -202,9 +202,9 @@ function MoreControl(contigoMap) {
                                             var landmarkThead = $("<thead></thead>").append("<tr>" + _.reduce(["", "Name", "Category", "Address", "Latitude", "Longitude", "Notes"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
                                             var landmarkTbody = $("<tbody></tbody>");
                                             _.each(landmarks, function(landmark, j) {
-                                                var html = $.parseHTML(landmark.data)[0], address = "";
+                                                var html = $(landmark.data), address = "";
                                                 landmarkInfo = landmark.object.title.match(/^(.*)\((.*)\)$/); // "Office (Company)"
-                                                address = $(html).find(".landmark_address").html();
+                                                address = html.find(".landmark_address").html();
                                                 address = address ? ("<a id='" + landmark.id + "'>" + address + "</a>") : "";
                                                 landmarkTbody.append("<tr>" + _.reduce([
                                                     "[" + ++j + "]", 
@@ -213,7 +213,7 @@ function MoreControl(contigoMap) {
                                                     address,
                                                     landmark.object.getPosition().lat().toFixed(5),
                                                     landmark.object.getPosition().lng().toFixed(5),
-                                                    $(html).find(".landmark_content").html()], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
+                                                    html.find(".landmark_content").html()], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
                                                 $(landmarkTbody).on("click", "#" + landmark.id, function() {
                                                     // due to 'full' property is true, the real marker object is stored in marker.object property
                                                     google.maps.event.trigger(landmark.object, 'click');
@@ -235,18 +235,18 @@ function MoreControl(contigoMap) {
                                             var jobThead = $("<thead></thead>").append("<tr>" + _.reduce(["Priority", "Status", "Destination", "Latitude", "Longitude", "Description"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
                                             var jobTbody = $("<tbody></tbody>");
                                             _.each(jobs, function(job) {
-                                                var html = $.parseHTML(job.data)[0], destination = "";
-                                                priority = $(html).find(".job_priority").html();
-                                                status = $(html).find(".job_status").html();
-                                                destination = $(html).find(".job_destination").html();
+                                                var html = $(job.data), destination = "";
+                                                priority = html.find(".job_priority").html();
+                                                status = html.find(".job_status").html();
+                                                destination = html.find(".job_destination").html();
                                                 destination = destination ? ("<a id='" + job.id + "'>" + destination + "</a>") : "";
                                                 jobTbody.append("<tr>" + _.reduce([
-                                                    $(html).find(".job_priority").html(), 
-                                                    $(html).find(".job_status").html(), 
+                                                    html.find(".job_priority").html(), 
+                                                    html.find(".job_status").html(), 
                                                     destination,
                                                     job.object.getPosition().lat().toFixed(5),
                                                     job.object.getPosition().lng().toFixed(5),
-                                                    $(html).find(".job_description_content").html()], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
+                                                    html.find(".job_description_content").html()], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
                                                 $(jobTbody).on("click", "#" + job.id, function() {
                                                     // due to 'full' property is true, the real marker object is stored in marker.object property
                                                     google.maps.event.trigger(job.object, 'click');
@@ -312,8 +312,9 @@ function MoreControl(contigoMap) {
     }
 }
 
-function ContigoMap(mapId) {
+function ContigoMap(mapId, mapType) {
     this.mapId = mapId ? mapId : 'map'; // the identity of the DOM element to hold the map
+    this.mapType = mapType ? mapType : '';
     this.map = null; // the google map object
     this.canvas = null; // the canvas object of a map
     this.contextMenu = null; // the context menu of a map
@@ -321,12 +322,12 @@ function ContigoMap(mapId) {
     this.isMetric = false; // to use metric system to show information on the map or not
     this.currentLocateFilterMode = LOCATE_MODE.ALL;
     this.currentCocMode = COC_MODE.ALL;
-    this.mostRecentLocateCoord = null;
+    this.mostRecentLocate = {latLng: null, timestamp: -1};
     this.isAutoCenteringActive = false;
     this.isAutoBestFitActive = false;
     this.isItemStatusActive = false;
     this.isTabularDataActive = false;
-    this.geocoder = new google.maps.Geocoder();
+    this.geocoder = new google.maps.Geocoder();    
     this.withMarkerLabel = true; // with lable for markers
     this.poiCollection = null;
     this.controls = [];
@@ -401,14 +402,14 @@ ContigoMap.prototype = {
                             // on clicking, draw a pre-defined circle with 
                             // the clicking point as the center, and 50 meters as radius
                             click: function(sender, event, context) {
-                                $this.reset(false);
+                                $this.clearMap(false);
                                 $this.recenter(event.latLng);
                                 $this.drawCircle(event.latLng.lat(), event.latLng.lng(), 50);
                             }                        
                         }
                     }
                 });
-                $this.reset(false);
+                $this.clearMap(false);
                 $this.contextMenu.close();
             });
         this.contextMenu.add("Draw Rectangle", "drawRectangle", 
@@ -424,14 +425,14 @@ ContigoMap.prototype = {
                             	var spherical = google.maps.geometry.spherical;
                             	var northernWest = spherical.computeOffset(center, 50, -45);
 								var southernEast = spherical.computeOffset(center, 50, 135);
-                                $this.reset(false);
+                                $this.clearMap(false);
                                 $this.recenter(center);
                                 $this.drawRectangle(southernEast.lat(), southernEast.lng(), northernWest.lat(), northernWest.lng());
                             }                        
                         }
                     }
                 });
-                $this.reset(false);
+                $this.clearMap(false);
                 $this.contextMenu.close();
             });
         this.contextMenu.add("Draw Polygon", "drawPolygon separator", 
@@ -448,14 +449,14 @@ ContigoMap.prototype = {
                                 var pointA = spherical.computeOffset(center, 50, 0);
                                 var pointB = spherical.computeOffset(center, 50, 120);
                                 var pointC = spherical.computeOffset(center, 50, -120);
-                                $this.reset(false);
+                                $this.clearMap(false);
                                 $this.recenter(center);
                                 $this.drawPolygon({polygonZones: [{key: "key", points: [{lat: pointA.lat(), lng: pointA.lng()}, {lat: pointB.lat(), lng: pointB.lng()}, {lat: pointC.lat(), lng: pointC.lng()}]}]});
                             }                        
                         }
                     }
                 });
-                $this.reset(false);
+                $this.clearMap(false);
                 $this.contextMenu.close();
             });        
         this.contextMenu.add("Show All Locates", "showAllLocate", 
@@ -475,7 +476,7 @@ ContigoMap.prototype = {
             });             
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function() {
-                $this.reset(true);
+                $this.clearMap(true);
                 $this.contextMenu.close();
             });
 		this.contextMenu.add("Zoom in", "zoomIn", 
@@ -568,10 +569,18 @@ ContigoMap.prototype = {
      *                      containing the data for the points to be shown on 
      *                      the map.
      */    
-    sendPoints: function(poiCollection) {
+    sendPoints: function(poiCollection, isRefreshMap) {
         this.refreshMap(poiCollection);
         // Always store the latest copy
     	this.poiCollection = poiCollection;
+        
+        if ((isRefreshMap || !this.poiCollection) || this.isAutoBestFitActive) {        
+        	this.bestFit();
+        }
+        
+        if (this.isAutoCenteringActive && this.mostRecentLocate) {
+        	this.recenter(this.mostRecentLocate.latLng);
+        }
     },
     
 	/**
@@ -592,7 +601,8 @@ ContigoMap.prototype = {
             this.buildJobMarkers(jobCollection, this.isMetric).markers);
 
 	    var mapObjects = {};
-        this.reset(false);
+        this.clearMap(false);
+        this.resetMostRecentLocate();
 	    
 	    if (mapMarkers.length > 0) {
 	    	mapObjects["marker"] = {
@@ -640,7 +650,7 @@ ContigoMap.prototype = {
 	    }
 	    
         this.canvas.gmap3(mapObjects);
-        this.bestFit();
+        //this.bestFit();
     },
     
     /**
@@ -696,6 +706,9 @@ ContigoMap.prototype = {
 	            var lineColor = point.lineColor;
 	            var numberLabel = point.numberLabel;
 				var dispatch = point.dispatch;
+                var tripID = point.tripID;
+				var vehicleStatus = point.vehicleStatus;
+				var temperature = point.temperature;
 
 	            if (label) {
 	            	var infoContent = $this.buildLocationInfoWindowContents(
@@ -704,7 +717,15 @@ ContigoMap.prototype = {
 		                            status, userNote, driverID, driverStatus, beaconID,
 		                            guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, 
 		                            dispatch, isMetric);
+                    var labelInfo = $this.generateLabelInfoByMapType(label, $this.mapType, szLocatePoints, i, speed, direction, vehicleStatus);                                        
                     var marker = null;
+                                    
+                    if (i == (szLocatePoints - 1)) {
+		            	$this.setMostRecentLocate(point);
+		            }
+
+                    
+
                     if ($this.withMarkerLabel) {
                         marker = {
                             id: TAG_GROUP.LOCATION + "_" + i,
@@ -717,10 +738,13 @@ ContigoMap.prototype = {
                                 	url: $this.constructMarkerIconName(icon, numberLabel),
                                 	anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2)),
                                 },
-                                labelAnchor: new google.maps.Point(10, -2),
-                                labelClass: "labels",
+                                //labelAnchor: new google.maps.Point(10, -2),
+                                //labelAnchor: new google.maps.Point(18, 18),
+                                labelAnchor: labelInfo.anchor,
+                                //labelClass: "labels",
+                                labelClass: labelInfo.clazz,
                                 labelStyle: {opacity: 0.75},
-                                labelContent: label}};
+                                labelContent: labelInfo.content}};
                     } else {
                         marker = {
                             id: TAG_GROUP.LOCATION + "_" + i,
@@ -736,6 +760,7 @@ ContigoMap.prototype = {
                             }
                         };                    
                     }
+
 		            markers.push(marker);
 	            }
                 
@@ -778,6 +803,68 @@ ContigoMap.prototype = {
 	    }); // _.each(beaconItems, function(beacon)
 	    return new ContigoMarkers(markers, cocs, routes);
 	},
+    
+    /**
+     * Generate the label information of a marker based on the map type and other criteria.
+     *
+     * @param label
+     * @param mapType
+     * @param szLocatePoints
+     * @param indexOfMarker
+     * @param speed
+     * @param direction
+     * @param itemStatus
+     */
+    generateLabelInfoByMapType : function(label, mapType, szLocatePoints, indexOfMarker, speed, direction, itemStatus) {
+        var anchor = clazz = content = title = null;
+        if (mapType == 'cp_fleet' && indexOfMarker == szLocatePoints - 1) {
+            anchor = new google.maps.Point(18, 18);
+            clazz = "";
+            switch (itemStatus) {
+            case "stop":
+                content = $("<div class='item_status stop_status'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+            case "idle":
+                content = $("<div class='item_status idle_status'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+            case "move":
+				if (!_.isEmpty(speed)) {
+					// for the case of an item with speed and direction
+					if (!_.isEmpty(direction)) {
+						switch (direction) {
+                        case "E":								
+                            content = $("<div class='item_status move_to_east'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                        case "W":
+                            content = $("<div class='item_status move_to_west'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                        case "S":
+                            content = $("<div class='item_status move_to_south'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                        case "N":
+                            content = $("<div class='item_status move_to_north'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                        case "NE":
+                            content = $("<div class='item_status move_to_northeast'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                        case "NW":
+                            content = $("<div class='item_status move_to_northwest'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                        case "SE":
+                            content = $("<div class='item_status move_to_southeast'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                        case "SW":
+                            content = $("<div class='item_status move_to_southwest'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                        default:
+                            content = $("<div class='item_status'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+						}				
+					} else {
+						// for the case of an item with speed but not direction
+						content = $("<div class='item_status move_status'><div class='labels item_status_label'>" + label + "</div></div>")[0];		
+					}			
+				} else {
+					content = $("<div class='item_status'><div class='labels item_status_label'>" + label + "</div></div>")[0];
+				}
+                break;
+            }
+        } else {
+            anchor = new google.maps.Point(10, -2);
+            clazz = "labels";
+            content = label;
+        }
+        return {anchor: anchor, clazz: clazz, content: content};
+    },
     
 	/**
 	 * Get icon name for marker 
@@ -1328,13 +1415,21 @@ ContigoMap.prototype = {
 	 * Clear all of objects on the map, and empty the poi collection.
 	 */
 	reset: function(backToDefault) {
-		//this.poiCollection = {};
+		this.poiCollection = {};
+        this.mostRecentLocate = null;
+		clearMap(backToDefault);
+	},
+    
+	/**
+	 * Clear all of objects on the map.
+	 */
+	clearMap: function(backToDefault) {
 		this.clear({name: ["marker", "polyline", "circle", "rectangle", "polygon"]});
 		if (backToDefault) {
 			this.map.setCenter(DEFAULT.CENTER_COORDINATE);
 			this.map.setZoom(DEFAULT.ZOOM_LEVEL);
 		}
-	},
+	},    
     
     /**
      * Clear objects in the groups on the map based on id, name, or tag in the groups.
@@ -1394,6 +1489,32 @@ ContigoMap.prototype = {
             });
         });
     },
+    
+    /**
+	 * Based on the beacon locate point passed it, this method determines
+	 * whether it is the most recent locate point of all locate points
+	 * currently displayed on the map.
+	 *
+	 * @param locatePoint  The ContigoBeaconPoi locate point object to
+	 *                     be considered.
+	 */
+	setMostRecentLocate : function(locatePoint) {  
+		var timestamp = Util.parseTimestampString(locatePoint.timestamp);
+		
+		if (timestamp > this.mostRecentLocate.timestamp) {        
+			this.mostRecentLocate.timestamp = timestamp;
+			this.mostRecentLocate.latLng = new google.maps.LatLng(locatePoint.coord.lat, locatePoint.coord.lng);
+		}
+	},
+	
+	/**
+	 * Reset the mostRecentLocate variable to the default value.
+	 *
+	 */
+	resetMostRecentLocate : function() {
+        this.mostRecentLocate.latLng = null;
+        this.mostRecentLocate.timestamp = -1;
+	},
     
     /**
      * Set withMarkerLabel property.

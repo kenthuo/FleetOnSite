@@ -102,9 +102,71 @@ function Util() {
         var timestamp = new Date(date.substring(6, 10), ((date.substring(0, 2) * 1) - 1), date.substring(3, 5), hh, mm, ss).getTime() / 1000;
         return timestamp;
     }
+    
+    /**
+	 * Parses a timestamp string and returns the millisecond representation of
+	 * it.
+	 *
+	 * @param timestamp  The timestamp string  (e.g. 12/13/2007 10:59:56AM PST).
+	 *
+	 * @return Returns the millisecond representation of the timestamp.
+	 */
+	function parseTimestampString(timestamp) {  
+		var dateStr = timestamp.substring(0, timestamp.length - 4);
+		var timeZone = timestamp.substring(timestamp.length - 3);
+	  
+		// convert the time portion to 24h format
+		var dateArray = dateStr.split(" ");
+		var datePortion = dateArray[0];
+		var timePortion = dateArray[1];
+	  
+		var timePortionArray = timePortion.split(":");
+		var hour = timePortionArray[0] * 1;
+		var minute = timePortionArray[1];
+		var seconds = timePortionArray[2].substring(0, 2);
+		var amPm = timePortionArray[2].substring(2).toLowerCase();
+	  
+		if (amPm == "pm") {
+			hour += 12;
+		}
+	  
+		var revampedTimePortion = hour + ":" + minute + ":" + seconds;
+	    
+		var revampedTimeZone = null;
+	  
+		if (timeZone == "PST") {
+			revampedTimeZone = "UTC-0800";    
+		} else if (timeZone == "PDT" || timeZone == "MST") {
+			revampedTimeZone = "UTC-0700";
+	    } else if (timeZone == "MDT" || timeZone == "CST") {
+	    	revampedTimeZone = "UTC-0600";    
+	    } else if (timeZone == "CDT" || timeZone == "EST") {
+	    	revampedTimeZone = "UTC-0500";    
+	    } else if (timeZone == "EDT" || timeZone == "AST") {    
+	    	revampedTimeZone == "UTC-0400";
+	    } else if (timeZone == "ADT") {    
+	    	revampedTimeZone == "UTC-0300";    
+	    } else if (timeZone == "NST") {    
+	    	revampedTimeZone = "UTC-0330";    
+	    } else if (timeZone == "NDT") {    
+	    	revampedTimeZone = "UTC-0230";    
+	    } else {
+	    	// do nothing    
+	    }
+	  
+		var revampedTimestamp = datePortion + " " + revampedTimePortion;
+	  
+		if (revampedTimeZone != null) {
+			revampedTimestamp += " " + revampedTimeZone;
+		}
+
+		return Date.parse(revampedTimestamp);	  
+	}
+    
 	// exports
 	Util.isMobile = isMobile;
     Util.toUTC = toUTC;
+    Util.parseTimestampString = parseTimestampString;
 })();
 
 // extend polygon of Gmap V3 with getBounds method

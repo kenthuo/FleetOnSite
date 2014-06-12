@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    var map = new ContigoMap();
+    var map = new ContigoMap('map', 'cp_fleet');
     map.init();
     
     var beaconPointsArray = {};
@@ -80,7 +80,7 @@ $(document).ready(function() {
     var locatePointsArray_2021 = [locatePoint_2021_1, locatePoint_2021_2];
     var beaconItem_2021 = new ContigoBeaconItem({locatePoints: locatePointsArray_2021, isPointsConnected: true});
     beaconPointsArray["2021"] = beaconItem_2021;
-    var locatePoint_2022_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00413", width: 16, height: 16}), label: "011892000347952-Matt", coord: new Coordinate({lat: 49.25353, lng: -123.07443}), eventType: "Locate", address: new Address({street: "1447 E 19th Ave", city: "Vancouver", county: "Greater Vancouver", state: "BC", postalCode: "V5N", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "12/04/2013 11:46:12AM PST ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "2022", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "", temperature:  "" });
+    var locatePoint_2022_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00413", width: 16, height: 16}), label: "011892000347952-Matt", coord: new Coordinate({lat: 49.25353, lng: -123.07443}), eventType: "Locate", address: new Address({street: "1447 E 19th Ave", city: "Vancouver", county: "Greater Vancouver", state: "BC", postalCode: "V5N", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "12/04/2013 11:46:12AM PST ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "2022", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "idle", temperature:  "" });
 
     var locatePointsArray_2022 = [locatePoint_2022_1];
     var beaconItem_2022 = new ContigoBeaconItem({locatePoints: locatePointsArray_2022, isPointsConnected: true});
@@ -88,7 +88,7 @@ $(document).ready(function() {
 
     var landmarkArray = [];
     var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
-    map.sendPoints(poiCollection);
+    map.sendPoints(poiCollection, true);
 
     
     $(window).on('resize', function(){
