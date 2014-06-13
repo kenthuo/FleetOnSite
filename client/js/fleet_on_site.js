@@ -111,7 +111,7 @@ function MoreControl(contigoMap) {
         highlight: true,
         events: {
             click: function() {
-                contigoMap.isItemStatusActive = contigoMap.idOptionChecked(this);
+                contigoMap.enableItemStatus(contigoMap.idOptionChecked(this));
             }       
         }
     });
@@ -325,10 +325,9 @@ function ContigoMap(mapId, mapType) {
     this.mostRecentLocate = {latLng: null, timestamp: -1};
     this.isAutoCenteringActive = false;
     this.isAutoBestFitActive = false;
-    this.isItemStatusActive = false;
+    this.isItemStatusActive = true;
     this.isTabularDataActive = false;
     this.geocoder = new google.maps.Geocoder();    
-    this.withMarkerLabel = true; // with lable for markers
     this.poiCollection = null;
     this.controls = [];
 }
@@ -717,16 +716,14 @@ ContigoMap.prototype = {
 		                            status, userNote, driverID, driverStatus, beaconID,
 		                            guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, 
 		                            dispatch, isMetric);
-                    var labelInfo = $this.generateLabelInfoByMapType(label, $this.mapType, szLocatePoints, i, speed, direction, vehicleStatus);                                        
+                    var labelInfo = $this.generateLabelInfoByMapType(label, $this.mapType, isPointsConnected, szLocatePoints, i, speed, direction, vehicleStatus);                                        
                     var marker = null;
                                     
                     if (i == (szLocatePoints - 1)) {
 		            	$this.setMostRecentLocate(point);
 		            }
 
-                    
-
-                    if ($this.withMarkerLabel) {
+                    if (!_.isEmpty(labelInfo)) {
                         marker = {
                             id: TAG_GROUP.LOCATION + "_" + i,
                             tag: [label, TAG_GROUP.LOCATION],
@@ -738,12 +735,9 @@ ContigoMap.prototype = {
                                 	url: $this.constructMarkerIconName(icon, numberLabel),
                                 	anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2)),
                                 },
-                                //labelAnchor: new google.maps.Point(10, -2),
-                                //labelAnchor: new google.maps.Point(18, 18),
                                 labelAnchor: labelInfo.anchor,
-                                //labelClass: "labels",
                                 labelClass: labelInfo.clazz,
-                                labelStyle: {opacity: 0.75},
+                                //labelStyle: {opacity: 0.75},
                                 labelContent: labelInfo.content}};
                     } else {
                         marker = {
@@ -815,49 +809,51 @@ ContigoMap.prototype = {
      * @param direction
      * @param itemStatus
      */
-    generateLabelInfoByMapType : function(label, mapType, szLocatePoints, indexOfMarker, speed, direction, itemStatus) {
-        var anchor = clazz = content = title = null;
+    generateLabelInfoByMapType : function(label, mapType, isPointsConnected, szLocatePoints, indexOfMarker, speed, direction, itemStatus) {
+        var anchor = clazz = content = title = statusClass = '';
         if (mapType == 'cp_fleet' && indexOfMarker == szLocatePoints - 1) {
             anchor = new google.maps.Point(18, 18);
             clazz = "";
             switch (itemStatus) {
             case "stop":
-                content = $("<div class='item_status stop_status'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                statusClass = 'stop_status'; break;
             case "idle":
-                content = $("<div class='item_status idle_status'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                statusClass = 'idle_status'; break;
             case "move":
 				if (!_.isEmpty(speed)) {
 					// for the case of an item with speed and direction
 					if (!_.isEmpty(direction)) {
 						switch (direction) {
-                        case "E":								
-                            content = $("<div class='item_status move_to_east'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
-                        case "W":
-                            content = $("<div class='item_status move_to_west'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                        case "E":
+                            statusClass = 'move_to_east'; break;
+                        case "W":                            
+                            statusClass = 'move_to_west'; break;
                         case "S":
-                            content = $("<div class='item_status move_to_south'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
-                        case "N":
-                            content = $("<div class='item_status move_to_north'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
-                        case "NE":
-                            content = $("<div class='item_status move_to_northeast'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
-                        case "NW":
-                            content = $("<div class='item_status move_to_northwest'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
-                        case "SE":
-                            content = $("<div class='item_status move_to_southeast'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
-                        case "SW":
-                            content = $("<div class='item_status move_to_southwest'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                            statusClass = 'move_to_south'; break;
+                        case "N":                            
+                            statusClass = 'move_to_north'; break;
+                        case "NE":                            
+                            statusClass = 'move_to_northeast'; break;
+                        case "NW":                            
+                            statusClass = 'move_to_northwest'; break;
+                        case "SE":                            
+                            statusClass = 'move_to_southeast'; break;
+                        case "SW":                           
+                            statusClass = 'move_to_southwest'; break;
                         default:
-                            content = $("<div class='item_status'><div class='labels item_status_label'>" + label + "</div></div>")[0]; break;
+                            statusClass = ''; break;
 						}				
 					} else {
 						// for the case of an item with speed but not direction
-						content = $("<div class='item_status move_status'><div class='labels item_status_label'>" + label + "</div></div>")[0];		
+                        statusClass = 'move_status';                        
 					}			
 				} else {
-					content = $("<div class='item_status'><div class='labels item_status_label'>" + label + "</div></div>")[0];
+                    statusClass = '';
 				}
-                break;
+                break;                
             }
+            var compiled = _.template("<div class='item_status <%= statusClass %>'><div class='labels item_status_label'><%= label %></div></div>");
+            content = $(compiled({label: label, statusClass: statusClass}))[0]; // get DOM object
         } else {
             anchor = new google.maps.Point(10, -2);
             clazz = "labels";
@@ -1467,6 +1463,15 @@ ContigoMap.prototype = {
         });
 	},
     
+	/**
+	 * Toggle item status feature of markers on the map.
+	 * 
+	 * @param boolean enabled true to show the icon of item status for markers on the map, vice versa.
+	 */
+	enableItemStatus : function(enabled) {
+		this.isItemStatusActive = enabled;
+	},    
+    
     /**
      * Fit all of markers, rectangles, circles, polygons to be visible on the map.
      */
@@ -1514,16 +1519,7 @@ ContigoMap.prototype = {
 	resetMostRecentLocate : function() {
         this.mostRecentLocate.latLng = null;
         this.mostRecentLocate.timestamp = -1;
-	},
-    
-    /**
-     * Set withMarkerLabel property.
-     *
-     * @param withMarkerLabel
-     */
-    setWithMarkerLabel : function(withMarkerLabel) {
-        this.withMarkerLabel = withMarkerLabel;
-    },
+	},    
     
     /**
      * Create a DOM element to represent the custom control.
