@@ -109,6 +109,7 @@ function MoreControl(contigoMap) {
         content: 'Display Item Status',
         classes: 'select_checkbox_option',
         highlight: true,
+        checked: true,
         events: {
             click: function() {
                 contigoMap.enableItemStatus(contigoMap.idOptionChecked(this));
@@ -736,7 +737,7 @@ ContigoMap.prototype = {
                                 	anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2)),
                                 },
                                 labelAnchor: labelInfo.anchor,
-                                labelClass: labelInfo.clazz,
+                                labelClass: labelInfo.classes,
                                 //labelStyle: {opacity: 0.75},
                                 labelContent: labelInfo.content}};
                     } else {
@@ -810,10 +811,10 @@ ContigoMap.prototype = {
      * @param itemStatus
      */
     generateLabelInfoByMapType : function(label, mapType, isPointsConnected, szLocatePoints, indexOfMarker, speed, direction, itemStatus) {
-        var anchor = clazz = content = title = statusClass = '';
+        var anchor = classes = content = title = statusClass = '';
         if (mapType == 'cp_fleet' && indexOfMarker == szLocatePoints - 1) {
             anchor = new google.maps.Point(18, 18);
-            clazz = "";
+            classes = "";
             switch (itemStatus) {
             case "stop":
                 statusClass = 'stop_status'; break;
@@ -856,10 +857,10 @@ ContigoMap.prototype = {
             content = $(compiled({label: label, statusClass: statusClass}))[0]; // get DOM object
         } else {
             anchor = new google.maps.Point(10, -2);
-            clazz = "labels";
+            classes = "labels";
             content = label;
         }
-        return {anchor: anchor, clazz: clazz, content: content};
+        return {anchor: anchor, classes: classes, content: content};
     },
     
 	/**
@@ -1527,73 +1528,51 @@ ContigoMap.prototype = {
      * @param options an object holds related properties of the control.
      */
     createControl: function(options) {
-        var control = document.createElement('div');
-        var highlightElm = control;
+        var control = $("<div style='cursor: pointer;'></div>");
+        var highlightElm = control[0];
         switch (options.type) {
         case "select":
-            var innerContainer = document.createElement('div');
-            innerContainer.className = "select_dropdown";
-            if (options.content) {
-                innerContainer.innerHTML = options.content;
-            }
-            var arrow = document.createElement('img');
-            arrow.src = IMG_HOST_PATH + "arrow-down.png";
-            arrow.className = "select_arrow";
-            innerContainer.appendChild(arrow);
-            control.appendChild(innerContainer);
-            highlightElm = innerContainer;
+            var innerContainer = $("<div class='select_dropdown'>" + (options.content ? options.content : "") + "<img class='select_arrow' src='" + IMG_HOST_PATH + "arrow-down.png" + "' /></div>");
+            control.append(innerContainer);
+            highlightElm = innerContainer[0];
             break;
         case "checkbox":
-            var span = document.createElement('span');
-            span.className = 'uncheckbox_span';
-            span.role = 'checkbox';
-            var checkbox = document.createElement('div');
-            checkbox.className = 'uncheckbox_image_container';
-            //checkbox.id = "uncheckbox_image_container";
-            var image = document.createElement('img');
-            image.className = "uncheckbox_image";
-            image.src = IMG_HOST_PATH + "imgs8.png";
-            var label = document.createElement('label');
-            label.className = 'uncheckbox_label';
-            label.innerHTML = options.content;
-            checkbox.appendChild(image);
-            span.appendChild(checkbox);
-            control.appendChild(span);
-            control.appendChild(label);
+            var checked = options.checked  ? " show" : ""; // add show class if checked by default
+            var span = $("<span class='checkbox_span' role='checkbox'><div class='checkbox_image_container" + checked + "'><img class='checkbox_image' src='" + IMG_HOST_PATH + "imgs8.png" + "' /></div></span>");
+            var label = $("<label class='checkbox_label'>" + options.content + "</label>");
+            control.append(span, label);
             break;
         case "option":
         default:
             if (options.content) {
-                control.innerHTML = options.content;
+                control.html(options.content);
             }
             break;
         }
         if (options.id) {
-            control.id = options.id;
+            control.attr('id', options.id);
         }          
         if (options.children) {
             _.each(options.children, function(child) {
-                control.appendChild(child);
+                control.append(child);
             });
         }
-
-        control.style.cursor = 'pointer';
-        for (var option in options.style) {
-            control.style[option] = options.style[option];
-        }
+        _.each(options.styles, function(style, name) {
+            control.css(name, style);
+        });
         if (options.title) {
-            control.title = options.title;
+            control.prop('title', options.title);
         }
         if (options.classes) {
-            control.className = options.classes;
-        }
-        
+            control.addClass(options.classes);
+        }        
         if (options.type == "checkbox") {
             (function(object, name) {
                 google.maps.event.addDomListener(object, name, function() {
-                    $(checkbox).is(":visible") ? $(checkbox).hide() : $(checkbox).show();
+                    var selectedCheckbox = $(object).find(".checkbox_image_container");
+                    selectedCheckbox.is(":visible") ? selectedCheckbox.removeClass("show") : selectedCheckbox.addClass("show");
                 });
-            })(control, "click");
+            })(control[0], "click");
         }
         if (options.highlight == true) {
             (function(object, name) {
@@ -1607,16 +1586,15 @@ ContigoMap.prototype = {
                 });
             })(highlightElm, "mouseout");
         }
-        
-        for (var event in options.events) {
+        _.each(options.events, function(event, name) {
             (function(object, name) {
                 google.maps.event.addDomListener(object, name, function() {
-                    options.events[name].apply(this, [this]);
+                    event.apply(this, [this]);
                 });
-            })(control, event);
-        }
-        control.index = 1;
-        return control;
+            })(control[0], name);
+        });
+
+        return control[0];
     },
     
     /**
@@ -1639,6 +1617,6 @@ ContigoMap.prototype = {
      * @param checkboxOption a checkbox option object
      */
     idOptionChecked: function(checkboxOption) {
-        return $(checkboxOption).find('.uncheckbox_image_container:first').is(':visible');
+        return $(checkboxOption).find('.checkbox_image_container:first').is(':visible');
     }
 }
