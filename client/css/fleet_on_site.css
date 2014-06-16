@@ -107,6 +107,10 @@ body {
     background-image: url(../images/direction/southwest.png);
 }
 
+.item_status_disabled {
+	background-image: url(../images/spacer.gif) !important;
+}
+
 .marker_infowindow .event_time, .marker_infowindow .event_location {
 	padding: 3px 0 3px 0;
 }

@@ -815,43 +815,47 @@ ContigoMap.prototype = {
         if (mapType == 'cp_fleet' && indexOfMarker == szLocatePoints - 1) {
             anchor = new google.maps.Point(18, 18);
             classes = "";
-            switch (itemStatus) {
-            case "stop":
-                statusClass = 'stop_status'; break;
-            case "idle":
-                statusClass = 'idle_status'; break;
-            case "move":
-				if (!_.isEmpty(speed)) {
-					// for the case of an item with speed and direction
-					if (!_.isEmpty(direction)) {
-						switch (direction) {
-                        case "E":
-                            statusClass = 'move_to_east'; break;
-                        case "W":                            
-                            statusClass = 'move_to_west'; break;
-                        case "S":
-                            statusClass = 'move_to_south'; break;
-                        case "N":                            
-                            statusClass = 'move_to_north'; break;
-                        case "NE":                            
-                            statusClass = 'move_to_northeast'; break;
-                        case "NW":                            
-                            statusClass = 'move_to_northwest'; break;
-                        case "SE":                            
-                            statusClass = 'move_to_southeast'; break;
-                        case "SW":                           
-                            statusClass = 'move_to_southwest'; break;
-                        default:
-                            statusClass = ''; break;
-						}				
+            if (!this.isItemStatusActive) {
+				statusClass = 'item_status_disabled';
+			} else {
+            	switch (itemStatus) {
+            	case "stop":
+                	statusClass = 'stop_status'; break;
+            	case "idle":
+                	statusClass = 'idle_status'; break;
+            	case "move":
+					if (!_.isEmpty(speed)) {
+						// for the case of an item with speed and direction
+						if (!_.isEmpty(direction)) {
+							switch (direction) {
+                        	case "E":
+                            	statusClass = 'move_to_east'; break;
+                        	case "W":                            
+                            	statusClass = 'move_to_west'; break;
+                        	case "S":
+                            	statusClass = 'move_to_south'; break;
+                        	case "N":                            
+                            	statusClass = 'move_to_north'; break;
+                        	case "NE":                            
+                            	statusClass = 'move_to_northeast'; break;
+                        	case "NW":                            
+                            	statusClass = 'move_to_northwest'; break;
+                        	case "SE":                            
+                            	statusClass = 'move_to_southeast'; break;
+                        	case "SW":                           
+                            	statusClass = 'move_to_southwest'; break;
+                        	default:
+                            	statusClass = ''; break;
+							}				
+						} else {
+							// for the case of an item with speed but not direction
+                        	statusClass = 'move_status';                        
+						}			
 					} else {
-						// for the case of an item with speed but not direction
-                        statusClass = 'move_status';                        
-					}			
-				} else {
-                    statusClass = '';
-				}
-                break;                
+                    	statusClass = '';
+					}
+                	break;                
+            	}
             }
             var compiled = _.template("<div class='item_status <%= statusClass %>'><div class='labels item_status_label'><%= label %></div></div>");
             content = $(compiled({label: label, statusClass: statusClass}))[0]; // get DOM object
@@ -1471,6 +1475,13 @@ ContigoMap.prototype = {
 	 */
 	enableItemStatus : function(enabled) {
 		this.isItemStatusActive = enabled;
+		$('.item_status').each(function(index, value) {
+			if (enabled) {
+				$(this).removeClass("item_status_disabled");
+			} else {
+				$(this).addClass("item_status_disabled");
+			}
+		});
 	},    
     
     /**
