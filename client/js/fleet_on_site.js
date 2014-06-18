@@ -603,7 +603,7 @@ ContigoMap.prototype = {
 	    var mapObjects = {};
         this.clearMap(false);
         this.resetMostRecentLocate();
-	    
+
 	    if (mapMarkers.length > 0) {
 	    	mapObjects["marker"] = {
                 values: mapMarkers,
@@ -860,7 +860,7 @@ ContigoMap.prototype = {
             var compiled = _.template("<div class='item_status <%= statusClass %>'><div class='labels item_status_label'><%= label %></div></div>");
             content = $(compiled({label: label, statusClass: statusClass}))[0]; // get DOM object
         } else {
-            anchor = new google.maps.Point(10, -2);
+            anchor = new google.maps.Point(10, -10);
             classes = "labels";
             content = label;
         }
@@ -1002,7 +1002,7 @@ ContigoMap.prototype = {
 			if (label) {
                 var infoContent = $this.buildLmkInfoWindowContents(label, userNote, lmkAddress, content, dispatch);
                 var marker = {
-                    id: TAG_GROUP.LOCATION + "_" + i,
+                    id: TAG_GROUP.LANDMARK + "_" + i,
                     tag: [label, TAG_GROUP.LANDMARK],
                     latLng: [coord.lat, coord.lng], 
                     data: infoContent,    
