@@ -43,13 +43,12 @@ body {
 }
 
 .item_status_label {
-    position: relative;
-    top: 35px;
+    line-height: 90px;
 }
 
 .item_status {
     height: 55px;
-    position: relative;
+    min-width: 35px;
 }
 
 .stop_status {

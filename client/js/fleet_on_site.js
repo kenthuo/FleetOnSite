@@ -131,16 +131,16 @@ function MoreControl(contigoMap) {
                         panel: {
                             options: {
                                 content: 
-                                    '<div id="tabs">' +
-                                        '<ul>' +
-                                            '<li><a href="#tabs_locate">Event Location</a></li>' +
-                                            '<li><a href="#tabs_landmark">Landmark</a></li>' +
-                                            '<li><a href="#tabs_job">Job</a></li>' +
-                                        '</ul>' +
-                                        '<div id="tabs_locate"></div>' +
-                                        '<div id="tabs_landmark"></div>' +
-                                        '<div id="tabs_job"></div>' +
-                                    '</div>',
+                                    '<div id="tabs">\
+                                        <ul>\
+                                            <li><a href="#tabs_locate">Event Location</a></li>\
+                                            <li><a href="#tabs_landmark">Landmark</a></li>\
+                                            <li><a href="#tabs_job">Job</a></li>\
+                                        </ul>\
+                                        <div id="tabs_locate"></div>\
+                                        <div id="tabs_landmark"></div>\
+                                        <div id="tabs_job"></div>\
+                                    </div>',
                                 bottom: true,
                                 left: true
                             },
@@ -812,6 +812,9 @@ ContigoMap.prototype = {
      */
     generateLabelInfoByMapType : function(label, mapType, isPointsConnected, szLocatePoints, indexOfMarker, speed, direction, itemStatus) {
         var anchor = classes = content = title = statusClass = '';
+        if (!(!isPointsConnected || (isPointsConnected && (indexOfMarker == szLocatePoints - 1)))) {
+            label = '';
+        }
         if (mapType == 'cp_fleet' && indexOfMarker == szLocatePoints - 1) {
             anchor = new google.maps.Point(18, 18);
             classes = "";
@@ -857,7 +860,7 @@ ContigoMap.prototype = {
                 	break;                
             	}
             }
-            var compiled = _.template("<div class='item_status <%= statusClass %>'><div class='labels item_status_label'><%= label %></div></div>");
+            var compiled = _.template("<div class='item_status <%= statusClass %>'><span class='labels item_status_label'><%= label %></span></div>");
             content = $(compiled({label: label, statusClass: statusClass}))[0]; // get DOM object
         } else {
             anchor = new google.maps.Point(10, -10);
