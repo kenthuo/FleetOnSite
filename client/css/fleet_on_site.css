@@ -43,7 +43,8 @@ body {
 }
 
 .item_status_label {
-    line-height: 90px;
+	position: relative;
+	top: 35px;
 }
 
 .item_status {

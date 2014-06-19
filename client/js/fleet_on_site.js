@@ -665,7 +665,7 @@ ContigoMap.prototype = {
 	 */
 	buildLocationMarkers : function(beaconItems, isMetric) {
 		var $this = this, markers = [], cocs = [], routes = [];
-        _.each(beaconItems, function(beacon) {
+        _.each(beaconItems, function(beacon, beaconId) {
 	        var locatePoints = beacon.locatePoints;
 	        var isPointsConnected = beacon.isPointsConnected;
 	        var showInputOutputColor = beacon.showInputOutputColor;
@@ -736,22 +736,21 @@ ContigoMap.prototype = {
 		                            label, coord, eventType, address, stopDuration, speed, 
 		                            direction, timestamp, landmark, circleCertaintyRadius, 
 		                            status, userNote, driverID, driverStatus, beaconID,
-		                            guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, 
-		                            dispatch, isMetric);
+		                            guardianID, ioprt1Scenario, ioprt2Scenario, ioprt3Scenario, ioprt4Scenario, lineColor, 
+		                            dispatch, isMetric, driverNameInItemMode);
 		                            
 					if (!(!isPointsConnected || (isPointsConnected && (i == szLocatePoints - 1))) || $this.mapType == "cp_rpt_routetrip") {
 						markerLabel = '';
 					}
-                    var labelInfo = $this.generateMarkerLabelInfoByMapType(markerLabel, $this.mapType, isPointsConnected, szLocatePoints, i, speed, direction, vehicleStatus);                                        
-                    var marker = null;
+                    var labelInfo = $this.generateMarkerLabelInfoByMapType(markerLabel, $this.mapType, isPointsConnected, szLocatePoints, i, speed, direction, vehicleStatus);
                                     
-                    if (i == (szLocatePoints - 1)) {
+                    if (i == szLocatePoints - 1) {
 		            	$this.setMostRecentLocate(point);
 		            }
 
                     if (!_.isEmpty(labelInfo)) {
-                        marker = {
-                            id: TAG_GROUP.LOCATION + "_" + i,
+                        var marker = {
+                            id: TAG_GROUP.LOCATION + "_" + beaconId + "_" + i,
                             tag: [label, TAG_GROUP.LOCATION],
                             latLng: [coord.lat, coord.lng], 
                             data: infoContent,                        
@@ -765,8 +764,9 @@ ContigoMap.prototype = {
                                 labelClass: labelInfo.classes,
                                 //labelStyle: {opacity: 0.75},
                                 labelContent: labelInfo.content}};
+						markers.push(marker);
                     }
-		            markers.push(marker);
+		            
 	            }
                 
                 circleCertaintyRadius = parseInt(circleCertaintyRadius, 10);
@@ -872,7 +872,7 @@ ContigoMap.prototype = {
                 		break;                
             		}
             	}
-            	var compiled = _.template("<div class='item_status <%= statusClass %>'><span class='labels item_status_label'><%= label %></span></div>");
+            	var compiled = _.template("<div class='item_status <%= statusClass %>'><div class='labels item_status_label'><%= label %></div></div>");
             	content = $(compiled({label: label, statusClass: statusClass}))[0]; // get DOM object
         	} else if ((mapType == 'cp_rpt_stop_map_multi' && indexOfMarker == szLocatePoints - 1) || mapType == 'address_to_map') {
 
@@ -911,7 +911,7 @@ ContigoMap.prototype = {
 	buildLocationInfoWindowContents : function(
 	                label, coord, eventType, address, stopDuration, speed, direction, timestamp, landmark,
 	                circleCertaintyRadius, status, userNote, driverID, driverStatus, beaconID,
-	                guardianID, ioprt1Scenario, ioprt2Scenario, lineColor, dispatch, isMetric) {        
+	                guardianID, ioprt1Scenario, ioprt2Scenario, ioprt3Scenario, ioprt4Scenario, lineColor, dispatch, isMetric, driverName) {        
                     
 	    var infoContent = "<div class='marker_infowindow'>";
 	    infoContent += "<div class='marker_infowindow_title'>" + label + "</div>";
@@ -1484,11 +1484,46 @@ ContigoMap.prototype = {
                 eventName: "resize", 
                 callback: function() {
                     $this.refreshMap($this.poiCollection);
+					$this.bestFit();
                 }
             }
         });
 	},
     
+	/**
+	 * Enables the "auto best fit" feature.  If the "auto centering" feature
+	 * is already enabled, it will be disabled.
+	 *
+	 * @param enabled  Whether the "auto best fit" feature is to be enabled.
+	 */
+	enableAutoBestFit : function(enabled) {  
+		if (enabled) {    
+			if (this.isAutoCenteringActive) {
+				this.isAutoCenteringActive = false;
+			}
+			this.isAutoBestFitActive = true;    
+		} else {
+			this.isAutoBestFitActive = false;
+		}
+	},
+	
+	/**
+	 * Enables the "auto centering" feature.  If the "auto best fit" feature
+	 * is already enabled, it will be disabled.
+	 *
+	 * @param enabled  Whether the "auto centering" feature is to be enabled.
+	 */
+	enableAutoCentering : function(enabled) {  
+		if (enabled) {    
+			if (this.isAutoBestFitActive) {
+				this.isAutoBestFitActive = false;
+			}    
+			this.isAutoCenteringActive = true;    
+		} else {
+			this.isAutoCenteringActive = false;
+		}
+	},
+	
 	/**
 	 * Toggle item status feature of markers on the map.
 	 * 

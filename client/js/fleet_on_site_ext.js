@@ -162,11 +162,34 @@ function Util() {
 
 		return Date.parse(revampedTimestamp);	  
 	}
+	
+    /**
+     * Convert from LatLng to Point.
+     */
+	function fromLatLngToPoint(latLng, map) {
+		var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
+		var bottomLeft = map.getProjection().fromLatLngToPoint(map.getBounds().getSouthWest());
+		var scale = Math.pow(2, map.getZoom());
+		var worldPoint = map.getProjection().fromLatLngToPoint(latLng);
+		return new google.maps.Point((worldPoint.x - bottomLeft.x) * scale, (worldPoint.y - topRight.y) * scale);
+	}
+	
+    /**
+     * Calculate distance between two points
+     */
+	function distanceBetween(point1, point2) {
+		var xDist = point1.x - point2.x;
+		var yDist = point1.y - point2.y;
+
+		return Math.sqrt(xDist * xDist + yDist * yDist);
+	}	
     
 	// exports
 	Util.isMobile = isMobile;
     Util.toUTC = toUTC;
     Util.parseTimestampString = parseTimestampString;
+	Util.fromLatLngToPoint = fromLatLngToPoint;
+	Util.distanceBetween = distanceBetween;
 })();
 
 // extend polygon of Gmap V3 with getBounds method

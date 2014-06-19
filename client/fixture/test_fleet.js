@@ -3,15 +3,15 @@ $(document).ready(function() {
     map.init();
     
     // First test fixture
+	/*
     var beaconPointsArray = {};
     var jobsArray = {};
-    /*
     var locatePoint_1520_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00414", width: 16, height: 16}), label: "354235050359342-1520-Kent2", coord: new Coordinate({lat: 49.26072, lng: -123.03474}), eventType: "Ignition Off", address: new Address({street: "Street Unavailable", city: "Vancouver", county: "", state: "BC", postalCode: "V5M 3T5", country: "CA"}), stopDuration: "STOP: 7h 59m 31s", speed: "", direction: "", timestamp: "06/05/2014 09:20:26AM PDT ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "1520", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "stop", temperature:  "" });
 
     var locatePointsArray_1520 = [locatePoint_1520_1];
     var beaconItem_1520 = new ContigoBeaconItem({locatePoints: locatePointsArray_1520, isPointsConnected: true});
     beaconPointsArray["1520"] = beaconItem_1520;
-    */
+
     var locatePoint_1915_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00421", width: 16, height: 16}), label: "354235050374044-1915-fw83", coord: new Coordinate({lat: 49.11231, lng: -122.86774}), eventType: "Speed", address: new Address({street: "Street Unavailable", city: "Surrey", county: "", state: "BC", postalCode: "V3X 2L2", country: "CA"}), stopDuration: "", speed: "64kph", direction: "", timestamp: "06/05/2014 05:09:28PM PDT ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "1915", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "", temperature:  "" });
 
     var locatePoint_1915_2 = new ContigoBeaconPoi({icon: new Icon({name: "GB00421", width: 16, height: 16}), label: "354235050374044-1915-fw83", coord: new Coordinate({lat: 49.11247, lng: -122.86774}), eventType: "Locate", address: new Address({street: "Street Unavailable", city: "Surrey", county: "", state: "BC", postalCode: "V3X 2L2", country: "CA"}), stopDuration: "", speed: "66kph", direction: "", timestamp: "06/05/2014 05:09:30PM PDT ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "1915", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "", temperature:  "" });
@@ -61,7 +61,7 @@ $(document).ready(function() {
     var locatePointsArray_1915 = [locatePoint_1915_1, locatePoint_1915_2, locatePoint_1915_3, locatePoint_1915_4, locatePoint_1915_5, locatePoint_1915_6, locatePoint_1915_7, locatePoint_1915_8, locatePoint_1915_9, locatePoint_1915_10, locatePoint_1915_11, locatePoint_1915_12, locatePoint_1915_13, locatePoint_1915_14, locatePoint_1915_15, locatePoint_1915_16, locatePoint_1915_17, locatePoint_1915_18, locatePoint_1915_19, locatePoint_1915_20, locatePoint_1915_21, locatePoint_1915_22, locatePoint_1915_23];
     var beaconItem_1915 = new ContigoBeaconItem({locatePoints: locatePointsArray_1915, isPointsConnected: true});
     beaconPointsArray["1915"] = beaconItem_1915;
-    /*
+
     var locatePoint_1987_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00411", width: 16, height: 16}), label: "1987-Brian", coord: new Coordinate({lat: 49.26181, lng: -122.90784}), eventType: "Ignition Off", address: new Address({street: "Street Unavailable", city: "Burnaby", county: "", state: "BC", postalCode: "V5A 4P7", country: "CA"}), stopDuration: "STOP: 8h 51m 51s", speed: "", direction: "", timestamp: "06/05/2014 08:45:17AM PDT ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "1987", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "stop", temperature:  "" });
 
     var locatePointsArray_1987 = [locatePoint_1987_1];
@@ -89,10 +89,11 @@ $(document).ready(function() {
     var locatePointsArray_2022 = [locatePoint_2022_1];
     var beaconItem_2022 = new ContigoBeaconItem({locatePoints: locatePointsArray_2022, isPointsConnected: true});
     beaconPointsArray["2022"] = beaconItem_2022;
-*/
+
     var landmarkArray = [];
     var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
-    map.sendPoints(poiCollection, true);
+*/	
+    
 
 	// Second test fixture
 /*
@@ -164,7 +165,7 @@ $(document).ready(function() {
 */
 
 	// Third test fixture	
-/*
+
     var beaconPointsArray = {};
 	var jobsArray = {};
 	var locatePoint_782_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00424", width: 16, height: 16}), label: "011892000414356 -782", coord: new Coordinate({lat: 49.27713, lng: -123.12008}), eventType: "Output Triggered", address: new Address({street: "388 Nelson St", city: "Vancouver", county: "Greater Vancouver", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "05/14/2014 01:00:01PM PDT ", landmark: "(Contigo\'s) ", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "782", guardianID: "", ioprt1Scenario: "Alice Input Open", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "", temperature:  "" });
@@ -203,7 +204,7 @@ $(document).ready(function() {
 	var locatePointsArray_1988 = [locatePoint_1988_1];
 	var beaconItem_1988 = new ContigoBeaconItem({locatePoints: locatePointsArray_1988, isPointsConnected: true});
 	beaconPointsArray["1988"] = beaconItem_1988;
-	var locatePoint_1990_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00412", width: 16, height: 16}), label: "354235050358724-1990-kent", coord: new Coordinate({lat: 49.23364, lng: -123.02105}), eventType: "Ignition Off", address: new Address({street: "5625 Smith Ave", city: "Burnaby", county: "", state: "BC", postalCode: "V5H", country: "CANADA"}), stopDuration: "STOP: 13h 57m 23s", speed: "", direction: "", timestamp: "06/15/2014 08:55:22PM PDT <br>(GPS Age: 0h 01m 00s)", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "1990", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "stop", temperature:  "" });
+	var locatePoint_1990_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00412", width: 16, height: 16}), label: "kent", coord: new Coordinate({lat: 49.23364, lng: -123.02105}), eventType: "Ignition Off", address: new Address({street: "5625 Smith Ave", city: "Burnaby", county: "", state: "BC", postalCode: "V5H", country: "CANADA"}), stopDuration: "STOP: 13h 57m 23s", speed: "", direction: "", timestamp: "06/15/2014 08:55:22PM PDT <br>(GPS Age: 0h 01m 00s)", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "1990", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "stop", temperature:  "" });
 	var locatePointsArray_1990 = [locatePoint_1990_1];
 	var beaconItem_1990 = new ContigoBeaconItem({locatePoints: locatePointsArray_1990, isPointsConnected: true});
 	beaconPointsArray["1990"] = beaconItem_1990;
@@ -229,9 +230,9 @@ $(document).ready(function() {
 	beaconPointsArray["2146"] = beaconItem_2146;
 	var landmarkArray = [];
 	var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
-	map.sendPoints(poiCollection, false);
-*/    
-    
+
+
+    map.sendPoints(poiCollection, true);
     $(window).on('resize', function(){
         map.resize("100%", "100%");
     });
