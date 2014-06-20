@@ -45,7 +45,7 @@ function MoreControl(contigoMap) {
         content: 'Live Traffic',
         title: 'Show live traffic information',
         classes: 'select_checkbox_option',
-        highlight: true,
+        disabled: false,
         events: {
             click: function() {
                 contigoMap.idOptionChecked(this) ? contigoMap.canvas.gmap3('trafficlayer') : contigoMap.clear({name: ['trafficlayer']});
@@ -57,7 +57,7 @@ function MoreControl(contigoMap) {
         content: 'Best Fit',
         title: 'Best fit',
         classes: 'select_option',
-        highlight: true,
+        disabled: false,
         events: {
             click: function() {
                 contigoMap.bestFit();
@@ -69,7 +69,7 @@ function MoreControl(contigoMap) {
         content: 'Center Map',
         title: 'Center map',
         classes: 'select_option',
-        highlight: true,
+        disabled: false,
         events: {
             click: function() {
                 alert('Center map');
@@ -82,7 +82,7 @@ function MoreControl(contigoMap) {
         title: 'Center last',
         content: 'Center Last',
         classes: 'select_checkbox_option',
-        highlight: true,
+        disabled: false,
         events: {
             click: function() {
                 contigoMap.isAutoCenteringActive = contigoMap.idOptionChecked(this);
@@ -95,7 +95,7 @@ function MoreControl(contigoMap) {
         title: 'Auto best fit',
         content: 'Auto Best Fit',
         classes: 'select_checkbox_option',
-        highlight: true,
+        disabled: false,
         events: {
             click: function() {
                 contigoMap.isAutoBestFitActive = contigoMap.idOptionChecked(this);
@@ -108,7 +108,7 @@ function MoreControl(contigoMap) {
         title: 'Display item status',
         content: 'Display Item Status',
         classes: 'select_checkbox_option',
-        highlight: true,
+        disabled: false,
         checked: true,
         events: {
             click: function() {
@@ -122,7 +122,7 @@ function MoreControl(contigoMap) {
         title: 'Show tabular data',
         content: 'Tabular Data',
         classes: 'select_checkbox_option',
-        highlight: true,
+        disabled: false,
         events: {
             click: function() {
                 contigoMap.isTabularDataActive = contigoMap.idOptionChecked(this);
@@ -297,7 +297,7 @@ function MoreControl(contigoMap) {
         content: "More ...",
         title: "Show more control options",
         children: [options],
-        highlight: true,
+        disabled: false,
         events: {
             click: function() {
                 var optionsContainer = $("#more_control .options_container");
@@ -1592,7 +1592,18 @@ ContigoMap.prototype = {
     /**
      * Create a DOM element to represent the custom control.
      *
-     * @param options an object holds related properties of the control.
+     * @param options an object holds related properties of the control. Properties include:
+	 *			type: the type of the control. It can be "select", "option", "checkbox". If not specified, the default control is a regular clickable toolbar.
+	 *			content: text or html content in the control.
+	 *			id: id of the control.
+	 *			children: a list of html string, DOM element, jQuery objects to insert at the end of each element in the control. 
+	 *			styles: css styles appled to the control.
+	 *			title: the title of the control.
+	 *			classes: the css classes appled to the control.
+	 *			disabled: disable the control. If true, all of events won't be applied.
+	 *			checked: make the check checked by default. The propery has to go with "checkbox" type.
+	 *			events: the events applied to the control.
+	 * @return the DOM element of the created control.
      */
     createControl: function(options) {
         var control = $("<div style='cursor: pointer;'></div>");
@@ -1641,7 +1652,7 @@ ContigoMap.prototype = {
                 });
             })(control[0], "click");
         }
-        if (options.highlight == true) {
+        if (options.disabled == false) {
             (function(object, name) {
                 google.maps.event.addDomListener(object, name, function() {
                     $(this).css("background-color", "#EEEEEE");
@@ -1652,14 +1663,17 @@ ContigoMap.prototype = {
                     $(this).css("background-color", "#FFFFFF");
                 });
             })(highlightElm, "mouseout");
-        }
-        _.each(options.events, function(event, name) {
-            (function(object, name) {
-                google.maps.event.addDomListener(object, name, function() {
-                    event.apply(this, [this]);
-                });
-            })(control[0], name);
-        });
+			
+			_.each(options.events, function(event, name) {
+				(function(object, name) {
+					google.maps.event.addDomListener(object, name, function() {
+						event.apply(this, [this]);
+					});
+				})(control[0], name);
+			});
+        } else {
+			control.addClass("control_disabled");
+		}
 
         return control[0];
     },

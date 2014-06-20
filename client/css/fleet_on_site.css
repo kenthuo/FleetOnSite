@@ -31,6 +31,10 @@ body {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
+.control_disabled {
+	color: rgb(184, 184, 184) !important;
+}
+
 .labels {
 	white-space: nowrap;
 	background-color: #ffffff;
