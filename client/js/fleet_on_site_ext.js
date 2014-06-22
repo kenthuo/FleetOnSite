@@ -165,6 +165,9 @@ function Util() {
 	
     /**
      * Convert from LatLng to Point.
+	 * 
+	 * @param latLng
+	 * @param map
      */
 	function fromLatLngToPoint(latLng, map) {
 		var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
@@ -176,13 +179,25 @@ function Util() {
 	
     /**
      * Calculate distance between two points
+	 *
+	 * @param point1
+	 * @param point2
      */
 	function distanceBetween(point1, point2) {
 		var xDist = point1.x - point2.x;
 		var yDist = point1.y - point2.y;
-
 		return Math.sqrt(xDist * xDist + yDist * yDist);
-	}	
+	}
+	
+	/**
+	 * Convert direction to heading degree.
+	 *
+	 * @param direction the abbreviation of a direction. It can be "N", "NE", "E", "SE", "S", "SW", "W", "NW", or empty.
+	 */
+	function fromDirectionToHeading(direction) {
+		var mapping = {"N": "0", "NE": "45", "E": "90", "SE": "135", "S": "180", "SW": "225", "W": "270", "NW": "315"};
+		return direction ? mapping[direction] : "";
+	}
     
 	// exports
 	Util.isMobile = isMobile;
@@ -190,6 +205,7 @@ function Util() {
     Util.parseTimestampString = parseTimestampString;
 	Util.fromLatLngToPoint = fromLatLngToPoint;
 	Util.distanceBetween = distanceBetween;
+	Util.fromDirectionToHeading = fromDirectionToHeading;
 })();
 
 // extend polygon of Gmap V3 with getBounds method

@@ -347,6 +347,7 @@ ContigoMap.prototype = {
         this.canvas.gmap3({
             defaults:{ 
                 classes:{
+					InfoWindow: InfoBubble,
                     Marker: MarkerWithLabel // use MarkerWithLabel class to allow to show lable with marker
                 }
             },
@@ -955,7 +956,7 @@ ContigoMap.prototype = {
 	    infoContent += (eventType) ? this.createMarkerInfoWindowPara("Event Type: <span class='event_type'>" + eventType + "</span>") : "";
 	    infoContent += (landmark) ? this.createMarkerInfoWindowPara("Landmark: <span class='landmark'>" + landmark + "</span>") : "";
 	    infoContent += "</div>";
-        
+        infoContent += "<img src='http://maps.googleapis.com/maps/api/streetview?size=300x100&location=" + coord.lat + "," + coord.lng + "&heading=" + Util.fromDirectionToHeading(direction) + "' border='1px'>";
 	    infoContent += "</div>";
 		return infoContent;
 	},
@@ -1202,8 +1203,8 @@ ContigoMap.prototype = {
 		return infoContent;	    
 	},
 	
-	/**
-	 * Show InfoWindow of a marker on the map
+	/** 
+	 * Show InfoWindow of a marker on the map. Use InfoBubble class to replace default InfoWindow class.
 	 *
 	 * @param marker
 	 * @param content
@@ -1218,7 +1219,10 @@ ContigoMap.prototype = {
 			this.canvas.gmap3({
 				infowindow: {
 					anchor: marker,
-					options: {content: content},
+					options: {
+						content: content, 
+						shadowStyle: 0, padding: 0, borderRadius: 10, arrowSize: 20, borderWidth: 3, borderColor: '#CCC',
+						disableAutoPan: true, hideCloseButton: false, arrowPosition: 50, arrowStyle: 0},
 					events: {
 						closeclick: function(infowindow) {
                             if (_.isFunction(onClose)) {

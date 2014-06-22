@@ -3,7 +3,7 @@ $(document).ready(function() {
     map.init();
     
     // First test fixture
-	/*
+
     var beaconPointsArray = {};
     var jobsArray = {};
     var locatePoint_1520_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00414", width: 16, height: 16}), label: "354235050359342-1520-Kent2", coord: new Coordinate({lat: 49.26072, lng: -123.03474}), eventType: "Ignition Off", address: new Address({street: "Street Unavailable", city: "Vancouver", county: "", state: "BC", postalCode: "V5M 3T5", country: "CA"}), stopDuration: "STOP: 7h 59m 31s", speed: "", direction: "", timestamp: "06/05/2014 09:20:26AM PDT ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "1520", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "stop", temperature:  "" });
@@ -92,7 +92,7 @@ $(document).ready(function() {
 
     var landmarkArray = [];
     var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
-*/	
+
     
 
 	// Second test fixture
@@ -165,7 +165,7 @@ $(document).ready(function() {
 */
 
 	// Third test fixture	
-
+/*
     var beaconPointsArray = {};
 	var jobsArray = {};
 	var locatePoint_782_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00424", width: 16, height: 16}), label: "011892000414356 -782", coord: new Coordinate({lat: 49.27713, lng: -123.12008}), eventType: "Output Triggered", address: new Address({street: "388 Nelson St", city: "Vancouver", county: "Greater Vancouver", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "05/14/2014 01:00:01PM PDT ", landmark: "(Contigo\'s) ", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "782", guardianID: "", ioprt1Scenario: "Alice Input Open", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "", temperature:  "" });
@@ -230,7 +230,7 @@ $(document).ready(function() {
 	beaconPointsArray["2146"] = beaconItem_2146;
 	var landmarkArray = [];
 	var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
-
+*/
 
     map.sendPoints(poiCollection, true);
     $(window).on('resize', function(){
