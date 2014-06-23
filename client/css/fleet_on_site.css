@@ -115,17 +115,39 @@ body {
 	background-image: url(../images/spacer.gif) !important;
 }
 
+.marker_infowindow {	
+    margin-top: 8px;
+    background: #c0c0c0;
+    font-family: Sans-Serif, Verdana, Arial, Helvetica;
+    font-size: 12px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    -webkit-box-shadow: 0 0  8px #000;
+    box-shadow: 0 0 8px #000;
+	width: 300px;
+}
+
+.marker_infowindow_content {
+	background:#fff;
+}
+
+.marker_infowindow .streetview {
+	border-width: 0;
+}
+
 .marker_infowindow .event_time, .marker_infowindow .event_location {
 	padding: 3px 0 3px 0;
 }
 
 .marker_infowindow_title {
-    background-color: #999999;
-	padding: 2px;
+	text-shadow: 0 -1px #000000;
+	font-weight: bold;
+	padding: 5px;
 }
 
 .marker_infowindow p {
-	padding: 1px 0;
+	padding: 1px 5px;
 	margin: 0;
 }
 

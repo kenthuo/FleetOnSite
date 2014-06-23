@@ -347,7 +347,7 @@ ContigoMap.prototype = {
         this.canvas.gmap3({
             defaults:{ 
                 classes:{
-					InfoWindow: InfoBubble,
+					InfoWindow: InfoBox,
                     Marker: MarkerWithLabel // use MarkerWithLabel class to allow to show lable with marker
                 }
             },
@@ -916,6 +916,7 @@ ContigoMap.prototype = {
                     
 	    var infoContent = "<div class='marker_infowindow'>";
 	    infoContent += "<div class='marker_infowindow_title'>" + label + "</div>";
+		infoContent += "<div class='marker_infowindow_content'>";
 		infoContent += "<div class='event_time'>";
 	    infoContent += this.createMarkerInfoWindowPara("<span class='date_time'>" + timestamp + "</span>");
 
@@ -956,8 +957,9 @@ ContigoMap.prototype = {
 	    infoContent += (eventType) ? this.createMarkerInfoWindowPara("Event Type: <span class='event_type'>" + eventType + "</span>") : "";
 	    infoContent += (landmark) ? this.createMarkerInfoWindowPara("Landmark: <span class='landmark'>" + landmark + "</span>") : "";
 	    infoContent += "</div>";
-        infoContent += "<img src='http://maps.googleapis.com/maps/api/streetview?size=300x100&location=" + coord.lat + "," + coord.lng + "&heading=" + Util.fromDirectionToHeading(direction) + "' border='1px'>";
+        infoContent += "<img class='streetview' src='http://maps.googleapis.com/maps/api/streetview?size=300x100&location=" + coord.lat + "," + coord.lng + "&heading=" + Util.fromDirectionToHeading(direction) + "' />";
 	    infoContent += "</div>";
+		infoContent += "</div>";
 		return infoContent;
 	},
 	
@@ -1205,10 +1207,11 @@ ContigoMap.prototype = {
 	
 	/** 
 	 * Show InfoWindow of a marker on the map. Use InfoBubble class to replace default InfoWindow class.
-	 *
+	 * 
 	 * @param marker
 	 * @param content
 	 * @param onClose a callback function when user clicks close(x) icon
+	 * @see https://google-maps-utility-library-v3.googlecode.com/svn/trunk/infobox/docs/reference.html
 	 */
 	showInfoWindow: function(marker, content, onClose) {
 		var infowindow = this.canvas.gmap3({get:{name:"infowindow"}});
@@ -1221,8 +1224,10 @@ ContigoMap.prototype = {
 					anchor: marker,
 					options: {
 						content: content, 
-						shadowStyle: 0, padding: 0, borderRadius: 10, arrowSize: 20, borderWidth: 3, borderColor: '#CCC',
-						disableAutoPan: true, hideCloseButton: false, arrowPosition: 50, arrowStyle: 0},
+						disableAutoPan: false ,maxWidth: 0, pixelOffset: new google.maps.Size(-140, 10), zIndex: null, 
+						boxStyle: { background: "url('images/tipbox.gif') no-repeat", width: "300px"}, 
+						closeBoxMargin: "13px 5px 5px 5px", closeBoxURL: "images/close.gif", infoBoxClearance: new google.maps.Size(1, 1)
+					},
 					events: {
 						closeclick: function(infowindow) {
                             if (_.isFunction(onClose)) {
