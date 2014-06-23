@@ -1224,7 +1224,7 @@ ContigoMap.prototype = {
 					anchor: marker,
 					options: {
 						content: content, 
-						disableAutoPan: false ,maxWidth: 0, pixelOffset: new google.maps.Size(-140, 10), zIndex: null, 
+						maxWidth: 0, pixelOffset: new google.maps.Size(-140, 10), 
 						boxStyle: { background: "url('images/tipbox.gif') no-repeat", width: "300px"}, 
 						closeBoxMargin: "13px 5px 5px 5px", closeBoxURL: "images/close.gif", infoBoxClearance: new google.maps.Size(1, 1)
 					},
