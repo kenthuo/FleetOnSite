@@ -1023,6 +1023,9 @@ ContigoMap.prototype = {
 			if (category) {
 				label += " (" + category + ")";
 			}
+			var markerLabel = label;
+			
+			var labelInfo = $this.generateMarkerLabelInfoByMapType(markerLabel, $this.mapType);
 			if (label) {
                 var infoContent = $this.buildLmkInfoWindowContents(label, userNote, lmkAddress, content, dispatch, coord);
                 var marker = {
@@ -1032,11 +1035,14 @@ ContigoMap.prototype = {
                     data: infoContent,    
                     options: {
                         title: label,
-                        icon: {url: $this.constructMarkerIconName(icon, numberLabel)},
-                        labelAnchor: new google.maps.Point(Math.floor(label.length * 2.5), -2),
-                        labelClass: "labels",
-                        labelStyle: {opacity: 0.75},
-                        labelContent: label}};
+                        icon: {
+							url: $this.constructMarkerIconName(icon, numberLabel),
+							anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2)),
+                        },
+                        labelAnchor: labelInfo.anchor,
+                        labelClass: labelInfo.classes,
+                        //labelStyle: {opacity: 0.75},
+                        labelContent: labelInfo.content}};
                 markers.push(marker);
 			}	        
         });
