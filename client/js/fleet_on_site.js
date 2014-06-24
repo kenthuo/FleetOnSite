@@ -957,7 +957,7 @@ ContigoMap.prototype = {
 	    infoContent += (eventType) ? this.createMarkerInfoWindowPara("Event Type: <span class='event_type'>" + eventType + "</span>") : "";
 	    infoContent += (landmark) ? this.createMarkerInfoWindowPara("Landmark: <span class='landmark'>" + landmark + "</span>") : "";
 	    infoContent += "</div>";
-        infoContent += "<img class='streetview' src='http://maps.googleapis.com/maps/api/streetview?size=300x100&location=" + coord.lat + "," + coord.lng + "&heading=" + Util.fromDirectionToHeading(direction) + "' />";
+        infoContent += Util.getStreetView(coord.lat, coord.lng, direction);
 	    infoContent += "</div>";
 		infoContent += "</div>";
 		return infoContent;
@@ -1024,7 +1024,7 @@ ContigoMap.prototype = {
 				label += " (" + category + ")";
 			}
 			if (label) {
-                var infoContent = $this.buildLmkInfoWindowContents(label, userNote, lmkAddress, content, dispatch);
+                var infoContent = $this.buildLmkInfoWindowContents(label, userNote, lmkAddress, content, dispatch, coord);
                 var marker = {
                     id: TAG_GROUP.LANDMARK + "_" + i,
                     tag: [label, TAG_GROUP.LANDMARK],
@@ -1051,15 +1051,16 @@ ContigoMap.prototype = {
 	 * @param userNote
 	 * @param lmkAddress
 	 * @param content
-	 * @param dispatch   
+	 * @param dispatch  
+	 * @param coord 
 	 *
 	 * @return string the content of landmark's InfoWindow
 	 */
-	buildLmkInfoWindowContents : function(label, userNote, lmkAddress, content, dispatch) {
+	buildLmkInfoWindowContents : function(label, userNote, lmkAddress, content, dispatch, coord) {
 	  
 	    var infoContent = "<div class='marker_infowindow'>";
 	    infoContent += "<div class='marker_infowindow_title'>" + label + "</div>";
-	    
+	    infoContent += "<div class='marker_infowindow_content'>";
 	    // dispatch toolbar
 		if (dispatch) {
 			var type = dispatch.type;
@@ -1082,6 +1083,8 @@ ContigoMap.prototype = {
 			infoContent += (content) ? this.createMarkerInfoWindowPara("<span class='landmark_content'>" + content + "</span>") : "";
 			infoContent += "</div>";
 	    }
+	    infoContent += Util.getStreetView(coord.lat, coord.lng);
+	    infoContent += "</div>";
 	    infoContent += "</div>";
 		return infoContent;	    
 	},

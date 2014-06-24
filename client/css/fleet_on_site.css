@@ -136,7 +136,7 @@ body {
 	border-width: 0;
 }
 
-.marker_infowindow .event_time, .marker_infowindow .event_location {
+.marker_infowindow .event_time, .marker_infowindow .event_location, .marker_infowindow .landmark_info {
 	padding: 3px 0 3px 0;
 }
 
@@ -149,6 +149,11 @@ body {
 .marker_infowindow p {
 	padding: 1px 5px;
 	margin: 0;
+}
+
+.marker_infowindow .landmark_info p {
+	margin: 0;
+	padding: 1px 5px;
 }
 
 .marker_infowindow .job_description, .marker_infowindow .job_location {

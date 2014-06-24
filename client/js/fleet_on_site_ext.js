@@ -198,6 +198,14 @@ function Util() {
 		var mapping = {"N": "0", "NE": "45", "E": "90", "SE": "135", "S": "180", "SW": "225", "W": "270", "NW": "315"};
 		return direction ? mapping[direction] : "";
 	}
+	
+	/**
+	 * Generate the IMG tag to represent the street view of a lat/lon location.
+	 * The dimension is 300x100. 
+	 */
+	function getStreetView(lat, lng, direction) {
+		return "<img class='streetview' src='http://maps.googleapis.com/maps/api/streetview?size=300x100&location=" + lat + "," + lng + "&heading=" + fromDirectionToHeading(direction) + "' />";
+	}
     
 	// exports
 	Util.isMobile = isMobile;
@@ -205,7 +213,7 @@ function Util() {
     Util.parseTimestampString = parseTimestampString;
 	Util.fromLatLngToPoint = fromLatLngToPoint;
 	Util.distanceBetween = distanceBetween;
-	Util.fromDirectionToHeading = fromDirectionToHeading;
+	Util.getStreetView = getStreetView;
 })();
 
 // extend polygon of Gmap V3 with getBounds method
