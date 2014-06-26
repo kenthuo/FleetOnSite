@@ -32,6 +32,19 @@ var DEFAULT = {CENTER_COORDINATE: new google.maps.LatLng(48.16700, -100.16700), 
 
 var CENTER_ICON = {url: ICON_HOST_PATH + 'crosshair.png', width: 41, height: 41}
 
+var POLYLINE_DECORATED_ICON = {
+	icon: {
+        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+        strokeColor: 'black',
+        strokeOpacity: 1.0,
+        strokeWeight: 1.0,
+        fillColor: 'yellow',
+        fillOpacity: 1.0,
+        scale: 3},
+    offset: '66%'};
+var POLYLINE_PLAIN_ICON = {};
+var POLYLINE_DECORATED_ICON_THRESHOLD = 30; // if the distance between two markers is greater than this threshold, a decorated icon is shown in the route
+
 function ContigoMarkers(markers, cocs, routes) {
     this.markers = markers ? markers : []; // an array of markers
     this.cocs = cocs ? cocs : []; // circle of certainty for each marker
@@ -377,6 +390,7 @@ ContigoMap.prototype = {
 					},
 					zoom_changed: function() {
 						$this.contextMenu.close();
+						$this.redrawRouteSegments();
 					}
 				},
 				callback: function(result) {
@@ -626,19 +640,6 @@ ContigoMap.prototype = {
 	    if (locationMarkers.routes.length > 0) {
             mapObjects["polyline"] = {};
             mapObjects["polyline"]["values"] = [];
-            var decorated = {
-                        icon: {
-                            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                            strokeColor: 'black',
-                            strokeOpacity: 1.0,
-                            strokeWeight: 1.0,
-                            fillColor: 'yellow',
-                            fillOpacity: 1.0,
-                            scale: 3
-                        },
-                        offset: '50%'
-                    };
-            var plain = {};
             _.each(locationMarkers.routes, function(route) {
                 mapObjects["polyline"]["values"].push({
                     options: {
@@ -646,7 +647,7 @@ ContigoMap.prototype = {
                         strokeOpacity: 1.0,
                         strokeWeight: 2,
                         path: route.segment,
-                        icons: [!_.isEqual(route.segment[0], route.segment[1]) ? decorated : plain]
+                        icons: [POLYLINE_PLAIN_ICON]
                     }
                 });
             });
@@ -1286,6 +1287,35 @@ ContigoMap.prototype = {
       		}
     	});
 	},
+	
+	/**
+	 * Redraw the route segments if exists. The decorated icon of the route is based on
+	 * the length in point. If the length is greater a given number, then the decorated
+	 * icon will be shown, otherwise just a plain line.
+	 */
+	redrawRouteSegments : function() {
+		var $this = this;
+		this.canvas.gmap3({
+			get: {
+				name: "polyline",
+				all: true,
+				callback: function(segments) {
+					$.each(segments, function(i, segment) {
+						var path = segment.getPath().getArray();
+						var distance = Util.distanceBetween(Util.fromLatLngToPoint(path[0], $this.map), Util.fromLatLngToPoint(path[1], $this.map));
+						var icon = POLYLINE_PLAIN_ICON;
+						if (distance > 30) {
+							icon = POLYLINE_DECORATED_ICON;
+						}
+						segment.setOptions({
+							options: {
+								icons: [icon]
+							}});
+					});
+				}
+			}
+		});
+	},
     
     /**
      * Draw a circular overlay on the map.
@@ -1575,6 +1605,9 @@ ContigoMap.prototype = {
                             bounds = _.isFunction(shape.getPosition) ? bounds.extend(shape.getPosition()) : bounds.union(shape.getBounds());
 						});
                         $this.map.fitBounds(bounds); 
+                        google.maps.event.addListenerOnce($this.map, 'bounds_changed', function(event) {
+							$this.redrawRouteSegments();
+						});
         			}
       			}
             });
