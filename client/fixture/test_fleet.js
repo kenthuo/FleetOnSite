@@ -232,6 +232,39 @@ $(document).ready(function() {
 	var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
 */
 
+	// Fourth test fixture
+
+/*
+	var beaconPointsArray = {};
+	var jobsArray = {};
+	var locatePoint_45345_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB01306", width: 16, height: 16}), label: "SM259", coord: new Coordinate({lat: 40.65080, lng: -73.50372}), eventType: "Ignition Off", address: new Address({street: "Larch Street Ext", city: "Seaford", county: "Nassau", state: "NY", postalCode: "11783", country: "US"}), stopDuration: "STOP: 29d 13h 13m 41s", speed: "", direction: "", timestamp: "06/12/2014 15:00:03 EDT ", landmark: "(CEDAR CREEK SHOP) ", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "45345", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "stop", temperature:  "" });
+	var locatePointsArray_45345 = [locatePoint_45345_1];
+	var beaconItem_45345 = new ContigoBeaconItem({locatePoints: locatePointsArray_45345, isPointsConnected: true});
+	beaconPointsArray["45345"] = beaconItem_45345;
+	var locatePoint_45352_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB01306", width: 16, height: 16}), label: "SM257", coord: new Coordinate({lat: 28.40887, lng: -80.60922}), eventType: "Ignition Off", address: new Address({street: "Glen Cheek Dr", city: "Cape Canaveral", county: "Brevard", state: "FL", postalCode: "32920", country: "US"}), stopDuration: "STOP: 23d 20h 43m 22s", speed: "", direction: "", timestamp: "06/02/2014 22:59:04 EDT ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "45352", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "stop", temperature:  "" });
+	var locatePointsArray_45352 = [locatePoint_45352_1];
+	var beaconItem_45352 = new ContigoBeaconItem({locatePoints: locatePointsArray_45352, isPointsConnected: true});
+	beaconPointsArray["45352"] = beaconItem_45352;
+	var locatePoint_45357_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB01303", width: 16, height: 16}), label: "SM251", coord: new Coordinate({lat: 40.65077, lng: -73.50403}), eventType: "Ignition Off", address: new Address({street: "Larch Street Ext", city: "Seaford", county: "Nassau", state: "NY", postalCode: "11783", country: "US"}), stopDuration: "STOP: 0h 03m 35s", speed: "", direction: "", timestamp: "06/26/2014 14:27:08 EDT ", landmark: "(CEDAR CREEK SHOP) ", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "45357", guardianID: "", ioprt1Scenario: "DPW-SEWER DEPT-RODDER- PTO OFF", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "stop", temperature:  "" });
+	var locatePointsArray_45357 = [locatePoint_45357_1];
+	var beaconItem_45357 = new ContigoBeaconItem({locatePoints: locatePointsArray_45357, isPointsConnected: true});
+	beaconPointsArray["45357"] = beaconItem_45357;
+	var locatePoint_45364_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB01306", width: 16, height: 16}), label: "SM258", coord: new Coordinate({lat: 40.65110, lng: -73.50477}), eventType: "Ignition Off", address: new Address({street: "Larch Street Ext", city: "Seaford", county: "Nassau", state: "NY", postalCode: "11783", country: "US"}), stopDuration: "STOP: 0h 34m 13s", speed: "", direction: "", timestamp: "06/26/2014 13:56:30 EDT ", landmark: "(CEDAR CREEK SHOP) ", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "45364", guardianID: "", ioprt1Scenario: "DPW-SEWER DEPT-FLUSH TRUCK-PTO OFF", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "stop", temperature:  "" });
+	var locatePointsArray_45364 = [locatePoint_45364_1];
+	var beaconItem_45364 = new ContigoBeaconItem({locatePoints: locatePointsArray_45364, isPointsConnected: true});
+	beaconPointsArray["45364"] = beaconItem_45364;
+	var locatePoint_46165_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB01621", width: 20, height: 20}), label: "SM256", coord: new Coordinate({lat: 40.66113, lng: -73.50663}), eventType: "Locate", address: new Address({street: "2378 Larch St", city: "Wantagh", county: "Nassau", state: "NY", postalCode: "11793", country: "US"}), stopDuration: "", speed: "23mph", direction: "S", timestamp: "06/26/2014 14:29:05 EDT ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "46165", guardianID: "", ioprt1Scenario: "DPW-SEWER DEPT-FLUSH TRUCK-PTO OFF", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "move", temperature:  "" });
+	var locatePointsArray_46165 = [locatePoint_46165_1];
+	var beaconItem_46165 = new ContigoBeaconItem({locatePoints: locatePointsArray_46165, isPointsConnected: true});
+	beaconPointsArray["46165"] = beaconItem_46165;
+	var locatePoint_47496_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB01702", width: 16, height: 16}), label: "SM255", coord: new Coordinate({lat: 40.66010, lng: -73.56442}), eventType: "Locate", address: new Address({street: "228 Sunrise Hwy", city: "Merrick", county: "Nassau", state: "NY", postalCode: "11566", country: "US"}), stopDuration: "STOP: 0h 02m 33s", speed: "", direction: "", timestamp: "06/26/2014 14:29:29 EDT ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "47496", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "DPW-SEWER DEPT-FLUSH TRUCKS-PTO OFF", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "idle", temperature:  "" });
+	var locatePointsArray_47496 = [locatePoint_47496_1];
+	var beaconItem_47496 = new ContigoBeaconItem({locatePoints: locatePointsArray_47496, isPointsConnected: true});
+	beaconPointsArray["47496"] = beaconItem_47496;
+	var landmarkArray = [];
+	var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'ft'});
+*/
+
     map.sendPoints(poiCollection, true);
     $(window).on('resize', function(){
         map.resize("100%", "100%");

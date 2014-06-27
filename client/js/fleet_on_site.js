@@ -826,51 +826,53 @@ ContigoMap.prototype = {
         var anchor = classes = content = title = statusClass = '';
 
         if (label) {
+        	anchor = new google.maps.Point(0, 0);
         	if (mapType == 'cp_fleet' && indexOfMarker == szLocatePoints - 1) {
             	if (!this.isItemStatusActive) {
 					statusClass = 'item_status_disabled';
-					anchor = new google.maps.Point(Math.floor(label.length * 2.5), 25);
+					//anchor = new google.maps.Point(Math.floor(label.length * 2.5), 0);
 				} else {
-					anchor = new google.maps.Point(18, 18);
+					//anchor = new google.maps.Point(18, 18);
+					//anchor = new google.maps.Point(Math.floor(label.length * 2.5), 0);
             		switch (itemStatus) {
             		case "stop":
-                		statusClass = 'stop_status'; break;
+                		statusClass = 'item_status_enabled stop_status'; break;
             		case "idle":
-                		statusClass = 'idle_status'; break;
+                		statusClass = 'item_status_enabled idle_status'; break;
             		case "move":
 						if (!_.isEmpty(speed)) {
 							// for the case of an item with speed and direction
 							if (!direction) {
 								switch (direction) {
                         		case "E":
-                            		statusClass = 'move_to_east'; break;
+                            		statusClass = 'item_status_enabled move_to_east'; break;
                         		case "W":                            
-                            		statusClass = 'move_to_west'; break;
+                            		statusClass = 'item_status_enabled move_to_west'; break;
                         		case "S":
-                            		statusClass = 'move_to_south'; break;
+                            		statusClass = 'item_status_enabled move_to_south'; break;
                         		case "N":                            
-                            		statusClass = 'move_to_north'; break;
+                            		statusClass = 'item_status_enabled move_to_north'; break;
                         		case "NE":                            
-                            		statusClass = 'move_to_northeast'; break;
+                            		statusClass = 'item_status_enabled move_to_northeast'; break;
                         		case "NW":                            
-                            		statusClass = 'move_to_northwest'; break;
+                            		statusClass = 'item_status_enabled move_to_northwest'; break;
                         		case "SE":                            
-                            		statusClass = 'move_to_southeast'; break;
+                            		statusClass = 'item_status_enabled move_to_southeast'; break;
                         		case "SW":                           
-                            		statusClass = 'move_to_southwest'; break;
+                            		statusClass = 'item_status_enabled move_to_southwest'; break;
                         		default:
-                            		statusClass = '', anchor = new google.maps.Point(Math.floor(label.length * 2.5), 25); break;
+                            		//statusClass = '', anchor = new google.maps.Point(Math.floor(label.length * 2.5), 25); break;
 								}				
 							} else {
 								// for the case of an item with speed but not direction
-                        		statusClass = 'move_status';                        
+                        		statusClass = 'item_status_enabled move_status';                        
 							}			
 						} else {
-                    		anchor = new google.maps.Point(Math.floor(label.length * 2.5), 25);
+                    		//anchor = new google.maps.Point(Math.floor(label.length * 2.5), 25);
 						}
                 		break;
                 	default:
-                		anchor = new google.maps.Point(Math.floor(label.length * 2.5), 25);
+                		//anchor = new google.maps.Point(Math.floor(label.length * 2.5), 25);
                 		break;                
             		}
             	}
@@ -879,7 +881,7 @@ ContigoMap.prototype = {
         	} else if ((mapType == 'cp_rpt_stop_map_multi' && indexOfMarker == szLocatePoints - 1) || mapType == 'address_to_map') {
 
         	} else {
-            	anchor = new google.maps.Point(Math.floor(label.length * 2.5), -10);
+            	//anchor = new google.maps.Point(Math.floor(label.length * 2.5), -10);
             	classes = "labels";
             	content = label;
         	}
@@ -1581,9 +1583,9 @@ ContigoMap.prototype = {
 		this.isItemStatusActive = enabled;
 		$('.item_status').each(function(index, value) {
 			if (enabled) {
-				$(this).removeClass("item_status_disabled");
+				$(this).removeClass("item_status_disabled").addClass("item_status_enabled");
 			} else {
-				$(this).addClass("item_status_disabled");
+				$(this).addClass("item_status_disabled").removeClass("item_status_enabled");
 			}
 		});
 	},    
@@ -1604,10 +1606,7 @@ ContigoMap.prototype = {
 						$.each(shapes, function(j, shape) {
                             bounds = _.isFunction(shape.getPosition) ? bounds.extend(shape.getPosition()) : bounds.union(shape.getBounds());
 						});
-                        $this.map.fitBounds(bounds); 
-                        google.maps.event.addListenerOnce($this.map, 'bounds_changed', function(event) {
-							$this.redrawRouteSegments();
-						});
+                        $this.map.fitBounds(bounds); // this will also trigger zoom_changed of the map
         			}
       			}
             });
