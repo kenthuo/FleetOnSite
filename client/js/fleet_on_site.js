@@ -828,6 +828,8 @@ ContigoMap.prototype = {
         if (label) {
         	anchor = new google.maps.Point(0, 0);
         	if (mapType == 'cp_fleet' && indexOfMarker == szLocatePoints - 1) {
+        		anchor = new google.maps.Point(17, 18);
+        		var statusClass = labelClass = '';
             	if (!this.isItemStatusActive) {
 					statusClass = 'item_status_disabled';
 					//anchor = new google.maps.Point(Math.floor(label.length * 2.5), 0);
@@ -836,52 +838,55 @@ ContigoMap.prototype = {
 					//anchor = new google.maps.Point(Math.floor(label.length * 2.5), 0);
             		switch (itemStatus) {
             		case "stop":
-                		statusClass = 'item_status_enabled stop_status'; break;
+                		statusClass = 'item_status item_status_enabled stop_status'; labelClass = 'item_status_label_enabled'; break;
             		case "idle":
-                		statusClass = 'item_status_enabled idle_status'; break;
+                		statusClass = 'item_status item_status_enabled idle_status'; labelClass = 'item_status_label_enabled'; break;
             		case "move":
 						if (!_.isEmpty(speed)) {
 							// for the case of an item with speed and direction
 							if (!direction) {
 								switch (direction) {
                         		case "E":
-                            		statusClass = 'item_status_enabled move_to_east'; break;
+                            		statusClass = 'item_status item_status_enabled move_to_east'; labelClass = 'item_status_label_enabled'; break;
                         		case "W":                            
-                            		statusClass = 'item_status_enabled move_to_west'; break;
+                            		statusClass = 'item_status item_status_enabled move_to_west'; labelClass = 'item_status_label_enabled'; break;
                         		case "S":
-                            		statusClass = 'item_status_enabled move_to_south'; break;
+                            		statusClass = 'item_status item_status_enabled move_to_south'; labelClass = 'item_status_label_enabled'; break;
                         		case "N":                            
-                            		statusClass = 'item_status_enabled move_to_north'; break;
+                            		statusClass = 'item_status item_status_enabled move_to_north'; labelClass = 'item_status_label_enabled'; break;
                         		case "NE":                            
-                            		statusClass = 'item_status_enabled move_to_northeast'; break;
+                            		statusClass = 'item_status item_status_enabled move_to_northeast'; labelClass = 'item_status_label_enabled'; break;
                         		case "NW":                            
-                            		statusClass = 'item_status_enabled move_to_northwest'; break;
+                            		statusClass = 'item_status item_status_enabled move_to_northwest'; labelClass = 'item_status_label_enabled'; break;
                         		case "SE":                            
-                            		statusClass = 'item_status_enabled move_to_southeast'; break;
+                            		statusClass = 'item_status item_status_enabled move_to_southeast'; labelClass = 'item_status_label_enabled'; break;
                         		case "SW":                           
-                            		statusClass = 'item_status_enabled move_to_southwest'; break;
+                            		statusClass = 'item_status item_status_enabled move_to_southwest'; labelClass = 'item_status_label_enabled'; break;
                         		default:
-                            		//statusClass = '', anchor = new google.maps.Point(Math.floor(label.length * 2.5), 25); break;
+                            		statusClass = '', anchor = new google.maps.Point(0, 0); break;
 								}				
 							} else {
 								// for the case of an item with speed but not direction
-                        		statusClass = 'item_status_enabled move_status';                        
+                        		statusClass = 'item_status item_status_enabled move_status'; labelClass = 'item_status_label_enabled';
 							}			
 						} else {
                     		//anchor = new google.maps.Point(Math.floor(label.length * 2.5), 25);
+                    		anchor = new google.maps.Point(0, 0);
 						}
                 		break;
                 	default:
                 		//anchor = new google.maps.Point(Math.floor(label.length * 2.5), 25);
+                		anchor = new google.maps.Point(0, -10);
                 		break;                
             		}
             	}
-            	var compiled = _.template("<div class='item_status <%= statusClass %>'><div class='labels item_status_label'><%= label %></div></div>");
-            	content = $(compiled({label: label, statusClass: statusClass}))[0]; // get DOM object
+            	var compiled = _.template("<div class='<%= statusClass %>'><div class='labels <%= labelClass %>'><%= label %></div></div>");
+            	content = $(compiled({label: label, labelClass: labelClass, statusClass: statusClass}))[0]; // get DOM object
         	} else if ((mapType == 'cp_rpt_stop_map_multi' && indexOfMarker == szLocatePoints - 1) || mapType == 'address_to_map') {
 
         	} else {
             	//anchor = new google.maps.Point(Math.floor(label.length * 2.5), -10);
+            	console.log(anchor);
             	classes = "labels";
             	content = label;
         	}
@@ -1583,9 +1588,9 @@ ContigoMap.prototype = {
 		this.isItemStatusActive = enabled;
 		$('.item_status').each(function(index, value) {
 			if (enabled) {
-				$(this).removeClass("item_status_disabled").addClass("item_status_enabled");
+				$(this).removeClass("item_status_disabled").addClass("item_status_enabled").children(":first").removeClass("item_status_label_disabled").addClass("item_status_label_enabled");
 			} else {
-				$(this).addClass("item_status_disabled").removeClass("item_status_enabled");
+				$(this).removeClass("item_status_enabled").addClass("item_status_disabled").children(":first").removeClass("item_status_label_enabled").addClass("item_status_label_disabled");
 			}
 		});
 	},    

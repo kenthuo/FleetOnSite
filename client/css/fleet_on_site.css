@@ -46,81 +46,67 @@ body {
 	box-shadow: 2px 2px 1px #555555;
 }
 
-.item_status_label {
-	/*position: relative;
-	top: 35px;*/
+.item_status_label_enabled {
+	position: relative;
+	top: 34px;
+}
+
+.item_status_label_disabled {
+	position: relative;
+	top: 27px;
 }
 
 .item_status {
-	border: 1px solid #000;
+	/*border: 1px solid #000;*/
+
 }
 
 .stop_status {
-    height: 55px;
-    min-width: 35px;
     background-repeat: no-repeat;
     background-image: url(../images/stop.png);
 }
 
 .idle_status {
-    height: 55px;
-    min-width: 35px;
     background-repeat: no-repeat;
     background-image: url(../images/idle.png);
 }
 
 .move_status {
-    height: 55px;
-    min-width: 35px;
     background-repeat: no-repeat;
     background-image: url(../images/move.png);
 }
 
 .move_to_north {
-    height: 55px;
-    min-width: 35px;
 	background-repeat: no-repeat;
 	background-image: url(../images/direction/north.png);
 }
 
 .move_to_south {
-    height: 55px;
-    min-width: 35px;
     background-repeat: no-repeat;
     background-image: url(../images/direction/south.png);
 }
 
 .move_to_east {
-    height: 55px;
-    min-width: 35px;
     background-repeat: no-repeat;
     background-image: url(../images/direction/east.png);
 }
 
 .move_to_west {
-    height: 55px;
-    min-width: 35px;
     background-repeat: no-repeat;
     background-image: url(../images/direction/west.png);
 }
 
 .move_to_northeast {
-    height: 55px;
-    min-width: 35px;
     background-repeat: no-repeat;
     background-image: url(../images/direction/northeast.png);
 }
 
 .move_to_northwest {
-    height: 55px;
-    min-width: 35px;
     background-repeat: no-repeat;
     background-image: url(../images/direction/northwest.png);
 }
 
 .move_to_southeast {
-    height: 55px;
-    min-width: 35px;
     background-repeat: no-repeat;
     background-image: url(../images/direction/southeast.png);
 }
@@ -131,13 +117,15 @@ body {
 }
 
 .item_status_disabled {
-    height: auto !important;
-    min-width: initial !important;
+    /*height: auto !important;
+    min-width: initial !important;*/
 	background-image: url(../images/spacer.gif) !important;
+    height: 51px;
+    min-width: 35px;
 }
 
 .item_status_enabled {
-    height: 55px;
+    height: 51px;
     min-width: 35px;
 }
 
