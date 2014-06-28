@@ -57,8 +57,6 @@ body {
 }
 
 .item_status {
-	/*border: 1px solid #000;*/
-
 }
 
 .stop_status {
@@ -76,42 +74,42 @@ body {
     background-image: url(../images/move.png);
 }
 
-.move_to_north {
+.move_to_N {
 	background-repeat: no-repeat;
 	background-image: url(../images/direction/north.png);
 }
 
-.move_to_south {
+.move_to_S {
     background-repeat: no-repeat;
     background-image: url(../images/direction/south.png);
 }
 
-.move_to_east {
+.move_to_E {
     background-repeat: no-repeat;
     background-image: url(../images/direction/east.png);
 }
 
-.move_to_west {
+.move_to_W {
     background-repeat: no-repeat;
     background-image: url(../images/direction/west.png);
 }
 
-.move_to_northeast {
+.move_to_NE {
     background-repeat: no-repeat;
     background-image: url(../images/direction/northeast.png);
 }
 
-.move_to_northwest {
+.move_to_NW {
     background-repeat: no-repeat;
     background-image: url(../images/direction/northwest.png);
 }
 
-.move_to_southeast {
+.move_to_SE {
     background-repeat: no-repeat;
     background-image: url(../images/direction/southeast.png);
 }
 
-.move_to_southwest {
+.move_to_SW {
     background-repeat: no-repeat;
     background-image: url(../images/direction/southwest.png);
 }

@@ -1009,7 +1009,7 @@ var beaconPointsArray = {};
 beaconPointsArray["1988"] = beaconItem;
 var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, measurementUnit: 'm'});
 
-    map.sendPoints(poiCollection);
+    map.sendPoints(poiCollection, true);
     
 $(window).on('resize', function(){
         map.resize("100%", "100%");

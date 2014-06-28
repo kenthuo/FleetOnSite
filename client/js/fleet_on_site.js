@@ -744,7 +744,7 @@ ContigoMap.prototype = {
 					if (!(!isPointsConnected || (isPointsConnected && (i == szLocatePoints - 1))) || $this.mapType == "cp_rpt_routetrip") {
 						markerLabel = '';
 					}
-                    var labelInfo = $this.generateMarkerLabelInfoByMapType(markerLabel, $this.mapType, isPointsConnected, szLocatePoints, i, speed, direction, vehicleStatus);
+                    var labelInfo = $this.generateMarkerLabelInfoByMapType(markerLabel, $this.mapType, icon, isPointsConnected, szLocatePoints, i, speed, direction, vehicleStatus);
                                     
                     if (i == szLocatePoints - 1) {
 		            	$this.setMostRecentLocate(point);
@@ -816,67 +816,48 @@ ContigoMap.prototype = {
      *
      * @param label
      * @param mapType
+	 * @param icon
      * @param szLocatePoints
      * @param indexOfMarker
      * @param speed
      * @param direction
      * @param itemStatus
      */
-    generateMarkerLabelInfoByMapType : function(label, mapType, isPointsConnected, szLocatePoints, indexOfMarker, speed, direction, itemStatus) {
-        var anchor = classes = content = title = statusClass = '';
-
+    generateMarkerLabelInfoByMapType : function(label, mapType, icon, isPointsConnected, szLocatePoints, indexOfMarker, speed, direction, itemStatus) {
+        var classes = content = title = statusClass = '', anchor = null;
+		
         if (label) {
-        	anchor = new google.maps.Point(0, 0);
-        	if (mapType == 'cp_fleet' && indexOfMarker == szLocatePoints - 1) {
-        		anchor = new google.maps.Point(17, 18);
+			var anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
+        	if (mapType == 'cp_fleet' && indexOfMarker == szLocatePoints - 1) {        		
         		var statusClass = labelClass = '';
             	if (!this.isItemStatusActive) {
-					statusClass = 'item_status_disabled';
-					//anchor = new google.maps.Point(Math.floor(label.length * 2.5), 0);
+					statusClass = 'item_status item_status_disabled';
 				} else {
-					//anchor = new google.maps.Point(18, 18);
-					//anchor = new google.maps.Point(Math.floor(label.length * 2.5), 0);
+					anchorX = 17, anchorY = 18, statusClass = 'item_status item_status_enabled', labelClass = 'item_status_label_enabled';
             		switch (itemStatus) {
             		case "stop":
-                		statusClass = 'item_status item_status_enabled stop_status'; labelClass = 'item_status_label_enabled'; break;
+                		statusClass += ' stop_status'; break;
             		case "idle":
-                		statusClass = 'item_status item_status_enabled idle_status'; labelClass = 'item_status_label_enabled'; break;
+                		statusClass += ' idle_status'; break;
             		case "move":
 						if (!_.isEmpty(speed)) {
 							// for the case of an item with speed and direction
 							if (!direction) {
-								switch (direction) {
-                        		case "E":
-                            		statusClass = 'item_status item_status_enabled move_to_east'; labelClass = 'item_status_label_enabled'; break;
-                        		case "W":                            
-                            		statusClass = 'item_status item_status_enabled move_to_west'; labelClass = 'item_status_label_enabled'; break;
-                        		case "S":
-                            		statusClass = 'item_status item_status_enabled move_to_south'; labelClass = 'item_status_label_enabled'; break;
-                        		case "N":                            
-                            		statusClass = 'item_status item_status_enabled move_to_north'; labelClass = 'item_status_label_enabled'; break;
-                        		case "NE":                            
-                            		statusClass = 'item_status item_status_enabled move_to_northeast'; labelClass = 'item_status_label_enabled'; break;
-                        		case "NW":                            
-                            		statusClass = 'item_status item_status_enabled move_to_northwest'; labelClass = 'item_status_label_enabled'; break;
-                        		case "SE":                            
-                            		statusClass = 'item_status item_status_enabled move_to_southeast'; labelClass = 'item_status_label_enabled'; break;
-                        		case "SW":                           
-                            		statusClass = 'item_status item_status_enabled move_to_southwest'; labelClass = 'item_status_label_enabled'; break;
-                        		default:
-                            		statusClass = '', anchor = new google.maps.Point(0, 0); break;
+								if (_.indexOf(["E", "W", "S", "N", "NE", "NW", "SE", "SW"], direction) > -1) {
+									statusClass += ' move_to_' + direction; break;
+								} else {
+									statusClass = labelClass = '', anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
 								}				
 							} else {
 								// for the case of an item with speed but not direction
-                        		statusClass = 'item_status item_status_enabled move_status'; labelClass = 'item_status_label_enabled';
+                        		statusClass += ' move_status';
 							}			
 						} else {
-                    		//anchor = new google.maps.Point(Math.floor(label.length * 2.5), 25);
-                    		anchor = new google.maps.Point(0, 0);
+							statusClass = labelClass = '', anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
 						}
                 		break;
                 	default:
-                		//anchor = new google.maps.Point(Math.floor(label.length * 2.5), 25);
-                		anchor = new google.maps.Point(0, -10);
+                		statusClass = labelClass = '', anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
                 		break;                
             		}
             	}
@@ -885,11 +866,10 @@ ContigoMap.prototype = {
         	} else if ((mapType == 'cp_rpt_stop_map_multi' && indexOfMarker == szLocatePoints - 1) || mapType == 'address_to_map') {
 
         	} else {
-            	//anchor = new google.maps.Point(Math.floor(label.length * 2.5), -10);
-            	console.log(anchor);
             	classes = "labels";
             	content = label;
         	}
+			anchor = new google.maps.Point(anchorX, anchorY);
         } else {
         	anchor = null;
         	content = classes = '';
@@ -1033,7 +1013,7 @@ ContigoMap.prototype = {
 			}
 			var markerLabel = label;
 			
-			var labelInfo = $this.generateMarkerLabelInfoByMapType(markerLabel, $this.mapType);
+			var labelInfo = $this.generateMarkerLabelInfoByMapType(markerLabel, $this.mapType, icon);
 			if (label) {
                 var infoContent = $this.buildLmkInfoWindowContents(label, userNote, lmkAddress, content, dispatch, coord);
                 var marker = {
