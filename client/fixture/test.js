@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    var map = new ContigoMap("map", "cp_rpt_routelog");
+    var map = new ContigoMap();
     map.init();
     
     var locatePoint_786_1 = new ContigoBeaconPoi({icon: new Icon({name: "CP00001", width: 16, height: 16}), label: "MT3000-85071-786-RACO", coord: new Coordinate({lat: 49.27700, lng: -123.11995}), eventType: "Locate", address: new Address({street: "380 Nelson St", city: "Vancouver", county: "", state: "BC", postalCode: "V6B", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "08/20/2012 05:46:38PM EDT ", landmark: "(\'Contigo Office--raco Dep\'s) ", circleCertaintyRadius: "8", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "786", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", lineColor:  "" });

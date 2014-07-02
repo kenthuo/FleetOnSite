@@ -1,49 +1,3 @@
-var LOCATE_MODE = {
-	ALL: 0, // show all points for each beacon on the map
-	LAST3: 1, // show the last 3 points for each beacon on the map 
-	LAST: 2 // show the last point for each beacon on the map 
-}
-var COC_MODE = {
-	LAST: 0, // show CoCs only on the last point for each beacon on the map
-	ALL: 1, // show CoCs on all of points for each beacon on the map
-	NONE: 2 // // show no CoC of every point for each beacon on the map
-}
-
-var TAG_GROUP = {
-	LOCATION: "tg_location", // The tag for all of location markers
-	COC: "tg_coc", // The tag for all of circle of certainty
-	LANDMARK: "tg_landmark", // The tag for all of landmark markers
-	JOB: "tg_job", // The tag for all of job markers.
-	CIRCLE_ZONE: "tg_circle_zone", // The tag for all of circle zones
-	RECTANGLE_ZONE: "tg_group_rectangle_zone", // The tag for all of rectangle zones
-	POLYGON_ZONE: "tg_polygon_zone", // The tag for all of polygon zones
-	ADDRESS: "tg_address" // The tag for all of address markers
-};
-
-var DEFAULT_ROUTE_COLOR = "#FF0000";
-
-var ICON_HOST_PATH = "icons/";
-
-var NUMBERS_ICON_HOST_PATH = "icons/numbers/";
-
-var IMG_HOST_PATH = "images/";
-
-var DEFAULT = {CENTER_COORDINATE: new google.maps.LatLng(48.16700, -100.16700), ZOOM_LEVEL: 4};
-
-var CENTER_ICON = {url: ICON_HOST_PATH + 'crosshair.png', width: 41, height: 41}
-
-var POLYLINE_DECORATED_ICON = {
-	icon: {
-        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-        strokeColor: 'black',
-        strokeOpacity: 1.0,
-        strokeWeight: 1.0,
-        fillColor: 'yellow',
-        fillOpacity: 1.0,
-        scale: 3},
-    offset: '66%'};
-var POLYLINE_PLAIN_ICON = {};
-var POLYLINE_DECORATED_ICON_THRESHOLD = 30; // if the distance between two markers is greater than this threshold, a decorated icon is shown in the route
 
 function ContigoMarkers(markers, cocs, routes) {
     this.markers = markers ? markers : []; // an array of markers
@@ -51,284 +5,17 @@ function ContigoMarkers(markers, cocs, routes) {
     this.routes = routes ? routes : []; // routes to connect markers
 }
 
-function MoreControl(contigoMap) {
-    var liveTrafficOption = contigoMap.createControl({
-        type: 'checkbox',
-        position: 'top_right',
-        content: 'Live Traffic',
-        title: 'Show live traffic information',
-        classes: 'select_checkbox_option',
-        disabled: false,
-        events: {
-            click: function() {
-                contigoMap.idOptionChecked(this) ? contigoMap.canvas.gmap3('trafficlayer') : contigoMap.clear({name: ['trafficlayer']});
-            }
-        }    
-    });
-    var bestFitOption = contigoMap.createControl({
-        type: 'option',
-        content: 'Best Fit',
-        title: 'Best fit',
-        classes: 'select_option',
-        disabled: false,
-        events: {
-            click: function() {
-                contigoMap.bestFit();
-            }            
-        }
-    });
-    var centerMapOption = contigoMap.createControl({
-        type: 'option',
-        content: 'Center Map',
-        title: 'Center map',
-        classes: 'select_option',
-        disabled: false,
-        events: {
-            click: function() {
-                alert('Center map');
-            }            
-        }
-    });    
-    var centerLastOption = contigoMap.createControl({
-        type: 'checkbox',
-        id: 'center_last_option',
-        title: 'Center last',
-        content: 'Center Last',
-        classes: 'select_checkbox_option',
-        disabled: false,
-        events: {
-            click: function() {
-                contigoMap.isAutoCenteringActive = contigoMap.idOptionChecked(this);
-            }       
-        }
-    });     
-    var autoBestFitOption = contigoMap.createControl({
-        type: 'checkbox',
-        id: 'auto_best_fit_option',
-        title: 'Auto best fit',
-        content: 'Auto Best Fit',
-        classes: 'select_checkbox_option',
-        disabled: false,
-        events: {
-            click: function() {
-                contigoMap.isAutoBestFitActive = contigoMap.idOptionChecked(this);
-            }       
-        }
-    });
-    var displayItemStatusOption = contigoMap.createControl({
-        type: 'checkbox',
-        id: 'display_item_status_option',
-        title: 'Display item status',
-        content: 'Display Item Status',
-        classes: 'select_checkbox_option',
-        disabled: false,
-        checked: true,
-        events: {
-            click: function() {
-                contigoMap.enableItemStatus(contigoMap.idOptionChecked(this));
-            }       
-        }
-    });
-    var tabularDataOption = contigoMap.createControl({
-        type: 'checkbox',
-        id: 'tabular_data_option',
-        title: 'Show tabular data',
-        content: 'Tabular Data',
-        classes: 'select_checkbox_option',
-        disabled: false,
-        events: {
-            click: function() {
-                contigoMap.isTabularDataActive = contigoMap.idOptionChecked(this);
-                if (contigoMap.isTabularDataActive) {
-                    contigoMap.canvas.gmap3({
-                        panel: {
-                            options: {
-                                content: 
-                                    '<div id="tabs">\
-                                        <ul>\
-                                            <li><a href="#tabs_locate">Event Location</a></li>\
-                                            <li><a href="#tabs_landmark">Landmark</a></li>\
-                                            <li><a href="#tabs_job">Job</a></li>\
-                                        </ul>\
-                                        <div id="tabs_locate"></div>\
-                                        <div id="tabs_landmark"></div>\
-                                        <div id="tabs_job"></div>\
-                                    </div>',
-                                bottom: true,
-                                left: true
-                            },
-                            callback: function(panel) {
-                                $(panel).css({width: '100%', height: '200px', bottom: '0px', top: ''});                                
-                                contigoMap.canvas.gmap3({
-                                    get: {
-                                        tag: TAG_GROUP.LOCATION,
-                                        all: true,
-                                        full: true,
-                                        callback: function(markers) {
-                                            var locationTable = $("<table id='location_table'></table>");
-                                            var locationThead = $("<thead></thead>").append("<tr>" + _.reduce(["", "Date/Time", "Nearest Address", "Latitude", "Longitude", "Event", "Dir", "Speed", "Type/Age"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
-                                            var locationTbody = $("<tbody></tbody>");
-                                            _.each(markers, function(marker, j) {
-                                                var dateTime = landmark = address = "";
-                                                var html = $(marker.data);
-                                                landmark = html.find(".landmark").html();
-                                                dateTime = html.find(".date_time").html().match(/^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}[A|P]M [a-zA-Z]*)(.*\(GPS Age: |)([a-zA-Z0-9 ]+|)(\)|)/); // "08/21/2012 02:17:24PM EDT " || 08/20/2012 08:05:01PM EDT <br>(GPS Age: 0h 05m 01s)
-                                                
-                                                address = _.reduce([
-                                                    html.find(".street_address").html(), 
-                                                    html.find(".city").html(), 
-                                                    html.find(".county").html(), 
-                                                    html.find(".state_province").html(), 
-                                                    html.find(".country").html(), 
-                                                    html.find(".postal_code").html()], function(memo, part) { return memo ? (memo + (part ? ", " + part : "")) : part;}, "");
+function ContigoMap(opts) {
+	var defaults = {
+		mapId: "map", // the identity of the DOM element to hold the map
+		controlOptions: {
+			TrafficOption: true, BestFitOption: true, CenterMapOption: true, CenterLastOption: false, 
+			AutoBestFitOption: false, DisplayItemStateOption: false, TabularDataOption: true, LocateOption: true
+		},
+		showLabel: false, showLastLabelOnly: true, drawCircle: false, drawRectangle: false, drawPolygon: false};
+	this.opts = $.extend(true, {}, defaults, opts);
 
-                                                address = address ? ("<a id='" + marker.id + "'>" + address + "</a>") : "";
-                                                address = landmark ? ("<b>" + landmark + "</b>" + address) : address;
-                                                
-                                                locationTbody.append("<tr>" + _.reduce([
-                                                    "[" + ++j + "]", 
-                                                    dateTime[1], 
-                                                    address,
-                                                    marker.object.getPosition().lat().toFixed(5),
-                                                    marker.object.getPosition().lng().toFixed(5),
-                                                    html.find(".event_type").html(), 
-                                                    html.find(".direction").html(), 
-                                                    html.find(".speed").html(), 
-                                                    dateTime[3]], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
-                                                $(locationTbody).on("click", "#" + marker.id, function() {
-                                                    // due to 'full' property is true, the real marker object is stored in marker.object property
-                                                    google.maps.event.trigger(marker.object, 'click');
-                                                });
-                                            });
-                                            locationTable.append(locationThead);                                            
-                                            locationTable.append(locationTbody);
-                                            $("#tabs_locate").append(locationTable);                                            
-                                        }
-                                    }
-                                });
-                                contigoMap.canvas.gmap3({
-                                    get: {
-                                        tag: TAG_GROUP.LANDMARK,
-                                        all: true,
-                                        full: true,
-                                        callback: function(landmarks) {
-                                            var landmarkTable = $("<table id='landmark_table'></table>");
-                                            var landmarkThead = $("<thead></thead>").append("<tr>" + _.reduce(["", "Name", "Category", "Address", "Latitude", "Longitude", "Notes"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
-                                            var landmarkTbody = $("<tbody></tbody>");
-                                            _.each(landmarks, function(landmark, j) {
-                                                var html = $(landmark.data), address = "";
-                                                landmarkInfo = landmark.object.title.match(/^(.*)\((.*)\)$/); // "Office (Company)"
-                                                address = html.find(".landmark_address").html();
-                                                address = address ? ("<a id='" + landmark.id + "'>" + address + "</a>") : "";
-                                                landmarkTbody.append("<tr>" + _.reduce([
-                                                    "[" + ++j + "]", 
-                                                    landmarkInfo[1], 
-                                                    landmarkInfo[2],
-                                                    address,
-                                                    landmark.object.getPosition().lat().toFixed(5),
-                                                    landmark.object.getPosition().lng().toFixed(5),
-                                                    html.find(".landmark_content").html()], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
-                                                $(landmarkTbody).on("click", "#" + landmark.id, function() {
-                                                    // due to 'full' property is true, the real marker object is stored in marker.object property
-                                                    google.maps.event.trigger(landmark.object, 'click');
-                                                });
-                                            });
-                                            landmarkTable.append(landmarkThead);                                            
-                                            landmarkTable.append(landmarkTbody);
-                                            $("#tabs_landmark").append(landmarkTable);  
-                                        }
-                                    }
-                                });
-                                contigoMap.canvas.gmap3({
-                                    get: {
-                                        tag: TAG_GROUP.JOB,
-                                        all: true,
-                                        full: true,
-                                        callback: function(jobs) {
-                                            var jobTable = $("<table id='job_table'></table>");
-                                            var jobThead = $("<thead></thead>").append("<tr>" + _.reduce(["Priority", "Status", "Destination", "Latitude", "Longitude", "Description"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
-                                            var jobTbody = $("<tbody></tbody>");
-                                            _.each(jobs, function(job) {
-                                                var html = $(job.data), destination = "";
-                                                priority = html.find(".job_priority").html();
-                                                status = html.find(".job_status").html();
-                                                destination = html.find(".job_destination").html();
-                                                destination = destination ? ("<a id='" + job.id + "'>" + destination + "</a>") : "";
-                                                jobTbody.append("<tr>" + _.reduce([
-                                                    html.find(".job_priority").html(), 
-                                                    html.find(".job_status").html(), 
-                                                    destination,
-                                                    job.object.getPosition().lat().toFixed(5),
-                                                    job.object.getPosition().lng().toFixed(5),
-                                                    html.find(".job_description_content").html()], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
-                                                $(jobTbody).on("click", "#" + job.id, function() {
-                                                    // due to 'full' property is true, the real marker object is stored in marker.object property
-                                                    google.maps.event.trigger(job.object, 'click');
-                                                });
-                                            });
-                                            jobTable.append(jobThead);                                            
-                                            jobTable.append(jobTbody);
-                                            $("#tabs_job").append(jobTable);  
-                                        }
-                                    }
-                                });
-                                $("#tabs").tabs();
-                            }
-                        }                        
-                    })
-                } else {
-                    contigoMap.clear({name: 'panel'});
-                }
-            }       
-        }
-    });
-    var options = contigoMap.createControl({
-        classes: "options_container",
-        children: [
-            liveTrafficOption,
-            contigoMap.createControl({
-                classes: "option_separator"
-            }),            
-            centerMapOption,
-            bestFitOption,
-            contigoMap.createControl({
-                classes: "option_separator"
-            }), 
-            centerLastOption,
-            autoBestFitOption,
-            displayItemStatusOption,
-            contigoMap.createControl({
-                classes: "option_separator"
-            }),
-            tabularDataOption
-        ]
-    });
-    return {
-        id: 'more_control',
-        position: 'top_right',
-        type: "select",
-        content: "More ...",
-        title: "Show more control options",
-        children: [options],
-        disabled: false,
-        events: {
-            click: function() {
-                var optionsContainer = $("#more_control .options_container");
-                optionsContainer.is(":visible")  ? optionsContainer.hide() : optionsContainer.show();          
-                optionsContainer.on('mouseover', function() {
-                    optionsContainer.show();
-                })                
-                optionsContainer.on('mouseout', function() {
-                    optionsContainer.hide();
-                })
-            }
-        }        
-    }
-}
-
-function ContigoMap(mapId, mapType) {
-    this.mapId = mapId ? mapId : 'map'; // the identity of the DOM element to hold the map
-    this.mapType = mapType ? mapType : '';
+    this.mapType = 'cp_rpt_routelog';
     this.map = null; // the google map object
     this.canvas = null; // the canvas object of a map
     this.contextMenu = null; // the context menu of a map
@@ -353,7 +40,7 @@ ContigoMap.prototype = {
 	 */
 	init: function() {
 		var $this = this;
-		this.canvas = $('#' + this.mapId);
+		this.canvas = $('#' + this.opts.mapId);
 		this.contextMenu = new Gmap3Menu(this.canvas);
 		this.initContextMenu();
         
@@ -396,7 +83,7 @@ ContigoMap.prototype = {
 				callback: function(result) {
                     // create custom controls on the map
                     $this.map = $this.canvas.gmap3("get");
-                    $this.addControl(new MoreControl($this));
+					$this.addControl(new MoreControl($this)[0], "top_right");
       			}
             }
         });
@@ -673,21 +360,19 @@ ContigoMap.prototype = {
 	        var showInputOutputColor = beacon.showInputOutputColor;
 	        var szLocatePoints = locatePoints.length;
 	        var initialIndex = 0;
-	        var lastIndex = szLocatePoints;
 	        
 	        // determine the starting and ending index to display location points
 	        if (szLocatePoints > 0) {
-		        var minNetworkTs = Util.toUTC(locatePoints[0]['timestamp']);
-                var maxNetworkTs = Util.toUTC(locatePoints[szLocatePoints - 1]['timestamp']);
-                var isDescOrder = (minNetworkTs > maxNetworkTs);
+                var isDescOrder = (Util.toUTC(locatePoints[0]['timestamp']) > Util.toUTC(locatePoints[szLocatePoints - 1]['timestamp']));
                 if (isDescOrder) {
                     locatePoints = locatePoints.reverse();
                 }
 		        initialIndex = $this.determineInitialIndex(locatePoints);
 	        }
 	        
-            _.each(locatePoints, function(point, i) {
+			for (var i = initialIndex; i < locatePoints.length; i++) {
                 var segment = [];
+				var point = locatePoints[i];
 	            var icon = point.icon;
 	            var label = point.label;
 	            var coord = point.coord;
@@ -733,6 +418,7 @@ ContigoMap.prototype = {
 	            	}	            	
 	            }
 
+				var isLast = (i == szLocatePoints - 1);
 	            if (label) {
 	            	var infoContent = $this.buildLocationInfoWindowContents(
 		                            label, coord, eventType, address, stopDuration, speed, 
@@ -740,13 +426,13 @@ ContigoMap.prototype = {
 		                            status, userNote, driverID, driverStatus, beaconID,
 		                            guardianID, ioprt1Scenario, ioprt2Scenario, ioprt3Scenario, ioprt4Scenario, lineColor, 
 		                            dispatch, isMetric, driverNameInItemMode);
-		                            
-					if (!(!isPointsConnected || (isPointsConnected && (i == szLocatePoints - 1))) || $this.mapType == "cp_rpt_routetrip") {
+		            
+					if (!(!isPointsConnected || (isPointsConnected && isLast)) || $this.mapType == "cp_rpt_routetrip") {
 						markerLabel = '';
-					}
-                    var labelInfo = $this.generateMarkerLabelInfoByMapType(markerLabel, $this.mapType, icon, isPointsConnected, szLocatePoints, i, speed, direction, vehicleStatus);
+					}					
+                    var labelInfo = $this.generateMarkerLabelInfoByMapType(markerLabel, $this.mapType, icon, isLast, speed, direction, vehicleStatus);
                                     
-                    if (i == szLocatePoints - 1) {
+                    if (isLast) {
 		            	$this.setMostRecentLocate(point);
 		            }
 
@@ -764,7 +450,6 @@ ContigoMap.prototype = {
                                 },
                                 labelAnchor: labelInfo.anchor,
                                 labelClass: labelInfo.classes,
-                                //labelStyle: {opacity: 0.75},
                                 labelContent: labelInfo.content}};
 						markers.push(marker);
                     }
@@ -773,7 +458,7 @@ ContigoMap.prototype = {
                 
                 circleCertaintyRadius = parseInt(circleCertaintyRadius, 10);
                 if (circleCertaintyRadius > 0) {
-                    if ($this.currentCocMode == COC_MODE.ALL || $this.currentCocMode == COC_MODE.LAST && i == szLocatePoints - 1) {
+                    if ($this.currentCocMode == COC_MODE.ALL || $this.currentCocMode == COC_MODE.LAST && isLast) {
                         var circle = {
                             tag: TAG_GROUP.COC,
                             options: {
@@ -806,7 +491,7 @@ ContigoMap.prototype = {
                         }
                     }
                 }
-	        }); // _.each(locatePoints, function(currentPoint, i)
+	        } // for (var i = initialIndex; i < locatePoints.length; i++)
 	    }); // _.each(beaconItems, function(beacon)
 	    return new ContigoMarkers(markers, cocs, routes);
 	},
@@ -817,18 +502,17 @@ ContigoMap.prototype = {
      * @param label
      * @param mapType
 	 * @param icon
-     * @param szLocatePoints
-     * @param indexOfMarker
+     * @param isLast
      * @param speed
      * @param direction
      * @param itemStatus
      */
-    generateMarkerLabelInfoByMapType : function(label, mapType, icon, isPointsConnected, szLocatePoints, indexOfMarker, speed, direction, itemStatus) {
+    generateMarkerLabelInfoByMapType : function(label, mapType, icon, isLast, speed, direction, itemStatus) {
         var classes = content = title = statusClass = '', anchor = null;
 		
         if (label) {
 			var anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
-        	if (mapType == 'cp_fleet' && indexOfMarker == szLocatePoints - 1) {        		
+        	if (mapType == 'cp_fleet' && isLast) {        		
         		var statusClass = labelClass = '';
             	if (!this.isItemStatusActive) {
 					statusClass = 'item_status item_status_disabled';
@@ -846,6 +530,7 @@ ContigoMap.prototype = {
 								if (_.indexOf(["E", "W", "S", "N", "NE", "NW", "SE", "SW"], direction) > -1) {
 									statusClass += ' move_to_' + direction; break;
 								} else {
+									// unknown direction
 									statusClass = labelClass = '', anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
 								}				
 							} else {
@@ -853,10 +538,12 @@ ContigoMap.prototype = {
                         		statusClass += ' move_status';
 							}			
 						} else {
+							// no speed
 							statusClass = labelClass = '', anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
 						}
                 		break;
                 	default:
+						// unknown status
                 		statusClass = labelClass = '', anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
                 		break;                
             		}
@@ -1029,7 +716,6 @@ ContigoMap.prototype = {
                         },
                         labelAnchor: labelInfo.anchor,
                         labelClass: labelInfo.classes,
-                        //labelStyle: {opacity: 0.75},
                         labelContent: labelInfo.content}};
                 markers.push(marker);
 			}	        
@@ -1250,6 +936,7 @@ ContigoMap.prototype = {
 	    if (this.poiCollection) {
 	        this.currentLocateFilterMode = mode;
 	        this.refreshMap(this.poiCollection);
+			this.redrawRouteSegments();
 	    }
 	},
 	
@@ -1560,11 +1247,11 @@ ContigoMap.prototype = {
 	},
 	
 	/**
-	 * Toggle item status feature of markers on the map.
+	 * Toggle item state feature of markers on the map.
 	 * 
-	 * @param boolean enabled true to show the icon of item status for markers on the map, vice versa.
+	 * @param boolean enabled true to show the icon of item state for markers on the map, vice versa.
 	 */
-	enableItemStatus : function(enabled) {
+	enableItemState : function(enabled) {
 		this.isItemStatusActive = enabled;
 		$('.item_status').each(function(index, value) {
 			if (enabled) {
@@ -1622,109 +1309,21 @@ ContigoMap.prototype = {
 	resetMostRecentLocate : function() {
         this.mostRecentLocate.latLng = null;
         this.mostRecentLocate.timestamp = -1;
-	},    
-    
-    /**
-     * Create a DOM element to represent the custom control.
-     *
-     * @param options an object holds related properties of the control. Properties include:
-	 *			type: the type of the control. It can be "select", "option", "checkbox". If not specified, the default control is a regular clickable toolbar.
-	 *			content: text or html content in the control.
-	 *			id: id of the control.
-	 *			children: a list of html string, DOM element, jQuery objects to insert at the end of each element in the control. 
-	 *			styles: css styles appled to the control.
-	 *			title: the title of the control.
-	 *			classes: the css classes appled to the control.
-	 *			disabled: disable the control. If true, all of events won't be applied.
-	 *			checked: make the check checked by default. The propery has to go with "checkbox" type.
-	 *			events: the events applied to the control.
-	 * @return the DOM element of the created control.
-     */
-    createControl: function(options) {
-        var control = $("<div style='cursor: pointer;'></div>");
-        var highlightElm = control[0];
-        switch (options.type) {
-        case "select":
-            var innerContainer = $("<div class='select_dropdown'>" + (options.content ? options.content : "") + "<img class='select_arrow' src='" + IMG_HOST_PATH + "arrow-down.png" + "' /></div>");
-            control.append(innerContainer);
-            highlightElm = innerContainer[0];
-            break;
-        case "checkbox":
-            var checked = options.checked  ? " show" : ""; // add show class if checked by default
-            var span = $("<span class='checkbox_span' role='checkbox'><div class='checkbox_image_container" + checked + "'><img class='checkbox_image' src='" + IMG_HOST_PATH + "imgs8.png" + "' /></div></span>");
-            var label = $("<label class='checkbox_label'>" + options.content + "</label>");
-            control.append(span, label);
-            break;
-        case "option":
-        default:
-            if (options.content) {
-                control.html(options.content);
-            }
-            break;
-        }
-        if (options.id) {
-            control.attr('id', options.id);
-        }          
-        if (options.children) {
-            _.each(options.children, function(child) {
-                control.append(child);
-            });
-        }
-        _.each(options.styles, function(style, name) {
-            control.css(name, style);
-        });
-        if (options.title) {
-            control.prop('title', options.title);
-        }
-        if (options.classes) {
-            control.addClass(options.classes);
-        }        
-        if (options.type == "checkbox") {
-            (function(object, name) {
-                google.maps.event.addDomListener(object, name, function() {
-                    var selectedCheckbox = $(object).find(".checkbox_image_container");
-                    selectedCheckbox.is(":visible") ? selectedCheckbox.removeClass("show") : selectedCheckbox.addClass("show");
-                });
-            })(control[0], "click");
-        }
-        if (options.disabled == false) {
-            (function(object, name) {
-                google.maps.event.addDomListener(object, name, function() {
-                    $(this).css("background-color", "#EEEEEE");
-                });
-            })(highlightElm, "mouseover");
-            (function(object, name) {
-                google.maps.event.addDomListener(object, name, function() {
-                    $(this).css("background-color", "#FFFFFF");
-                });
-            })(highlightElm, "mouseout");
-			
-			_.each(options.events, function(event, name) {
-				(function(object, name) {
-					google.maps.event.addDomListener(object, name, function() {
-						event.apply(this, [this]);
-					});
-				})(control[0], name);
-			});
-        } else {
-			control.addClass("control_disabled");
-		}
-
-        return control[0];
-    },
+	},
     
     /**
      * Add custom control to the map. Gmap3 is lack of this feature.
      *
-     * @param options an object holds related properties of the control.
+     * @param control a DOM object representing the control.
+	 * @param position one of "TOP_CENTER", "TOP_LEFT", "TOP_RIGHT", "LEFT_TOP", "RIGHT_TOP", 
+	 *			"LEFT_CENTER", "RIGHT_CENTER", "LEFT_BOTTOM", "RIGHT_BOTTOM", "BOTTOM_CENTER", 
+	 *			"BOTTOM_LEFT", "BOTTOM_RIGHT" on the map.
      */
-    addControl: function(options) {
-        var position = google.maps.ControlPosition[options.position.toUpperCase()];
-        delete options.position;
-        var control = this.createControl(options);
+    addControl: function(control, position) {
+        var positionIndex = google.maps.ControlPosition[position.toUpperCase()];
         this.controls.push(control);
-        this.map.controls[position].push(control);
-        return control;
+        this.map.controls[positionIndex].push(control);
+        return control;			
     },
     
     /**
