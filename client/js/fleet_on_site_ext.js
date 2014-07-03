@@ -526,6 +526,19 @@ function LocateOption(contigoMap) {
 						contigoMap.filterLocatePoints(LOCATE_MODE.LAST3);
 					}       
 				}
+			}),
+            new Control_({
+				type: 'option',
+				id: 'show_last_point_option',
+				title: 'Show Locates For Last Point',
+				content: 'Last Point',
+				classes: 'select_option',
+				disabled: false,
+				events: {
+					click: function() {		
+						contigoMap.filterLocatePoints(LOCATE_MODE.LAST);
+					}       
+				}
 			})			
         ]    
     });

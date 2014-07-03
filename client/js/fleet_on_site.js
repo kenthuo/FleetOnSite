@@ -160,22 +160,7 @@ ContigoMap.prototype = {
                 });
                 $this.clearMap(false);
                 $this.contextMenu.close();
-            });        
-        this.contextMenu.add("Show All Locates", "showAllLocate", 
-            function() {
-            	$this.filterLocatePoints(LOCATE_MODE.ALL);
-                $this.contextMenu.close();
-            });
-        this.contextMenu.add("Show Last 3 Locates", "showLast3Locate", 
-            function() {
-            	$this.filterLocatePoints(LOCATE_MODE.LAST3);
-                $this.contextMenu.close();
-            });
-        this.contextMenu.add("Show Last Locate", "showLastLocate", 
-            function() {
-            	$this.filterLocatePoints(LOCATE_MODE.LAST);
-                $this.contextMenu.close();
-            });             
+            });       
         this.contextMenu.add("Clear Markers", "clearMarker separator", 
             function() {
                 $this.clearMap(true);
