@@ -10,7 +10,7 @@ function ContigoMap(opts) {
 		mapId: "map", // the identity of the DOM element to hold the map
 		controlOptions: {
 			TrafficOption: true, BestFitOption: true, CenterMapOption: true, CenterLastOption: false, 
-			AutoBestFitOption: false, DisplayItemStateOption: false, TabularDataOption: true, LocateOption: true
+			AutoBestFitOption: false, DisplayItemStateOption: false, TabularDataOption: true, LocateOption: true, CoCOption: true
 		},
 		showLabel: false, showLastLabelOnly: true, drawCircle: false, drawRectangle: false, drawPolygon: false};
 	this.opts = $.extend(true, {}, defaults, opts);
@@ -179,21 +179,6 @@ ContigoMap.prototype = {
 		this.contextMenu.add("Center here", "centerHere separator", 
 			function() {
 				$this.map.setCenter($this.currentClickEvent.latLng);
-				$this.contextMenu.close();
-			});
-		this.contextMenu.add("Show All CoCs", "showAllCoC", 
-			function() {
-				$this.filterCoCs(COC_MODE.ALL);
-				$this.contextMenu.close();
-			});
-		this.contextMenu.add("Show Last CoC", "showLastCoC", 
-			function() {
-				$this.filterCoCs(COC_MODE.LAST);
-				$this.contextMenu.close();
-			});
-		this.contextMenu.add("Hide CoC", "hideCoC separator", 
-			function() {
-				$this.filterCoCs(COC_MODE.NONE);
 				$this.contextMenu.close();
 			});
 		this.contextMenu.add("View Address", "viewAddress", 

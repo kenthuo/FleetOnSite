@@ -544,6 +544,56 @@ function LocateOption(contigoMap) {
     });
 }
 
+function CoCOption(contigoMap) {
+	return new Control_({
+        classes: "options_container",
+        children: [
+			new Control_({
+				classes: "option_separator"
+			}),
+            new Control_({
+				type: 'option',
+				id: 'show_coc_on_all_points_option',
+				title: 'Show Circles of Certainty On All Points',
+				content: 'CoC On All Points',
+				classes: 'select_option',
+				disabled: false,
+				events: {
+					click: function() {
+						contigoMap.filterCoCs(COC_MODE.ALL);
+					}       
+				}
+			}),
+            new Control_({
+				type: 'option',
+				id: 'show_coc_on_most_recent_point_option',
+				title: 'Show Circles of Certainty On Most Recent Point',
+				content: 'CoC On Most Recent Point',
+				classes: 'select_option',
+				disabled: false,
+				events: {
+					click: function() {
+						contigoMap.filterCoCs(COC_MODE.LAST);
+					}       
+				}
+			}),
+            new Control_({
+				type: 'option',
+				id: 'hide_coc_on_all_points_option',
+				title: 'Hide Circles of Certainty On All Points',
+				content: 'Hide All CoC',
+				classes: 'select_option',
+				disabled: false,
+				events: {
+					click: function() {		
+						contigoMap.filterCoCs(COC_MODE.NONE);
+					}       
+				}
+			})			
+        ]    
+    });
+}
+
 function TabularDataOption(contigoMap) {
 	return new Control_({
         type: 'checkbox',
