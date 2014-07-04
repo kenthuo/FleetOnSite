@@ -252,7 +252,7 @@ function Util() {
 	 * The dimension is 300x100. 
 	 */
 	function getStreetView(lat, lng, direction) {
-		return "<img class='streetview' src='http://maps.googleapis.com/maps/api/streetview?size=300x100&location=" + lat + "," + lng + "&heading=" + fromDirectionToHeading(direction) + "' />";
+		return "<img class='streetview' src='http://maps.googleapis.com/maps/api/streetview?size=290x100&location=" + lat + "," + lng + "&heading=" + fromDirectionToHeading(direction) + "' />";
 	}
     
 	// exports

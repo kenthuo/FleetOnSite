@@ -137,7 +137,7 @@ body {
     border-radius: 10px;
     -webkit-box-shadow: 0 0  8px #000;
     box-shadow: 0 0 8px #000;
-	width: 300px;
+	padding: 0 5px 5px 5px;
 }
 
 .marker_infowindow_content {
@@ -161,11 +161,6 @@ body {
 .marker_infowindow p {
 	padding: 1px 5px;
 	margin: 0;
-}
-
-.marker_infowindow .landmark_info p {
-	margin: 0;
-	padding: 1px 5px;
 }
 
 .marker_infowindow .job_description, .marker_infowindow .job_location {

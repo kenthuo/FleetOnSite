@@ -606,6 +606,31 @@ ContigoMap.prototype = {
 	    infoContent += "</div>";
 		infoContent += "</div>";
 		return infoContent;
+		/*
+		var compiled = _.template("\
+		<div class='marker_infowindow'>\
+			<div class='marker_infowindow_title'><%= label %></div>\
+			<div class='marker_infowindow_content'>\
+				<div class='event_time'>\
+					<p class='date_time'><%= timestamp %></p>\
+					<% if (speed) { %><p><span class='speed'><%= speed %></span> <span class='direction'><%= direction %></span></p><% } %>\
+				</div>\
+				<div class='event_location'>\
+					<p class='street_address'><%= street %></p>\
+					<p class='country'><%= country %></p>\
+					<% if (stopDuration) { %><p><%= stopDuration %></p><% } %>\
+					<% if (coord) { %><p><span class='<%= displayLatLngClass %>'>Lat/Long: (<span class='latitude'><%= lat %></span>, <span class='longitude'><%= lng %></span>)</span></p><% } %>\
+					<% if (eventType) { %><p>Event Type: <span class='event_type'><%= eventType %></span></p><% } %>\
+					<% if (landmark) { %><p>Landmark: <span class='landmark'><%= landmark %></span></p><% } %>\
+				</div>\
+				<%= streetView %>\
+			</div>\
+		</div>\
+		");
+        content = $(compiled({label: label, timestamp: timestamp, type: dispatch ? dispatch.type : "", landmarkId: dispatch ? dispatch.id.split("|")[0] : "", 
+        	ICON_HOST_PATH: ICON_HOST_PATH, userNote: userNote, lmkAddress: lmkAddress, content: content,
+        	streetView: Util.getStreetView(coord.lat, coord.lng)}))[0]; // get DOM object
+        return content;*/
 	},
 	
 	/**
@@ -708,6 +733,7 @@ ContigoMap.prototype = {
 	 */
 	buildLmkInfoWindowContents : function(label, userNote, lmkAddress, content, dispatch, coord) {		
 		// dispatch.id: 11903|1008 Homer Street, Vancouver, BC, Canada, V6B 2X1|49.27727|-123.12019|407|1008 Homer Street
+		var type = dispatch ? dispatch.type : "", landmarkId = dispatch ? dispatch.id.split("|")[0] : "";
 		var compiled = _.template("\
 		<div class='marker_infowindow'>\
 			<div class='marker_infowindow_title'><%= label %></div>\
@@ -719,16 +745,16 @@ ContigoMap.prototype = {
 			<% } %>\
 			<% if (userNote || lmkAddress || content) { %>\
 				<div class='landmark_info'>\
-				<% if (userNote) { %><p><span class='user_note'><%= userNote %></span></p><% } %>\
-				<% if (lmkAddress) { %><p><span class='landmark_address'><%= lmkAddress %></span></p><% } %>\
-				<% if (content) { %><p><span class='landmark_content'><%= content %></span></p><% } %>\
+				<% if (userNote) { %><p class='user_note'><%= userNote %></p><% } %>\
+				<% if (lmkAddress) { %><p class='landmark_address'><%= lmkAddress %></p><% } %>\
+				<% if (content) { %><p class='landmark_content'><%= content %></p><% } %>\
 				</div>\
 			<% } %>\
 			<%= streetView %>\
 			</div>\
 		</div>\
 		");
-        content = $(compiled({label: label, dispatch: dispatch, type: dispatch ? dispatch.type : "", landmarkId: dispatch ? dispatch.id.split("|")[0] : "", 
+        content = $(compiled({label: label, dispatch: dispatch, type: type, landmarkId: landmarkId, 
         	ICON_HOST_PATH: ICON_HOST_PATH, userNote: userNote, lmkAddress: lmkAddress, content: content,
         	streetView: Util.getStreetView(coord.lat, coord.lng)}))[0]; // get DOM object
         return content;
