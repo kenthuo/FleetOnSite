@@ -706,37 +706,32 @@ ContigoMap.prototype = {
 	 *
 	 * @return string the content of landmark's InfoWindow
 	 */
-	buildLmkInfoWindowContents : function(label, userNote, lmkAddress, content, dispatch, coord) {
-	  
-	    var infoContent = "<div class='marker_infowindow'>";
-	    infoContent += "<div class='marker_infowindow_title'>" + label + "</div>";
-	    infoContent += "<div class='marker_infowindow_content'>";
-	    // dispatch toolbar
-		if (dispatch) {
-			var type = dispatch.type;
-			var id = dispatch.id;
-			infoContent += "<div class='dispatch_toolbar'>";
-			var landmarkInfo = id.split("|"); // 11903|1008 Homer Street, Vancouver, BC, Canada, V6B 2X1|49.27727|-123.12019|407|1008 Homer Street
-			var landmarkId = landmarkInfo[0];
-			infoContent += "<div><a href='#' id='sendjob_" + type + "_" + landmarkId + "'><img src='" + ICON_HOST_PATH + "send_job.png'></a></div>";
-			infoContent += "</div>";
-		}
-	    if (userNote || lmkAddress || content) {
-			infoContent += "<div class='landmark_info'>";
-			// user note
-			infoContent += (userNote) ? this.createMarkerInfoWindowPara("<span class='user_note'>" + userNote + "</span>") : "";
-	    
-			// landmark's address
-			infoContent += (lmkAddress) ? this.createMarkerInfoWindowPara("<span class='landmark_address'>" + lmkAddress + "</span>") : "";
-	    
-			// landmark's content
-			infoContent += (content) ? this.createMarkerInfoWindowPara("<span class='landmark_content'>" + content + "</span>") : "";
-			infoContent += "</div>";
-	    }
-	    infoContent += Util.getStreetView(coord.lat, coord.lng);
-	    infoContent += "</div>";
-	    infoContent += "</div>";
-		return infoContent;	    
+	buildLmkInfoWindowContents : function(label, userNote, lmkAddress, content, dispatch, coord) {		
+		// dispatch.id: 11903|1008 Homer Street, Vancouver, BC, Canada, V6B 2X1|49.27727|-123.12019|407|1008 Homer Street
+		var compiled = _.template("\
+		<div class='marker_infowindow'>\
+			<div class='marker_infowindow_title'><%= label %></div>\
+			<div class='marker_infowindow_content'>\
+			<% if (dispatch) { %>\
+				<div class='dispatch_toolbar'>\
+					<div><a href='#' id='sendjob_<%= type %>_<%= landmarkId %>'><img src='<%= ICON_HOST_PATH %>send_job.png'></a></div>\
+				</div>\
+			<% } %>\
+			<% if (userNote || lmkAddress || content) { %>\
+				<div class='landmark_info'>\
+				<% if (userNote) { %><p><span class='user_note'><%= userNote %></span></p><% } %>\
+				<% if (lmkAddress) { %><p><span class='landmark_address'><%= lmkAddress %></span></p><% } %>\
+				<% if (content) { %><p><span class='landmark_content'><%= content %></span></p><% } %>\
+				</div>\
+			<% } %>\
+			<%= streetView %>\
+			</div>\
+		</div>\
+		");
+        content = $(compiled({label: label, dispatch: dispatch, type: dispatch ? dispatch.type : "", landmarkId: dispatch ? dispatch.id.split("|")[0] : "", 
+        	ICON_HOST_PATH: ICON_HOST_PATH, userNote: userNote, lmkAddress: lmkAddress, content: content,
+        	streetView: Util.getStreetView(coord.lat, coord.lng)}))[0]; // get DOM object
+        return content;
 	},
 
     /**
