@@ -350,6 +350,7 @@ ContigoMap.prototype = {
 	            var address = point.address;
 	            var stopDuration = point.stopDuration;
 	            var speed = point.speed;
+	            var postedSpeed = point.postedSpeed;
 	            var direction = point.direction;
 	            var timestamp = point.timestamp;
 	            var landmark = point.landmark;
@@ -392,7 +393,7 @@ ContigoMap.prototype = {
 	            if (label) {
 	            	var infoContent = $this.buildLocationInfoWindowContents(
 		                            label, coord, eventType, address, stopDuration, speed, 
-		                            direction, timestamp, landmark, circleCertaintyRadius, 
+		                            direction, postedSpeed, temperature, timestamp, landmark, circleCertaintyRadius, 
 		                            status, userNote, driverID, driverStatus, beaconID,
 		                            guardianID, ioprt1Scenario, ioprt2Scenario, ioprt3Scenario, ioprt4Scenario, lineColor, 
 		                            dispatch, isMetric, driverNameInItemMode);
@@ -555,58 +556,21 @@ ContigoMap.prototype = {
 	 * @returns string the content of InfoWindow
 	 */
 	buildLocationInfoWindowContents : function(
-	                label, coord, eventType, address, stopDuration, speed, direction, timestamp, landmark,
+	                label, coord, eventType, address, stopDuration, speed, direction, postedSpeed, temperature, timestamp, landmark,
 	                circleCertaintyRadius, status, userNote, driverID, driverStatus, beaconID,
 	                guardianID, ioprt1Scenario, ioprt2Scenario, ioprt3Scenario, ioprt4Scenario, lineColor, dispatch, isMetric, driverName) {        
-                    
-	    var infoContent = "<div class='marker_infowindow'>";
-	    infoContent += "<div class='marker_infowindow_title'>" + label + "</div>";
-		infoContent += "<div class='marker_infowindow_content'>";
-		infoContent += "<div class='event_time'>";
-	    infoContent += this.createMarkerInfoWindowPara("<span class='date_time'>" + timestamp + "</span>");
-
-	    infoContent += (speed) ? this.createMarkerInfoWindowPara("<span class='speed'>" + speed + "</span> <span class='direction'>" + direction + "</span>") : "";
-		infoContent += "</div>";
-	    infoContent += "<div class='event_location'>";
-	    infoContent += this.createMarkerInfoWindowPara("<span class='street_address'>" + address.street + "</span>");
-
-	    var secondAddressLine = "";
-	    var city = address.city;
-	    var county = address.county;
-	    var stateProvince = address.state;
-	    secondAddressLine += (city) ? "<span class='city'>" + city + "</span>" : "";
-	    secondAddressLine += (county) ? ((secondAddressLine) ? ", <span class='county'>" + county + "</span>" : "<span class='county'>" + county + "</span>") : "";
-	    secondAddressLine += (stateProvince) ? ((secondAddressLine) ? ", <span class='state_province'>" + stateProvince + "</span>" : "<span class='state_province'>" + stateProvince + "</span>") : "";
+		
+		var cocValue = circleCertaintyRadius;
+		var displayLatLngClass = this.latLonDisplayed ? "show" : "hide";
+		var secondAddressLine = "";
+	    secondAddressLine += (address.city) ? "<span class='city'>" + address.city + "</span>" : "";
+	    secondAddressLine += (address.county) ? ((secondAddressLine) ? ", <span class='county'>" + address.county + "</span>" : "<span class='county'>" + address.county + "</span>") : "";
+	    secondAddressLine += (address.state) ? ((secondAddressLine) ? ", <span class='state_province'>" + address.state + "</span>" : "<span class='state_province'>" + address.state + "</span>") : "";
 	    secondAddressLine += " <span class='postal_code'>" + address.postalCode + "</span>";
-	    infoContent += this.createMarkerInfoWindowPara(secondAddressLine);
-
-	    infoContent += this.createMarkerInfoWindowPara("<span class='country'>" + address.country + "</span>");
-	    infoContent += (stopDuration) ? this.createMarkerInfoWindowPara(stopDuration) : "";
-
-        if (!isMetric) {
-            var cocValueFeet = Math.round(circleCertaintyRadius) * 3.2808399;
-            infoContent += (cocValueFeet > 0) ? this.createMarkerInfoWindowPara(cocValueFeet + " ft accuracy (radius)") : "";
-        } else {
-            var cocValueMetres = circleCertaintyRadius;
-            infoContent += (cocValueMetres > 0) ? this.createMarkerInfoWindowPara(cocValueMetres + " m accuracy (radius)") : "";
+	    if (!isMetric) {
+            cocValue = Math.round(circleCertaintyRadius) * 3.2808399;
         }
 
-        if (coord) {
-            if (this.latLonDisplayed) {
-                infoContent += this.createMarkerInfoWindowPara("<span class='show'>Lat/Long: (" + "<span class='latitude'>" + coord.lat + "</span>, <span class='longitude'>" + coord.lng + "</span>)</span>");
-            } else {
-                infoContent += this.createMarkerInfoWindowPara("<span class='hide'>Lat/Long: (" + "<span class='latitude'>" + coord.lat + "</span>, <span class='longitude'>" + coord.lng + "</span>)</span>");
-            }
-        }
-	    infoContent += (coord && this.latLonDisplayed) ? this.createMarkerInfoWindowPara("Lat/Long: (" + "<span class='latitude'>" + coord.lat + "</span>, <span class='longitude'>" + coord.lng + "</span>)") : "";
-	    infoContent += (eventType) ? this.createMarkerInfoWindowPara("Event Type: <span class='event_type'>" + eventType + "</span>") : "";
-	    infoContent += (landmark) ? this.createMarkerInfoWindowPara("Landmark: <span class='landmark'>" + landmark + "</span>") : "";
-	    infoContent += "</div>";
-        infoContent += Util.getStreetView(coord.lat, coord.lng, direction);
-	    infoContent += "</div>";
-		infoContent += "</div>";
-		return infoContent;
-		/*
 		var compiled = _.template("\
 		<div class='marker_infowindow'>\
 			<div class='marker_infowindow_title'><%= label %></div>\
@@ -614,23 +578,49 @@ ContigoMap.prototype = {
 				<div class='event_time'>\
 					<p class='date_time'><%= timestamp %></p>\
 					<% if (speed) { %><p><span class='speed'><%= speed %></span> <span class='direction'><%= direction %></span></p><% } %>\
+					<% if (postedSpeed) { %><p class='postedSpeed'><%= postedSpeed %></p><% } %>\
+					<% if (temperature) { %><p class='temperature'><%= temperature %></p><% } %>\
 				</div>\
 				<div class='event_location'>\
 					<p class='street_address'><%= street %></p>\
+					<p><%= secondAddressLine %></p>\
 					<p class='country'><%= country %></p>\
 					<% if (stopDuration) { %><p><%= stopDuration %></p><% } %>\
+					<% if (cocValue > 0) { %><p><%= cocValue %><% if (!isMetric) { %>ft<% } else { %>m<% } %> accuracy (radius)</p><% } %>\
 					<% if (coord) { %><p><span class='<%= displayLatLngClass %>'>Lat/Long: (<span class='latitude'><%= lat %></span>, <span class='longitude'><%= lng %></span>)</span></p><% } %>\
 					<% if (eventType) { %><p>Event Type: <span class='event_type'><%= eventType %></span></p><% } %>\
 					<% if (landmark) { %><p>Landmark: <span class='landmark'><%= landmark %></span></p><% } %>\
 				</div>\
+				<% if (driverStatus || status || userNote || ioprt1Scenario || ioprt2Scenario || ioprt3Scenario || ioprt4Scenario || dispatch) { %>\
+				<div class='event_driver_info'>\
+					<% if (driverStatus) { %><p><%= driverStatus %></p><% } %>\
+					<% if (status) { %><p><%= status %></p><% } %>\
+					<% if (userNote) { %><p><%= userNote %></p><% } %>\
+					<% if (dispatch) { %>\
+					<div class='dispatch_toolbar'>\
+						<div><a href='#' id='sendjob_<%= type %>_<%= dispatchId %>'><img src='<%= ICON_HOST_PATH %>send_job.png'></a></div>\
+						<div><a href='#' id='viewjob_<%= type %>_<%= dispatchId %>'><img src='<%= ICON_HOST_PATH %>view_job.png'></a></div>\
+						<div><a href='#' id='sendmessage_<%= type %>_<%= dispatchId %>'><img src='<%= ICON_HOST_PATH %>send_message.png'></a></div>\
+					</div>\
+					<% } %>\
+					<% if (ioprt1Scenario) { %><p><%= ioprt1Scenario %></p><% } %>\
+					<% if (ioprt2Scenario) { %><p><%= ioprt2Scenario %></p><% } %>\
+					<% if (ioprt3Scenario) { %><p><%= ioprt3Scenario %></p><% } %>\
+					<% if (ioprt4Scenario) { %><p><%= ioprt4Scenario %></p><% } %>\
+				</div>\
+				<% } %>\
 				<%= streetView %>\
 			</div>\
 		</div>\
 		");
-        content = $(compiled({label: label, timestamp: timestamp, type: dispatch ? dispatch.type : "", landmarkId: dispatch ? dispatch.id.split("|")[0] : "", 
-        	ICON_HOST_PATH: ICON_HOST_PATH, userNote: userNote, lmkAddress: lmkAddress, content: content,
+        content = $(compiled({label: label, timestamp: timestamp, type: dispatch ? dispatch.type : "", dispatchId: dispatch ? dispatch.id : "", 
+        	ICON_HOST_PATH: ICON_HOST_PATH, userNote: userNote, speed: speed, postedSpeed: postedSpeed, temperature: temperature, street: address.street,
+        	secondAddressLine: secondAddressLine, country: address.country, stopDuration: stopDuration, cocValue: cocValue, isMetric: isMetric, coord: coord,
+        	displayLatLngClass: displayLatLngClass, lat: coord.lat, lng: coord.lng, eventType: eventType, landmark: landmark, driverStatus: driverStatus,
+        	status: status, userNote: userNote, dispatch: dispatch, ioprt1Scenario: ioprt1Scenario, ioprt2Scenario: ioprt2Scenario, 
+        	ioprt3Scenario: ioprt3Scenario, ioprt4Scenario: ioprt4Scenario,
         	streetView: Util.getStreetView(coord.lat, coord.lng)}))[0]; // get DOM object
-        return content;*/
+        return content;
 	},
 	
 	/**
