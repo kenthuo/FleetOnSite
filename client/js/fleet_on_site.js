@@ -15,7 +15,7 @@ function ContigoMap(opts) {
 		showLabel: false, showLastLabelOnly: true, drawCircle: false, drawRectangle: false, drawPolygon: false};
 	this.opts = $.extend(true, {}, defaults, opts);
 
-    this.mapType = 'cp_rpt_routelog';
+    this.mapType = 'cp_fleet'; // cp_rpt_routelog
     this.map = null; // the google map object
     this.canvas = null; // the canvas object of a map
     this.contextMenu = null; // the context menu of a map
@@ -192,13 +192,15 @@ ContigoMap.prototype = {
                 					tag: TAG_GROUP.ADDRESS,
                 					latLng: $this.currentClickEvent.latLng,
                 					options: {
-                    					icon: ICON_HOST_PATH + "red_dot.png"
-                					},
+										icon: {
+											url: ICON_HOST_PATH + "red_dot.png",
+											anchor: new google.maps.Point(8, 4)}
+									},
                 					callback: function(marker) {
                 						$this.showInfoWindow(
                 							marker, 
-                							results[0].formatted_address, 
-                							function() {$this.clear({tag: TAG_GROUP.ADDRESS});})
+											$this.buildViewAddressInfoWindowContents(results[0].formatted_address, $this.currentClickEvent.latLng),
+                							{close: function() {$this.clear({tag: TAG_GROUP.ADDRESS});}})
 									}
            						}
 							});
@@ -407,24 +409,20 @@ ContigoMap.prototype = {
 		            	$this.setMostRecentLocate(point);
 		            }
 
-                    if (!_.isEmpty(labelInfo)) {
-                        var marker = {
-                            id: TAG_GROUP.LOCATION + "_" + beaconId + "_" + i,
-                            tag: [label, TAG_GROUP.LOCATION],
-                            latLng: [coord.lat, coord.lng], 
-                            data: infoContent,                        
-                            options: {
-                                title: label,
-                                icon: {
-                                	url: $this.constructMarkerIconName(icon, numberLabel),
-                                	anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2)),
-                                },
-                                labelAnchor: labelInfo.anchor,
-                                labelClass: labelInfo.classes,
-                                labelContent: labelInfo.content}};
-						markers.push(marker);
-                    }
-		            
+					var marker = {
+						id: TAG_GROUP.LOCATION + "_" + beaconId + "_" + i,
+						tag: [label, TAG_GROUP.LOCATION],
+						latLng: [coord.lat, coord.lng], 
+						data: infoContent,                        
+						options: {
+							title: label,
+							icon: {
+								url: $this.constructMarkerIconName(icon, numberLabel),
+								anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2))},
+							labelAnchor: labelInfo.anchor,
+							labelClass: labelInfo.classes,
+							labelContent: labelInfo.content}};
+					markers.push(marker);		            
 	            }
                 
                 circleCertaintyRadius = parseInt(circleCertaintyRadius, 10);
@@ -480,7 +478,6 @@ ContigoMap.prototype = {
      */
     generateMarkerLabelInfoByMapType : function(label, mapType, icon, isLast, speed, direction, itemStatus) {
         var classes = content = title = statusClass = '', anchor = null;
-		
         if (label) {
 			var anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
         	if (mapType == 'cp_fleet' && isLast) {        		
@@ -548,7 +545,26 @@ ContigoMap.prototype = {
             iconName = numberLabel && numberLabel > 0 ? NUMBERS_ICON_HOST_PATH + icon.name + "-" + numberLabel + ".png" : ICON_HOST_PATH + icon.name + ".png";
 		 }
 		 return iconName;
-	},  
+	},
+	
+	/**
+	 * Construct the content of InfoWindow for view address Poi object.
+	 * 
+	 * @returns string the content of InfoWindow
+	 */	
+	buildViewAddressInfoWindowContents : function(address, coord) {
+		var compiled = _.template("\
+		<div class='marker_infowindow'>\
+			<div class='marker_infowindow_title'>View Address</div>\
+			<div class='marker_infowindow_content'>\
+				<p><%= address %></p>\
+				<%= streetView %>\
+			</div>\
+		</div>\
+		");
+        content = $(compiled({address: address, streetView: Util.getStreetView(coord.lat(), coord.lng())}))[0]; // get DOM object
+        return content;	
+	},
 	
 	/**
 	 * Construct the content of InfoWindow for each location Poi object.
@@ -593,14 +609,13 @@ ContigoMap.prototype = {
 				</div>\
 				<% if (driverStatus || status || userNote || ioprt1Scenario || ioprt2Scenario || ioprt3Scenario || ioprt4Scenario || dispatch) { %>\
 				<div class='event_driver_info'>\
-					<% if (driverStatus) { %><p><%= driverStatus %></p><% } %>\
-					<% if (status) { %><p><%= status %></p><% } %>\
-					<% if (userNote) { %><p><%= userNote %></p><% } %>\
+					<% if (driverStatus) { %><p>Driver Status: <%= driverStatus %></p><% } %>\
+					<% if (status) { %><p>PND Status: <%= status %></p><% } %>\
 					<% if (dispatch) { %>\
 					<div class='dispatch_toolbar'>\
-						<div><a href='#' id='sendjob_<%= type %>_<%= dispatchId %>'><img src='<%= ICON_HOST_PATH %>send_job.png'></a></div>\
-						<div><a href='#' id='viewjob_<%= type %>_<%= dispatchId %>'><img src='<%= ICON_HOST_PATH %>view_job.png'></a></div>\
-						<div><a href='#' id='sendmessage_<%= type %>_<%= dispatchId %>'><img src='<%= ICON_HOST_PATH %>send_message.png'></a></div>\
+						<div class='send_job'><a href='#' id='sendjob_<%= type %>_<%= dispatchId %>'>Send Job</a></div>\
+						<div class='view_jobs'><a href='#' id='viewjob_<%= type %>_<%= dispatchId %>'>View Jobs</a></div>\
+						<div class='send_message'><a href='#' id='sendmessage_<%= type %>_<%= dispatchId %>'>Send Message</a></div>\
 					</div>\
 					<% } %>\
 					<% if (ioprt1Scenario) { %><p><%= ioprt1Scenario %></p><% } %>\
@@ -614,23 +629,13 @@ ContigoMap.prototype = {
 		</div>\
 		");
         content = $(compiled({label: label, timestamp: timestamp, type: dispatch ? dispatch.type : "", dispatchId: dispatch ? dispatch.id : "", 
-        	ICON_HOST_PATH: ICON_HOST_PATH, userNote: userNote, speed: speed, postedSpeed: postedSpeed, temperature: temperature, street: address.street,
+        	IMG_HOST_PATH: IMG_HOST_PATH, userNote: userNote, speed: speed, direction: direction, postedSpeed: postedSpeed, temperature: temperature, street: address.street,
         	secondAddressLine: secondAddressLine, country: address.country, stopDuration: stopDuration, cocValue: cocValue, isMetric: isMetric, coord: coord,
         	displayLatLngClass: displayLatLngClass, lat: coord.lat, lng: coord.lng, eventType: eventType, landmark: landmark, driverStatus: driverStatus,
         	status: status, userNote: userNote, dispatch: dispatch, ioprt1Scenario: ioprt1Scenario, ioprt2Scenario: ioprt2Scenario, 
         	ioprt3Scenario: ioprt3Scenario, ioprt4Scenario: ioprt4Scenario,
         	streetView: Util.getStreetView(coord.lat, coord.lng)}))[0]; // get DOM object
         return content;
-	},
-	
-	/**
-	 * Construct a paragraph for the content of InfoWindow of Parker object.
-	 * 
-	 * @param paragraph
-	 * @returns string the decorated paragraph
-	 */
-	createMarkerInfoWindowPara : function(paragraph) {
-	    return "<p>" + paragraph + "</p>";
 	},
     
 	/**
@@ -683,10 +688,9 @@ ContigoMap.prototype = {
 			if (category) {
 				label += " (" + category + ")";
 			}
-			var markerLabel = label;
-			
-			var labelInfo = $this.generateMarkerLabelInfoByMapType(markerLabel, $this.mapType, icon);
+						
 			if (label) {
+				var labelInfo = $this.generateMarkerLabelInfoByMapType(label, $this.mapType, icon);
                 var infoContent = $this.buildLmkInfoWindowContents(label, userNote, lmkAddress, content, dispatch, coord);
                 var marker = {
                     id: TAG_GROUP.LANDMARK + "_" + i,
@@ -697,11 +701,10 @@ ContigoMap.prototype = {
                         title: label,
                         icon: {
 							url: $this.constructMarkerIconName(icon, numberLabel),
-							anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2)),
-                        },
+							anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2))},
                         labelAnchor: labelInfo.anchor,
                         labelClass: labelInfo.classes,
-                        labelContent: labelInfo.content}};
+                        labelContent: landmark.label}};
                 markers.push(marker);
 			}	        
         });
@@ -779,25 +782,28 @@ ContigoMap.prototype = {
 				var deletedBy = job.deletedBy;
 				var numberLabel = job.numberLabel;
 				var isDeleted = (deletedTimestamp) ? true : false;
-				var isDone = (status && status.toLowerCase() == "done") ? true : false;
-	            
+				var isDone = (status && status.toLowerCase() == "done") ? true : false;				
+				
 				if (label) {
+					var labelInfo = $this.generateMarkerLabelInfoByMapType("", $this.mapType, icon);
                     var infoContent = $this.buildJobInfoWindowContents(
-		            		beaconId, jobId, label, description, landmark, destination, 
+		            		beaconId, jobId, coord, label, description, landmark, destination, 
 		            		priority, status, sentTimestamp, ackTimestamp, 
 		            		etaTimestamp, doneTimestamp, deletedTimestamp, 
 		            		deletedBy, isDeleted, isDone);
+							
                     var marker = {
                     	tag: [label, TAG_GROUP.JOB],
                         latLng: [coord.lat, coord.lng], 
                         data: infoContent,                        
                         options: {
                             title: label,
-                            icon: {url: $this.constructMarkerIconName(icon, numberLabel)},
-                            labelAnchor: new google.maps.Point(Math.floor(label.length * 2.5), -10, -2),
-                            labelClass: "labels",
-                            labelStyle: {opacity: 0.75},
-                            labelContent: label}};
+                            icon: {
+								url: $this.constructMarkerIconName(icon, numberLabel),
+								anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2))},
+                            labelAnchor: labelInfo.anchor,
+							labelClass: labelInfo.classes,
+							labelContent: labelInfo.content}};
 		            markers.push(marker);
 				}
 			});				
@@ -810,6 +816,7 @@ ContigoMap.prototype = {
 	 *
 	 * @param beaconId
 	 * @param jobId
+	 * @param coord
 	 * @param label
 	 * @param description
 	 * @param landmark
@@ -828,45 +835,49 @@ ContigoMap.prototype = {
 	 *
 	 * @return string the content of job's InfoWindow
 	 */
-	buildJobInfoWindowContents : function(beaconId, jobId, label, description, landmark, destination, 
+	buildJobInfoWindowContents : function(beaconId, jobId, coord, label, description, landmark, destination, 
     		priority, status, sentTimestamp, ackTimestamp, 
     		etaTimestamp, doneTimestamp, deletedTimestamp, 
-    		deletedBy, isDeleted, isDone) {	
-
-		var jobDescription = jobLocation = jobDetails = "";
-	    var infoContent = "<div class='marker_infowindow'>";
-	    infoContent += "<div class='marker_infowindow_title'>" + label + "</div>";
-	    
-	    jobDescription = "<div class='job_description'>";
-		jobDescription += "<div class='job_description_title'>Job Description:</div>";
-		jobDescription += "<div class='job_description_content'>" + description + "</div>";
-		jobDescription += "</div>";
-		
-		jobLocation = "<div class='job_location'>";
-		jobLocation += "<div class='job_location_title'>Job Location:</div>";
-		jobLocation += ((landmark) ? "<div class='job_landmark'>(" + landmark + ")</div>" : "");
-		jobLocation += "<div class='job_destination'>" + destination + "</div>";
-		jobLocation += "</div>";
-		
-		jobDetails = "<table class='job_details'>";
-		jobDetails += "<tr><td class='job_details_title'>Priority</td><td class='job_priority'>" + ((priority == -1) ? "-" : priority) + "</td></tr>";
-		jobDetails += "<tr><td class='job_details_title'>Status:</td><td class='job_status'>" + ((status) ? status : "-") + "</td></tr>";
-		jobDetails += "<tr><td class='job_details_title'>Sent:</td><td>" + ((sentTimestamp) ? sentTimestamp : "-") + "</td></tr>";
-		jobDetails += "<tr><td class='job_details_title'>Ack'd:</td><td>" + ((ackTimestamp) ? ackTimestamp : "-") + "</td></tr>";
-		jobDetails += "<tr><td class='job_details_title'>ETA:</td><td>" + ((etaTimestamp) ? etaTimestamp : "-") + "</td></tr>";
-		jobDetails += (isDone) ? "<tr><td class='job_details_title'>Done:</td><td>" + doneTimestamp + "</td></tr>" : "";
-		jobDetails += (isDeleted) ? "<tr><td class='job_details_title'>Deleted:</td><td>" + ((deletedTimestamp) ? deletedTimestamp : "") + " " + ((deletedBy) ? deletedBy : "") + "</td></tr>" : "";
-		jobDetails += "</table>";
-		
-		infoContent += jobDescription + jobLocation + jobDetails;
-			    
-	    infoContent += "<div class='job_toolbar'>";
-	    infoContent += "<input id='delete_job_" + beaconId + "_" + jobId + "' type='button' class='job_button' value='delete' />&nbsp;";
-	    infoContent += "<input id='reorder_job_" + beaconId + "_" + jobId + "' type='button' class='job_button button_reorder_job' value='reorder'" + ((isDeleted || isDone) ? " disabled='disabled'" : "") + " />&nbsp;";
-	    infoContent += "<input id='reassign_job_" + beaconId + "_" + jobId + "' type='button' class='job_button button_reassign_job' value='reassign'" + ((!isDeleted && isDone) ? " disabled='disabled'" : "") + " />";
-	    infoContent += "</div>";
-		infoContent += "</div>";
-		return infoContent;	    
+    		deletedBy, isDeleted, isDone) {
+			
+		var compiled = _.template("\
+		<div class='marker_infowindow'>\
+			<div class='marker_infowindow_title'><%= label %></div>\
+			<div class='marker_infowindow_content'>\
+			<div class='job_description'>\
+			<div class='job_description_title'>Job Description:</div>\
+			<div class='job_description_content'><%= description %></div>\
+			</div>\
+			<div class='job_location'>\
+			<div class='job_location_title'>Job Location:</div>\
+			<% if (landmark) { %><div class='job_landmark'>(<%= landmark %>)</div><% } %>\
+			<div class='job_destination'><%= destination %></div>\
+			</div>\
+			<table class='job_details'>\
+			<tr><td class='job_details_title'>Priority:</td><td class='job_priority'><%= priority %></td></tr>\
+			<tr><td class='job_details_title'>Status:</td><td class='job_status'><%= status %></td></tr>\
+			<tr><td class='job_details_title'>Sent:</td><td><%= sentTimestamp %></td></tr>\
+			<tr><td class='job_details_title'>Ack'd:</td><td><%= ackTimestamp %></td></tr>\
+			<tr><td class='job_details_title'>ETA:</td><td><%= etaTimestamp %></td></tr>\
+			<% if (isDone) { %><tr><td class='job_details_title'>Done:</td><td><%= doneTimestamp %></td></tr><% } %>\
+			<% if (isDeleted) { %><tr><td class='job_details_title'>Deleted:</td><td><% if (deletedTimestamp) { %><%= deletedTimestamp %><% } %><% if (deletedBy) { %> <%= deletedBy %><% } %></td></tr><% } %>\
+			</table>\
+			<div class='job_toolbar'>\
+			<input id='delete_job_<%= beaconId %>_<%= jobId %>' type='button' class='rounded_corners job_button' value='delete' />\
+			<input id='reorder_job_<%= beaconId %>_<%= jobId %>' type='button' class='rounded_corners job_button button_reorder_job' value='reorder'<% if (isDeleted || isDone) { %> disabled='disabled'<% } %> />\
+			<input id='reassign_job_<%= beaconId %>_<%= jobId %>' type='button' class='rounded_corners job_button button_reassign_job' value='reassign'<% if (!isDeleted && isDone) { %> disabled='disabled'<% } %> />\
+			</div>\
+			<%= streetView %>\
+			</div>\
+		</div>\
+		");
+        content = $(compiled({label: label, description: description, landmark: landmark, destination: destination, 
+        	priority: (priority == -1) ? "-" : priority, status: status, 
+			sentTimestamp: (sentTimestamp) ? sentTimestamp : "-", ackTimestamp: (ackTimestamp) ? ackTimestamp : "-", 
+			etaTimestamp: (etaTimestamp) ? etaTimestamp : "-", isDone: isDone, doneTimestamp: doneTimestamp, 
+			isDeleted: isDeleted, deletedTimestamp: deletedTimestamp, deletedBy: deletedBy, beaconId: beaconId, jobId: jobId,
+        	streetView: Util.getStreetView(coord.lat, coord.lng)}))[0]; // get DOM object
+        return content;
 	},
 	
 	/** 
@@ -874,34 +885,36 @@ ContigoMap.prototype = {
 	 * 
 	 * @param marker
 	 * @param content
-	 * @param onClose a callback function when user clicks close(x) icon
+	 * @param events registered callback functions 
+	 * 			close: when user clicks close(x) icon
+	 * 			open: when the info window is open
 	 * @see https://google-maps-utility-library-v3.googlecode.com/svn/trunk/infobox/docs/reference.html
 	 */
-	showInfoWindow: function(marker, content, onClose) {
-		var infowindow = this.canvas.gmap3({get:{name:"infowindow"}});
-		if (infowindow) {
-			infowindow.open(marker.getMap(), marker);
-			infowindow.setContent(content);
-		} else {
-			this.canvas.gmap3({
-				infowindow: {
-					anchor: marker,
-					options: {
-						content: content, 
-						maxWidth: 0, pixelOffset: new google.maps.Size(-140, 10), 
-						boxStyle: { background: "url('images/tipbox.gif') no-repeat", width: "300px"}, 
-						closeBoxMargin: "13px 5px 5px 5px", closeBoxURL: "images/close.gif", infoBoxClearance: new google.maps.Size(1, 1)
-					},
-					events: {
-						closeclick: function(infowindow) {
-                            if (_.isFunction(onClose)) {
-								onClose.call();
-							}
+	showInfoWindow: function(marker, content, events) {
+		this.clear({name:"infowindow"});
+		this.canvas.gmap3({
+			infowindow: {
+				anchor: marker,
+				options: {
+					content: content, 
+					maxWidth: 0, pixelOffset: new google.maps.Size(-140, 10), 
+					boxStyle: { background: "url('images/tipbox.gif') no-repeat", width: "300px"}, 
+					closeBoxMargin: "13px 5px 5px 5px", closeBoxURL: "images/close.gif", infoBoxClearance: new google.maps.Size(1, 1)
+				},
+				events: {
+					closeclick: function(infowindow) {
+						if (!_.isEmpty(events) && _.isFunction(events.close)) {
+							events.close.call();
 						}
 					}
+				},
+				callback: function(infowindow) {
+					if (!_.isEmpty(events) && _.isFunction(events.open)) {
+						events.open.call();
+					}
 				}
-			});
-		}
+			}
+		});
 	},
 	
 	/**
@@ -1006,7 +1019,7 @@ ContigoMap.prototype = {
                     rightclick: function(circle, event) {
                         var contextMenu = new Gmap3Menu($(this).gmap3());
                         contextMenu.add("Delete", "clearMarker", 
-                            function(){
+                            function() {
                                 circle.setMap(null);
                                 contextMenu.close();
                             });

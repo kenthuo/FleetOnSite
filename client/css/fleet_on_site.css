@@ -130,8 +130,7 @@ body {
 .marker_infowindow {	
     margin-top: 8px;
     background: #c0c0c0;
-    font-family: Sans-Serif, Verdana, Arial, Helvetica;
-    font-size: 12px;
+    font-family: Sans-Serif, Verdana, Arial, Helvetica;    
     -webkit-border-radius: 10px;
     -moz-border-radius: 10px;
     border-radius: 10px;
@@ -141,7 +140,9 @@ body {
 }
 
 .marker_infowindow_content {
-	background:#fff;
+	font-size: 11px;
+	background: #fff;
+	color: #434343;
 }
 
 .marker_infowindow .streetview {
@@ -164,20 +165,42 @@ body {
 }
 
 .marker_infowindow .job_description, .marker_infowindow .job_location {
-	padding: 2px 0 5px 0;
+	padding: 3px 5px;
 }
 .marker_infowindow .job_details, .marker_infowindow .job_toolbar, .marker_infowindow .dispatch_toolbar {
-	margin: 2px 0 5px 0;
+	margin: 3px 5px;
 }
+
+.dispatch_toolbar div {
+	font-size: 11px;
+	padding: 3px 1px 2px 18px;
+	margin: 2px 5px 2px 0;
+	display: inline-block;
+}
+
+.dispatch_toolbar .send_job {
+	background: url(../images/send_pnd_job.gif) no-repeat left center;
+}
+
+.dispatch_toolbar .view_jobs {
+	background: url(../images/view_pnd_job.gif) no-repeat left center; 
+}
+
+.dispatch_toolbar .send_message {
+	background: url(../images/send_pnd_message.gif) no-repeat left center; 
+}
+
 .address_toolbar {
 	margin: 5px 0 5px 0;
 }
+/*
 .marker_infowindow .dispatch_toolbar a img, .infoWindowImg {
 	text-decoration: none;
 	border: 0 none;
 	width: 103px;
 	height: 20px;	
 }
+*/
 .marker_infowindow .job_description_title, .marker_infowindow .job_location_title, .marker_infowindow .job_landmark {
 	font-weight: bold;
 }
@@ -186,14 +209,7 @@ body {
 	border-collapse: collapse;
 }
 .marker_infowindow .job_details tr {
-	line-height: 10px;
-}
-.marker_infowindow .job_details td {
-	vertical-align: top;
-}
-.marker_infowindow .job_details_title {
-	width: 30px;
-	height: 10px;
+	line-height: 13px;
 }
 
 .traffic_control_hilite {
@@ -374,20 +390,46 @@ body {
     padding: 5px 5px;
 }
 
-#location_table a, #location_table a:link, #landmark_table a, #landmark_table a:link, #job_table a, #job_table a:link {
+.dispatch_toolbar a, #location_table a, #location_table a:link, #landmark_table a, #landmark_table a:link, #job_table a, #job_table a:link {
     color: #0000ff;
     text-decoration: none;
 }
-#location_table a:visited, #landmark_table a:visited, #job_table a:visited {
+.dispatch_toolbar a:visited, #location_table a:visited, #landmark_table a:visited, #job_table a:visited {
     color: #0000ff;
     text-decoration: none;
 }
-#location_table a:hover, #landmark_table a:hover, #job_table a:hover {
+.dispatch_toolbar a:hover, #location_table a:hover, #landmark_table a:hover, #job_table a:hover {
     cursor: pointer; 
     color: #0000ff;
     text-decoration: underline;
 }
-#location_table a:active, #landmark_table a:active, #job_table a:active  {
+.dispatch_toolbar a:active, #location_table a:active, #landmark_table a:active, #job_table a:active  {
     color: #0000ff;
     text-decoration: underline;
+}
+
+.job_toolbar, .dispatch_toolbar {
+	text-align: center;
+}
+.job_button {
+	background-color: #003366;
+	color: white;
+	font-family: Arial, Verdana , Helvetica;
+	font-size: 11px;
+	width: 70px;
+	padding: 2px 0;
+	margin: 0 2px;
+	cursor: pointer;
+}
+
+.job_button[disabled=disabled], .job_button:disabled  { 
+	background: #cccccc;
+	cursor: default;
+}
+
+.rounded_corners {
+    -moz-border-radius: 7px;
+    -webkit-border-radius: 7px;
+    -khtml-border-radius: 7px;
+    border-radius: 7px;
 }
