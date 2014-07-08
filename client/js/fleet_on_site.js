@@ -587,47 +587,7 @@ ContigoMap.prototype = {
             cocValue = Math.round(circleCertaintyRadius) * 3.2808399;
         }
 
-		var compiled = _.template("\
-		<div class='marker_infowindow'>\
-			<div class='marker_infowindow_title'><%= label %></div>\
-			<div class='marker_infowindow_content'>\
-				<div class='event_time'>\
-					<p class='date_time'><%= timestamp %></p>\
-					<% if (speed) { %><p><span class='speed'><%= speed %></span> <span class='direction'><%= direction %></span></p><% } %>\
-					<% if (postedSpeed) { %><p class='postedSpeed'><%= postedSpeed %></p><% } %>\
-					<% if (temperature) { %><p class='temperature'><%= temperature %></p><% } %>\
-				</div>\
-				<div class='event_location'>\
-					<p class='street_address'><%= street %></p>\
-					<p><%= secondAddressLine %></p>\
-					<p class='country'><%= country %></p>\
-					<% if (stopDuration) { %><p><%= stopDuration %></p><% } %>\
-					<% if (cocValue > 0) { %><p><%= cocValue %><% if (!isMetric) { %>ft<% } else { %>m<% } %> accuracy (radius)</p><% } %>\
-					<% if (coord) { %><p><span class='<%= displayLatLngClass %>'>Lat/Long: (<span class='latitude'><%= lat %></span>, <span class='longitude'><%= lng %></span>)</span></p><% } %>\
-					<% if (eventType) { %><p>Event Type: <span class='event_type'><%= eventType %></span></p><% } %>\
-					<% if (landmark) { %><p>Landmark: <span class='landmark'><%= landmark %></span></p><% } %>\
-				</div>\
-				<% if (driverStatus || status || userNote || ioprt1Scenario || ioprt2Scenario || ioprt3Scenario || ioprt4Scenario || dispatch) { %>\
-				<div class='event_driver_info'>\
-					<% if (driverStatus) { %><p>Driver Status: <%= driverStatus %></p><% } %>\
-					<% if (status) { %><p>PND Status: <%= status %></p><% } %>\
-					<% if (dispatch) { %>\
-					<div class='dispatch_toolbar'>\
-						<div class='send_job'><a href='#' id='sendjob_<%= type %>_<%= dispatchId %>'>Send Job</a></div>\
-						<div class='view_jobs'><a href='#' id='viewjob_<%= type %>_<%= dispatchId %>'>View Jobs</a></div>\
-						<div class='send_message'><a href='#' id='sendmessage_<%= type %>_<%= dispatchId %>'>Send Message</a></div>\
-					</div>\
-					<% } %>\
-					<% if (ioprt1Scenario) { %><p><%= ioprt1Scenario %></p><% } %>\
-					<% if (ioprt2Scenario) { %><p><%= ioprt2Scenario %></p><% } %>\
-					<% if (ioprt3Scenario) { %><p><%= ioprt3Scenario %></p><% } %>\
-					<% if (ioprt4Scenario) { %><p><%= ioprt4Scenario %></p><% } %>\
-				</div>\
-				<% } %>\
-				<%= streetView %>\
-			</div>\
-		</div>\
-		");
+		var compiled = _.template($("script.location_info_template").html());
         content = $(compiled({label: label, timestamp: timestamp, type: dispatch ? dispatch.type : "", dispatchId: dispatch ? dispatch.id : "", 
         	IMG_HOST_PATH: IMG_HOST_PATH, userNote: userNote, speed: speed, direction: direction, postedSpeed: postedSpeed, temperature: temperature, street: address.street,
         	secondAddressLine: secondAddressLine, country: address.country, stopDuration: stopDuration, cocValue: cocValue, isMetric: isMetric, coord: coord,
@@ -727,26 +687,7 @@ ContigoMap.prototype = {
 	buildLmkInfoWindowContents : function(label, userNote, lmkAddress, content, dispatch, coord) {		
 		// dispatch.id: 11903|1008 Homer Street, Vancouver, BC, Canada, V6B 2X1|49.27727|-123.12019|407|1008 Homer Street
 		var type = dispatch ? dispatch.type : "", landmarkId = dispatch ? dispatch.id.split("|")[0] : "";
-		var compiled = _.template("\
-		<div class='marker_infowindow'>\
-			<div class='marker_infowindow_title'><%= label %></div>\
-			<div class='marker_infowindow_content'>\
-			<% if (dispatch) { %>\
-				<div class='dispatch_toolbar'>\
-					<div><a href='#' id='sendjob_<%= type %>_<%= landmarkId %>'><img src='<%= ICON_HOST_PATH %>send_job.png'></a></div>\
-				</div>\
-			<% } %>\
-			<% if (userNote || lmkAddress || content) { %>\
-				<div class='landmark_info'>\
-				<% if (userNote) { %><p class='user_note'><%= userNote %></p><% } %>\
-				<% if (lmkAddress) { %><p class='landmark_address'><%= lmkAddress %></p><% } %>\
-				<% if (content) { %><p class='landmark_content'><%= content %></p><% } %>\
-				</div>\
-			<% } %>\
-			<%= streetView %>\
-			</div>\
-		</div>\
-		");
+		var compiled = _.template($("script.landmark_info_template").html());
         content = $(compiled({label: label, dispatch: dispatch, type: type, landmarkId: landmarkId, 
         	ICON_HOST_PATH: ICON_HOST_PATH, userNote: userNote, lmkAddress: lmkAddress, content: content,
         	streetView: Util.getStreetView(coord.lat, coord.lng)}))[0]; // get DOM object
@@ -839,38 +780,7 @@ ContigoMap.prototype = {
     		priority, status, sentTimestamp, ackTimestamp, 
     		etaTimestamp, doneTimestamp, deletedTimestamp, 
     		deletedBy, isDeleted, isDone) {
-			
-		var compiled = _.template("\
-		<div class='marker_infowindow'>\
-			<div class='marker_infowindow_title'><%= label %></div>\
-			<div class='marker_infowindow_content'>\
-			<div class='job_description'>\
-			<div class='job_description_title'>Job Description:</div>\
-			<div class='job_description_content'><%= description %></div>\
-			</div>\
-			<div class='job_location'>\
-			<div class='job_location_title'>Job Location:</div>\
-			<% if (landmark) { %><div class='job_landmark'>(<%= landmark %>)</div><% } %>\
-			<div class='job_destination'><%= destination %></div>\
-			</div>\
-			<table class='job_details'>\
-			<tr><td class='job_details_title'>Priority:</td><td class='job_priority'><%= priority %></td></tr>\
-			<tr><td class='job_details_title'>Status:</td><td class='job_status'><%= status %></td></tr>\
-			<tr><td class='job_details_title'>Sent:</td><td><%= sentTimestamp %></td></tr>\
-			<tr><td class='job_details_title'>Ack'd:</td><td><%= ackTimestamp %></td></tr>\
-			<tr><td class='job_details_title'>ETA:</td><td><%= etaTimestamp %></td></tr>\
-			<% if (isDone) { %><tr><td class='job_details_title'>Done:</td><td><%= doneTimestamp %></td></tr><% } %>\
-			<% if (isDeleted) { %><tr><td class='job_details_title'>Deleted:</td><td><% if (deletedTimestamp) { %><%= deletedTimestamp %><% } %><% if (deletedBy) { %> <%= deletedBy %><% } %></td></tr><% } %>\
-			</table>\
-			<div class='job_toolbar'>\
-			<input id='delete_job_<%= beaconId %>_<%= jobId %>' type='button' class='rounded_corners job_button' value='delete' />\
-			<input id='reorder_job_<%= beaconId %>_<%= jobId %>' type='button' class='rounded_corners job_button button_reorder_job' value='reorder'<% if (isDeleted || isDone) { %> disabled='disabled'<% } %> />\
-			<input id='reassign_job_<%= beaconId %>_<%= jobId %>' type='button' class='rounded_corners job_button button_reassign_job' value='reassign'<% if (!isDeleted && isDone) { %> disabled='disabled'<% } %> />\
-			</div>\
-			<%= streetView %>\
-			</div>\
-		</div>\
-		");
+		var compiled = _.template($("script.job_info_template").html());
         content = $(compiled({label: label, description: description, landmark: landmark, destination: destination, 
         	priority: (priority == -1) ? "-" : priority, status: status, 
 			sentTimestamp: (sentTimestamp) ? sentTimestamp : "-", ackTimestamp: (ackTimestamp) ? ackTimestamp : "-", 
