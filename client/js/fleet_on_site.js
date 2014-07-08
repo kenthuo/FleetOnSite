@@ -413,7 +413,7 @@ ContigoMap.prototype = {
 						id: TAG_GROUP.LOCATION + "_" + beaconId + "_" + i,
 						tag: [label, TAG_GROUP.LOCATION],
 						latLng: [coord.lat, coord.lng], 
-						data: infoContent,                        
+						data: {content: infoContent, streetViewSrc: Util.getStreetView(coord.lat, coord.lng, direction)},                        
 						options: {
 							title: label,
 							icon: {
@@ -553,15 +553,7 @@ ContigoMap.prototype = {
 	 * @returns string the content of InfoWindow
 	 */	
 	buildViewAddressInfoWindowContents : function(address, coord) {
-		var compiled = _.template("\
-		<div class='marker_infowindow'>\
-			<div class='marker_infowindow_title'>View Address</div>\
-			<div class='marker_infowindow_content'>\
-				<p><%= address %></p>\
-				<%= streetView %>\
-			</div>\
-		</div>\
-		");
+		var compiled = _.template($("script.view_address_info_template").html());
         content = $(compiled({address: address, streetView: Util.getStreetView(coord.lat(), coord.lng())}))[0]; // get DOM object
         return content;	
 	},
@@ -593,8 +585,7 @@ ContigoMap.prototype = {
         	secondAddressLine: secondAddressLine, country: address.country, stopDuration: stopDuration, cocValue: cocValue, isMetric: isMetric, coord: coord,
         	displayLatLngClass: displayLatLngClass, lat: coord.lat, lng: coord.lng, eventType: eventType, landmark: landmark, driverStatus: driverStatus,
         	status: status, userNote: userNote, dispatch: dispatch, ioprt1Scenario: ioprt1Scenario, ioprt2Scenario: ioprt2Scenario, 
-        	ioprt3Scenario: ioprt3Scenario, ioprt4Scenario: ioprt4Scenario,
-        	streetView: Util.getStreetView(coord.lat, coord.lng)}))[0]; // get DOM object
+        	ioprt3Scenario: ioprt3Scenario, ioprt4Scenario: ioprt4Scenario}))[0]; // get DOM object
         return content;
 	},
     
@@ -656,7 +647,7 @@ ContigoMap.prototype = {
                     id: TAG_GROUP.LANDMARK + "_" + i,
                     tag: [label, TAG_GROUP.LANDMARK],
                     latLng: [coord.lat, coord.lng], 
-                    data: infoContent,    
+                    data: {content: infoContent, streetViewSrc: Util.getStreetView(coord.lat, coord.lng)},    
                     options: {
                         title: label,
                         icon: {
@@ -689,8 +680,7 @@ ContigoMap.prototype = {
 		var type = dispatch ? dispatch.type : "", landmarkId = dispatch ? dispatch.id.split("|")[0] : "";
 		var compiled = _.template($("script.landmark_info_template").html());
         content = $(compiled({label: label, dispatch: dispatch, type: type, landmarkId: landmarkId, 
-        	ICON_HOST_PATH: ICON_HOST_PATH, userNote: userNote, lmkAddress: lmkAddress, content: content,
-        	streetView: Util.getStreetView(coord.lat, coord.lng)}))[0]; // get DOM object
+        	ICON_HOST_PATH: ICON_HOST_PATH, userNote: userNote, lmkAddress: lmkAddress, content: content}))[0]; // get DOM object
         return content;
 	},
 
@@ -736,7 +726,7 @@ ContigoMap.prototype = {
                     var marker = {
                     	tag: [label, TAG_GROUP.JOB],
                         latLng: [coord.lat, coord.lng], 
-                        data: infoContent,                        
+                        data: {content: infoContent, streetViewSrc: Util.getStreetView(coord.lat, coord.lng)},                      
                         options: {
                             title: label,
                             icon: {
@@ -785,8 +775,7 @@ ContigoMap.prototype = {
         	priority: (priority == -1) ? "-" : priority, status: status, 
 			sentTimestamp: (sentTimestamp) ? sentTimestamp : "-", ackTimestamp: (ackTimestamp) ? ackTimestamp : "-", 
 			etaTimestamp: (etaTimestamp) ? etaTimestamp : "-", isDone: isDone, doneTimestamp: doneTimestamp, 
-			isDeleted: isDeleted, deletedTimestamp: deletedTimestamp, deletedBy: deletedBy, beaconId: beaconId, jobId: jobId,
-        	streetView: Util.getStreetView(coord.lat, coord.lng)}))[0]; // get DOM object
+			isDeleted: isDeleted, deletedTimestamp: deletedTimestamp, deletedBy: deletedBy, beaconId: beaconId, jobId: jobId}))[0]; // get DOM object
         return content;
 	},
 	
@@ -800,13 +789,13 @@ ContigoMap.prototype = {
 	 * 			open: when the info window is open
 	 * @see https://google-maps-utility-library-v3.googlecode.com/svn/trunk/infobox/docs/reference.html
 	 */
-	showInfoWindow: function(marker, content, events) {
+	showInfoWindow: function(marker, data, events) {
 		this.clear({name:"infowindow"});
 		this.canvas.gmap3({
 			infowindow: {
 				anchor: marker,
 				options: {
-					content: content, 
+					content: data.content, 
 					maxWidth: 0, pixelOffset: new google.maps.Size(-140, 10), 
 					boxStyle: { background: "url('images/tipbox.gif') no-repeat", width: "300px"}, 
 					closeBoxMargin: "13px 5px 5px 5px", closeBoxURL: "images/close.gif", infoBoxClearance: new google.maps.Size(1, 1)
@@ -819,6 +808,8 @@ ContigoMap.prototype = {
 					}
 				},
 				callback: function(infowindow) {
+					// call street view on the fly to avoid to exceed usage quota
+					$(infowindow.getContent()).find(".streetview").attr("src", data.streetViewSrc);
 					if (!_.isEmpty(events) && _.isFunction(events.open)) {
 						events.open.call();
 					}

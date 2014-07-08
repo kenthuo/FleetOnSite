@@ -9,23 +9,32 @@
     <link type="text/css" rel="stylesheet" href="css/gmap3menu.css" />
     <link type="text/css" rel="stylesheet" href="js/jquery-ui-1.10.4/css/smoothness/jquery-ui-1.10.4.custom.min.css" />
     <!-- BEGIN: Underscore Template Definition. -->
+	<script type="text/template" class="view_address_info_template">
+    	<div class='marker_infowindow'>
+			<div class='marker_infowindow_title'>View Address</div>
+			<div class='marker_infowindow_content'>
+				<p><%= address %></p>
+				<img class='streetview' src='<%= streetView %>' />
+			</div>
+		</div>
+    </script>
     <script type="text/template" class="landmark_info_template">
     	<div class='marker_infowindow'>
 			<div class='marker_infowindow_title'><%= label %></div>
 			<div class='marker_infowindow_content'>
-			<% if (dispatch) { %>
+				<% if (dispatch) { %>
 				<div class='dispatch_toolbar'>
 					<div><a href='#' id='sendjob_<%= type %>_<%= landmarkId %>'><img src='<%= ICON_HOST_PATH %>send_job.png'></a></div>
 				</div>
-			<% } %>
-			<% if (userNote || lmkAddress || content) { %>
+				<% } %>
+				<% if (userNote || lmkAddress || content) { %>
 				<div class='landmark_info'>
-				<% if (userNote) { %><p class='user_note'><%= userNote %></p><% } %>
-				<% if (lmkAddress) { %><p class='landmark_address'><%= lmkAddress %></p><% } %>
-				<% if (content) { %><p class='landmark_content'><%= content %></p><% } %>
+					<% if (userNote) { %><p class='user_note'><%= userNote %></p><% } %>
+					<% if (lmkAddress) { %><p class='landmark_address'><%= lmkAddress %></p><% } %>
+					<% if (content) { %><p class='landmark_content'><%= content %></p><% } %>
 				</div>
-			<% } %>
-			<%= streetView %>
+				<% } %>
+				<img class='streetview' />
 			</div>
 		</div>
     </script>
@@ -56,7 +65,7 @@
 					<input id='reorder_job_<%= beaconId %>_<%= jobId %>' type='button' class='rounded_corners job_button button_reorder_job' value='reorder'<% if (isDeleted || isDone) { %> disabled='disabled'<% } %> />
 					<input id='reassign_job_<%= beaconId %>_<%= jobId %>' type='button' class='rounded_corners job_button button_reassign_job' value='reassign'<% if (!isDeleted && isDone) { %> disabled='disabled'<% } %> />
 				</div>
-				<%= streetView %>
+				<img class='streetview' />
 			</div>
 		</div>
     </script>
@@ -97,7 +106,7 @@
 					<% if (ioprt4Scenario) { %><p><%= ioprt4Scenario %></p><% } %>
 				</div>
 				<% } %>
-				<%= streetView %>
+				<img class='streetview' />
 			</div>
 		</div>
     </script>
@@ -116,6 +125,6 @@
     <script type="text/javascript" src="js/ContigoPoiCollection.js"></script>
     <script type="text/javascript" src="js/fleet_on_site_ext.js"></script>
     <script type="text/javascript" src="js/fleet_on_site.js"></script>
-    <script type="text/javascript" src="fixture/test.js"></script>
+    <script type="text/javascript" src="fixture/test_fleet.js"></script>
 </body>
 </html>

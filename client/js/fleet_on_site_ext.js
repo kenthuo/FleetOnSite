@@ -248,11 +248,11 @@ function Util() {
 	}
 	
 	/**
-	 * Generate the IMG tag to represent the street view of a lat/lon location.
-	 * The dimension is 300x100. 
+	 * Build the source of an IMG tag to represent the street view of a lat/lon location.
+	 * The dimension is 290x100. 
 	 */
 	function getStreetView(lat, lng, direction) {
-		return "<img class='streetview' src='http://maps.googleapis.com/maps/api/streetview?size=290x100&location=" + lat + "," + lng + "&heading=" + fromDirectionToHeading(direction) + "' />";
+		return "http://maps.googleapis.com/maps/api/streetview?size=290x100&location=" + lat + "," + lng + "&heading=" + fromDirectionToHeading(direction);
 	}
     
 	// exports
