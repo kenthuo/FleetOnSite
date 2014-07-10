@@ -12,6 +12,11 @@ function ContigoMap(opts) {
 			TrafficOption: true, BestFitOption: true, CenterMapOption: true, CenterLastOption: false, 
 			AutoBestFitOption: false, DisplayItemStateOption: false, TabularDataOption: true, LocateOption: true, CoCOption: true
 		},
+		callback: {
+			reorderJob: function(beaconId, jobId) {},
+			deleteJob: function(beaconId, jobId) {},
+			reassignJob: function(beaconId, jobId) {}
+		},
 		showLabel: false, showLastLabelOnly: true, drawCircle: false, drawRectangle: false, drawPolygon: false};
 	this.opts = $.extend(true, {}, defaults, opts);
 
@@ -726,7 +731,7 @@ ContigoMap.prototype = {
                     var marker = {
                     	tag: [label, TAG_GROUP.JOB],
                         latLng: [coord.lat, coord.lng], 
-                        data: {content: infoContent, streetViewSrc: Util.getStreetView(coord.lat, coord.lng)},                      
+                        data: {content: infoContent, streetViewSrc: Util.getStreetView(coord.lat, coord.lng), job: {beaconId: beaconId, jobId: jobId}},                      
                         options: {
                             title: label,
                             icon: {
@@ -775,7 +780,7 @@ ContigoMap.prototype = {
         	priority: (priority == -1) ? "-" : priority, status: status, 
 			sentTimestamp: (sentTimestamp) ? sentTimestamp : "-", ackTimestamp: (ackTimestamp) ? ackTimestamp : "-", 
 			etaTimestamp: (etaTimestamp) ? etaTimestamp : "-", isDone: isDone, doneTimestamp: doneTimestamp, 
-			isDeleted: isDeleted, deletedTimestamp: deletedTimestamp, deletedBy: deletedBy, beaconId: beaconId, jobId: jobId}))[0]; // get DOM object
+			isDeleted: isDeleted, deletedTimestamp: deletedTimestamp, deletedBy: deletedBy}))[0]; // get DOM object
         return content;
 	},
 	
@@ -790,6 +795,7 @@ ContigoMap.prototype = {
 	 * @see https://google-maps-utility-library-v3.googlecode.com/svn/trunk/infobox/docs/reference.html
 	 */
 	showInfoWindow: function(marker, data, events) {
+		var $this = this;
 		this.clear({name:"infowindow"});
 		this.canvas.gmap3({
 			infowindow: {
@@ -808,8 +814,14 @@ ContigoMap.prototype = {
 					}
 				},
 				callback: function(infowindow) {
+					var content = $(infowindow.getContent());
 					// call street view on the fly to avoid to exceed usage quota
-					$(infowindow.getContent()).find(".streetview").attr("src", data.streetViewSrc);
+					content.find(".streetview").attr("src", data.streetViewSrc);
+					if (!_.isEmpty(data.job)) {
+						content.find(".reorder_job").on('click', function() {$this.opts.callback.reorderJob(data.job.beaconId, data.job.jobId)});
+						content.find(".delete_job").on('click', function() {$this.opts.callback.deleteJob(data.job.beaconId, data.job.jobId)});
+						content.find(".reassign_job").on('click', function() {$this.opts.callback.reassignJob(data.job.beaconId, data.job.jobId)});
+					}
 					if (!_.isEmpty(events) && _.isFunction(events.open)) {
 						events.open.call();
 					}
