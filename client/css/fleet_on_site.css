@@ -153,6 +153,11 @@ body {
 	padding: 3px 0 3px 0;
 }
 
+.marker_infowindow .view_address {
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
 .marker_infowindow_title {
 	text-shadow: 0 -1px #000000;
 	font-weight: bold;

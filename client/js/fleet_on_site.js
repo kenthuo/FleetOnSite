@@ -204,7 +204,8 @@ ContigoMap.prototype = {
                 					callback: function(marker) {
                 						$this.showInfoWindow(
                 							marker, 
-											$this.buildViewAddressInfoWindowContents(results[0].formatted_address, $this.currentClickEvent.latLng),
+											{content: $this.buildViewAddressInfoWindowContents(results[0].formatted_address), 
+											streetViewSrc: Util.getStreetView($this.currentClickEvent.latLng.lat(), $this.currentClickEvent.latLng.lng())},
                 							{close: function() {$this.clear({tag: TAG_GROUP.ADDRESS});}})
 									}
            						}
@@ -557,9 +558,9 @@ ContigoMap.prototype = {
 	 * 
 	 * @returns string the content of InfoWindow
 	 */	
-	buildViewAddressInfoWindowContents : function(address, coord) {
+	buildViewAddressInfoWindowContents : function(address) {
 		var compiled = _.template($("script.view_address_info_template").html());
-        content = $(compiled({address: address, streetView: Util.getStreetView(coord.lat(), coord.lng())}))[0]; // get DOM object
+        content = $(compiled({address: address}))[0]; // get DOM object
         return content;	
 	},
 	
