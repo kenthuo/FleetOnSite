@@ -18,7 +18,7 @@ function ContigoMap(opts) {
 			deleteJob: function(beaconId, jobId) {},
 			reassignJob: function(beaconId, jobId) {}
 		},
-		showLabel: false, showLastLabelOnly: true, drawCircle: false, drawRectangle: false, drawPolygon: false};
+		showLabelWithMarker: false, showLastLabelOnly: true, showDriverNameInInfoWindow: false, drawCircle: false, drawRectangle: false, drawPolygon: false};
 	this.opts = $.extend(true, {}, defaults, opts);
 
     this.mapType = 'cp_fleet'; // cp_rpt_routelog
