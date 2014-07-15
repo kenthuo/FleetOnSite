@@ -13,7 +13,7 @@ function ContigoMap(opts) {
 			AutoBestFitOption: false, DisplayItemStateOption: false, TabularDataOption: true, LocateOption: true, CoCOption: true
 		},
 		callback: {
-			init: function() {},
+			mapLoaded: function() {},
 			reorderJob: function(beaconId, jobId) {},
 			deleteJob: function(beaconId, jobId) {},
 			reassignJob: function(beaconId, jobId) {}
@@ -37,6 +37,7 @@ function ContigoMap(opts) {
     this.geocoder = new google.maps.Geocoder();    
     this.poiCollection = null;
     this.controls = [];
+    this.init();
 }
 
 ContigoMap.prototype = {
@@ -49,7 +50,6 @@ ContigoMap.prototype = {
 		this.canvas = $('#' + this.opts.mapId);
 		this.contextMenu = new Gmap3Menu(this.canvas);
 		this.initContextMenu();
-        
         this.canvas.gmap3({
             defaults:{ 
                 classes:{
@@ -90,11 +90,11 @@ ContigoMap.prototype = {
                     // create custom controls on the map
                     $this.map = $this.canvas.gmap3("get");
 					$this.addControl(new MoreControl($this)[0], "top_right");
-					$this.opts.callback.init();
+        			$this.markCenter();
+					$this.opts.callback.mapLoaded();
       			}
             }
         });
-        this.markCenter();
 	},
 	
 	/**
