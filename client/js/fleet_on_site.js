@@ -401,12 +401,7 @@ ContigoMap.prototype = {
 
 				var isLast = (i == szLocatePoints - 1);
 	            if (label) {
-	            	var infoContent = $this.buildLocationInfoWindowContents(
-		                            label, coord, eventType, address, stopDuration, speed, 
-		                            direction, postedSpeed, temperature, timestamp, landmark, circleCertaintyRadius, 
-		                            status, userNote, driverID, driverStatus, beaconID,
-		                            guardianID, ioprt1Scenario, ioprt2Scenario, ioprt3Scenario, ioprt4Scenario, lineColor, 
-		                            dispatch, isMetric, driverNameInItemMode);
+	            	var infoContent = $this.buildLocationInfoWindowContents(label, point, isMetric, driverNameInItemMode);
 		            
 					if (!(!isPointsConnected || (isPointsConnected && isLast)) || $this.mapType == "cp_rpt_routetrip") {
 						markerLabel = '';
@@ -569,31 +564,23 @@ ContigoMap.prototype = {
 	/**
 	 * Construct the content of InfoWindow for each location Poi object.
 	 * 
+	 * @param label
+	 * @param point
+	 * @param isMetric
+	 * @param driverName
 	 * @returns string the content of InfoWindow
 	 */
-	buildLocationInfoWindowContents : function(
-	                label, coord, eventType, address, stopDuration, speed, direction, postedSpeed, temperature, timestamp, landmark,
-	                circleCertaintyRadius, status, userNote, driverID, driverStatus, beaconID,
-	                guardianID, ioprt1Scenario, ioprt2Scenario, ioprt3Scenario, ioprt4Scenario, lineColor, dispatch, isMetric, driverName) {        
+	buildLocationInfoWindowContents : function(label, point, isMetric, driverName) {        
 		
-		var cocValue = circleCertaintyRadius;
+		var cocValue = point.circleCertaintyRadius, cocUnit = "m";
 		var displayLatLngClass = this.latLonDisplayed ? "show" : "hide";
-		var secondAddressLine = "";
-	    secondAddressLine += (address.city) ? "<span class='city'>" + address.city + "</span>" : "";
-	    secondAddressLine += (address.county) ? ((secondAddressLine) ? ", <span class='county'>" + address.county + "</span>" : "<span class='county'>" + address.county + "</span>") : "";
-	    secondAddressLine += (address.state) ? ((secondAddressLine) ? ", <span class='state_province'>" + address.state + "</span>" : "<span class='state_province'>" + address.state + "</span>") : "";
-	    secondAddressLine += " <span class='postal_code'>" + address.postalCode + "</span>";
 	    if (!isMetric) {
             cocValue = Math.round(circleCertaintyRadius) * 3.2808399;
+            cocUnit = "ft";
         }
 
 		var compiled = _.template($("script.location_info_template").html());
-        content = $(compiled({label: label, timestamp: timestamp, type: dispatch ? dispatch.type : "", dispatchId: dispatch ? dispatch.id : "", 
-        	IMG_HOST_PATH: IMG_HOST_PATH, userNote: userNote, speed: speed, direction: direction, postedSpeed: postedSpeed, temperature: temperature, street: address.street,
-        	secondAddressLine: secondAddressLine, country: address.country, stopDuration: stopDuration, cocValue: cocValue, isMetric: isMetric, coord: coord,
-        	displayLatLngClass: displayLatLngClass, lat: coord.lat, lng: coord.lng, eventType: eventType, landmark: landmark, driverStatus: driverStatus,
-        	status: status, userNote: userNote, dispatch: dispatch, ioprt1Scenario: ioprt1Scenario, ioprt2Scenario: ioprt2Scenario, 
-        	ioprt3Scenario: ioprt3Scenario, ioprt4Scenario: ioprt4Scenario}))[0]; // get DOM object
+        content = $(compiled({label: label, point: point, driverName: driverName, displayLatLngClass: displayLatLngClass, cocValue: cocValue, cocUnit: cocUnit}))[0]; // get DOM object
         return content;
 	},
     

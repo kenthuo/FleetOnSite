@@ -636,7 +636,7 @@ function TabularDataOption(contigoMap) {
                                             var locationTbody = $("<tbody></tbody>");
                                             _.each(markers, function(marker, j) {
                                                 var dateTime = landmark = address = "";
-                                                var html = $(marker.data);
+                                                var html = $(marker.data.content);
                                                 landmark = html.find(".landmark").html();
                                                 dateTime = html.find(".date_time").html().match(/^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}[A|P]M [a-zA-Z]*)(.*\(GPS Age: |)([a-zA-Z0-9 ]+|)(\)|)/); // "08/21/2012 02:17:24PM EDT " || 08/20/2012 08:05:01PM EDT <br>(GPS Age: 0h 05m 01s)
                                                 
@@ -682,7 +682,7 @@ function TabularDataOption(contigoMap) {
                                             var landmarkThead = $("<thead></thead>").append("<tr>" + _.reduce(["", "Name", "Category", "Address", "Latitude", "Longitude", "Notes"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
                                             var landmarkTbody = $("<tbody></tbody>");
                                             _.each(landmarks, function(landmark, j) {
-                                                var html = $(landmark.data), address = "";
+                                                var html = $(landmark.data.content), address = "";
                                                 landmarkInfo = landmark.object.title.match(/^(.*)\((.*)\)$/); // "Office (Company)"
                                                 address = html.find(".landmark_address").html();
                                                 address = address ? ("<a id='" + landmark.id + "'>" + address + "</a>") : "";
@@ -715,7 +715,7 @@ function TabularDataOption(contigoMap) {
                                             var jobThead = $("<thead></thead>").append("<tr>" + _.reduce(["Priority", "Status", "Destination", "Latitude", "Longitude", "Description"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
                                             var jobTbody = $("<tbody></tbody>");
                                             _.each(jobs, function(job) {
-                                                var html = $(job.data), destination = "";
+                                                var html = $(job.data.content), destination = "";
                                                 priority = html.find(".job_priority").html();
                                                 status = html.find(".job_status").html();
                                                 destination = html.find(".job_destination").html();

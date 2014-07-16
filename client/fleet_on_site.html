@@ -74,36 +74,45 @@
 			<div class='marker_infowindow_title'><%= label %></div>
 			<div class='marker_infowindow_content'>
 				<div class='event_time'>
-					<p class='date_time'><%= timestamp %></p>
-					<% if (speed) { %><p><span class='speed'><%= speed %></span> <span class='direction'><%= direction %></span></p><% } %>
-					<% if (postedSpeed) { %><p class='postedSpeed'><%= postedSpeed %></p><% } %>
-					<% if (temperature) { %><p class='temperature'><%= temperature %></p><% } %>
+					<p class='date_time'><%= point.timestamp %></p>
+					<% if (point.speed) { %><p><span class='speed'><%= point.speed %></span> <span class='direction'><%= point.direction %></span></p><% } %>
+					<% if (point.postedSpeed) { %><p class='postedSpeed'><%= point.postedSpeed %></p><% } %>
+					<% if (point.temperature) { %><p class='temperature'><%= point.temperature %></p><% } %>
 				</div>
 				<div class='event_location'>
-					<p class='street_address'><%= street %></p>
-					<p><%= secondAddressLine %></p>
-					<p class='country'><%= country %></p>
-					<% if (stopDuration) { %><p><%= stopDuration %></p><% } %>
-					<% if (cocValue > 0) { %><p><%= cocValue %><% if (!isMetric) { %>ft<% } else { %>m<% } %> accuracy (radius)</p><% } %>
-					<% if (coord) { %><p><span class='<%= displayLatLngClass %>'>Lat/Long: (<span class='latitude'><%= lat %></span>, <span class='longitude'><%= lng %></span>)</span></p><% } %>
-					<% if (eventType) { %><p>Event Type: <span class='event_type'><%= eventType %></span></p><% } %>
-					<% if (landmark) { %><p>Landmark: <span class='landmark'><%= landmark %></span></p><% } %>
+					<p class='street_address'><%= point.address.street %></p>
+					<p>
+					<% if (point.address.city) { %>
+						<span class='city'><%= point.address.city %></span><% if (point.address.county) { %>, <span class='county'><%= point.address.county %></span><% if (point.address.state) { %>, <span class='state'><%= point.address.state %></span><% } %><% } else { %><% if (point.address.state) { %>, <span class='state'><%= point.address.state %></span><% } %><% } %>
+					<% } else { %>
+						<% if (point.address.county) { %>
+							<span class='county'><%= point.address.county %></span><% if (point.address.state) { %>, <span class='state'><%= point.address.state %></span><% } %><% } else { %><% if (point.address.state) { %>, <span class='state'><%= point.address.state %></span><% } %>
+						<% } %>
+					<% } %>
+					<span class='postal_code'> <%= point.address.postalCode %></span>
+					</p>
+					<p class='country'><%= point.address.country %></p>
+					<% if (point.stopDuration) { %><p><%= point.stopDuration %></p><% } %>
+					<% if (cocValue > 0) { %><p><%= cocValue %><%= cocUnit %> accuracy (radius)</p><% } %>
+					<% if (point.coord) { %><p><span class='<%= displayLatLngClass %>'>Lat/Long: (<span class='latitude'><%= point.coord.lat %></span>, <span class='longitude'><%= point.coord.lng %></span>)</span></p><% } %>
+					<% if (point.eventType) { %><p>Event Type: <span class='event_type'><%= point.eventType %></span></p><% } %>
+					<% if (point.landmark) { %><p>Landmark: <span class='landmark'><%= point.landmark %></span></p><% } %>
 				</div>
-				<% if (driverStatus || status || userNote || ioprt1Scenario || ioprt2Scenario || ioprt3Scenario || ioprt4Scenario || dispatch) { %>
+				<% if (point.driverStatus || point.status || point.userNote || point.ioprt1Scenario || point.ioprt2Scenario || point.ioprt3Scenario || point.ioprt4Scenario || point.dispatch) { %>
 				<div class='event_driver_info'>
-					<% if (driverStatus) { %><p>Driver Status: <%= driverStatus %></p><% } %>
-					<% if (status) { %><p>PND Status: <%= status %></p><% } %>
-					<% if (dispatch) { %>
+					<% if (point.driverStatus) { %><p>Driver Status: <%= point.driverStatus %></p><% } %>
+					<% if (point.status) { %><p>PND Status: <%= point.status %></p><% } %>
+					<% if (point.dispatch) { %>
 					<div class='dispatch_toolbar'>
-						<div class='send_job'><a href='#' id='sendjob_<%= type %>_<%= dispatchId %>'>Send Job</a></div>
-						<div class='view_jobs'><a href='#' id='viewjob_<%= type %>_<%= dispatchId %>'>View Jobs</a></div>
-						<div class='send_message'><a href='#' id='sendmessage_<%= type %>_<%= dispatchId %>'>Send Message</a></div>
+						<div class='send_job'><a href='#' id='sendjob_<%= point.dispatch.type %>_<%= point.dispatch.id %>'>Send Job</a></div>
+						<div class='view_jobs'><a href='#' id='viewjob_<%= point.dispatch.type %>_<%= point.dispatch.id %>'>View Jobs</a></div>
+						<div class='send_message'><a href='#' id='sendmessage_<%= point.dispatch.type %>_<%= point.dispatch.id %>'>Send Message</a></div>
 					</div>
 					<% } %>
-					<% if (ioprt1Scenario) { %><p><%= ioprt1Scenario %></p><% } %>
-					<% if (ioprt2Scenario) { %><p><%= ioprt2Scenario %></p><% } %>
-					<% if (ioprt3Scenario) { %><p><%= ioprt3Scenario %></p><% } %>
-					<% if (ioprt4Scenario) { %><p><%= ioprt4Scenario %></p><% } %>
+					<% if (point.ioprt1Scenario) { %><p><%= point.ioprt1Scenario %></p><% } %>
+					<% if (point.ioprt2Scenario) { %><p><%= point.ioprt2Scenario %></p><% } %>
+					<% if (point.ioprt3Scenario) { %><p><%= point.ioprt3Scenario %></p><% } %>
+					<% if (point.ioprt4Scenario) { %><p><%= point.ioprt4Scenario %></p><% } %>
 				</div>
 				<% } %>
 				<img class='streetview' />
