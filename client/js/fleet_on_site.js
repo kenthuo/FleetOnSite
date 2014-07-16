@@ -6,6 +6,7 @@ function ContigoMarkers(markers, cocs, routes) {
 }
 
 function ContigoMap(opts) {
+	var $this = this;
 	var defaults = {
 		mapId: "map", // the identity of the DOM element to hold the map
 		controlOptions: {
@@ -21,7 +22,6 @@ function ContigoMap(opts) {
 		showLabelWithMarker: false, showLabelWithLandmark: true, showCentralMarker: true, showLastLabelOnly: true, showDriverNameInInfoWindow: true, drawCircle: false, drawRectangle: false, drawPolygon: false};
 	this.opts = $.extend(true, {}, defaults, opts);
 
-    this.mapType = 'cp_fleet'; // cp_rpt_routelog
     this.map = null; // the google map object
     this.canvas = null; // the canvas object of a map
     this.contextMenu = null; // the context menu of a map
@@ -37,7 +37,17 @@ function ContigoMap(opts) {
     this.geocoder = new google.maps.Geocoder();    
     this.poiCollection = null;
     this.controls = [];
-    this.init();
+    
+    if (navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(function (position) {
+			DEFAULT.CENTER_COORDINATE = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+			DEFAULT.ZOOM_LEVEL = 14;
+			$this.init();
+		}, function(error) {
+			$this.init();
+		});
+    }
+    
 }
 
 ContigoMap.prototype = {
@@ -50,6 +60,7 @@ ContigoMap.prototype = {
 		this.canvas = $('#' + this.opts.mapId);
 		this.contextMenu = new Gmap3Menu(this.canvas);
 		this.initContextMenu();
+		
         this.canvas.gmap3({
             defaults:{ 
                 classes:{
@@ -90,7 +101,7 @@ ContigoMap.prototype = {
                     // create custom controls on the map
                     $this.map = $this.canvas.gmap3("get");
 					$this.addControl(new MoreControl($this)[0], "top_right");
-					if ($this.showCentralMarker) {
+					if ($this.opts.showCentralMarker) {
 						$this.markCenter();
 					}
 					$this.opts.callback.mapLoaded();
@@ -379,7 +390,7 @@ ContigoMap.prototype = {
 	            	label = driverName + ' (' + label + ')';
 	            	markerLabel = driverName;	            	
 	            } else {
-	            	if ($this.showDriverNameInInfoWindow) {
+	            	if ($this.opts.showDriverNameInInfoWindow) {
 	            		driverNameInItemMode = driverName;
 	            	}	            	
 	            }
@@ -388,10 +399,10 @@ ContigoMap.prototype = {
 	            if (label) {
 	            	var infoContent = $this.buildLocationInfoWindowContents(label, point, isMetric, driverNameInItemMode);
 		            
-					if (!(!isPointsConnected || (isPointsConnected && isLast)) || $this.mapType == "cp_rpt_routetrip") {
+					if (!(!isPointsConnected || (isPointsConnected && isLast))) {
 						markerLabel = '';
 					}					
-                    var labelInfo = $this.generateMarkerLabelInfoByMapType(markerLabel, $this.mapType, icon, isLast, speed, direction, vehicleStatus);
+                    var labelInfo = $this.generateMarkerLabelInfo(markerLabel, icon, isLast, speed, direction, vehicleStatus);
                                     
                     if (isLast) {
 		            	$this.setMostRecentLocate(point);
@@ -457,14 +468,13 @@ ContigoMap.prototype = {
      * Generate the label information of a marker based on the map type and other criteria.
      *
      * @param label
-     * @param mapType
 	 * @param icon
      * @param isLast
      * @param speed
      * @param direction
      * @param itemState
      */
-    generateMarkerLabelInfoByMapType : function(label, mapType, icon, isLast, speed, direction, itemState) {
+    generateMarkerLabelInfo : function(label, icon, isLast, speed, direction, itemState) {
         var classes = content = title = '', anchor = null;
         if (label) {
 			var anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
@@ -506,8 +516,6 @@ ContigoMap.prototype = {
             	}
             	var compiled = _.template("<div class='<%= stateClass %>'><div class='labels <%= labelClass %>'><%= label %></div></div>");
             	content = $(compiled({label: label, labelClass: labelClass, stateClass: stateClass}))[0]; // get DOM object
-        	} else if ((mapType == 'cp_rpt_stop_map_multi' && indexOfMarker == szLocatePoints - 1) || mapType == 'address_to_map') {
-
         	} else {
             	classes = "labels";
             	content = label;
@@ -621,7 +629,7 @@ ContigoMap.prototype = {
 			}
 						
 			if (label) {
-				var labelInfo = $this.generateMarkerLabelInfoByMapType($this.showLabelWithLandmark ? label : "", $this.mapType, icon);
+				var labelInfo = $this.generateMarkerLabelInfo($this.opts.showLabelWithLandmark ? label : "", icon);
                 var infoContent = $this.buildLmkInfoWindowContents(label, userNote, lmkAddress, content, dispatch, coord);
                 var marker = {
                     id: TAG_GROUP.LANDMARK + "_" + i,
@@ -696,7 +704,7 @@ ContigoMap.prototype = {
 				var isDone = (status && status.toLowerCase() == "done") ? true : false;				
 				
 				if (label) {
-					var labelInfo = $this.generateMarkerLabelInfoByMapType("", $this.mapType, icon);
+					var labelInfo = $this.generateMarkerLabelInfo("", icon);
                     var infoContent = $this.buildJobInfoWindowContents(
 		            		beaconId, jobId, coord, label, description, landmark, destination, 
 		            		priority, status, sentTimestamp, ackTimestamp, 
