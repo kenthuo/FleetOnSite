@@ -18,7 +18,7 @@ function ContigoMap(opts) {
 			deleteJob: function(beaconId, jobId) {},
 			reassignJob: function(beaconId, jobId) {}
 		},
-		showLabelWithMarker: false, showLastLabelOnly: true, showDriverNameInInfoWindow: false, drawCircle: false, drawRectangle: false, drawPolygon: false};
+		showLabelWithMarker: false, showLabelWithLandmark: true, showCentralMarker: true, showLastLabelOnly: true, showDriverNameInInfoWindow: true, drawCircle: false, drawRectangle: false, drawPolygon: false};
 	this.opts = $.extend(true, {}, defaults, opts);
 
     this.mapType = 'cp_fleet'; // cp_rpt_routelog
@@ -32,7 +32,7 @@ function ContigoMap(opts) {
     this.mostRecentLocate = {latLng: null, timestamp: -1};
     this.isAutoCenteringActive = false;
     this.isAutoBestFitActive = false;
-    this.isItemStatusActive = true;
+    this.isItemStateActive = true;
     this.isTabularDataActive = false;
     this.geocoder = new google.maps.Geocoder();    
     this.poiCollection = null;
@@ -90,7 +90,9 @@ ContigoMap.prototype = {
                     // create custom controls on the map
                     $this.map = $this.canvas.gmap3("get");
 					$this.addControl(new MoreControl($this)[0], "top_right");
-        			$this.markCenter();
+					if ($this.showCentralMarker) {
+						$this.markCenter();
+					}
 					$this.opts.callback.mapLoaded();
       			}
             }
@@ -206,7 +208,7 @@ ContigoMap.prototype = {
                 					callback: function(marker) {
                 						$this.showInfoWindow(
                 							marker, 
-											{content: $this.buildViewAddressInfoWindowContents(results[0].formatted_address), 
+											{content: $this.buildViewAddressInfoWindowContents(results[0].formatted_address, $this.currentClickEvent.latLng.lat().toFixed(5), $this.currentClickEvent.latLng.lng().toFixed(5)), 
 											streetViewSrc: Util.getStreetView($this.currentClickEvent.latLng.lat(), $this.currentClickEvent.latLng.lng())},
                 							{close: function() {$this.clear({tag: TAG_GROUP.ADDRESS});}})
 									}
@@ -356,33 +358,16 @@ ContigoMap.prototype = {
 	            var icon = point.icon;
 	            var label = point.label;
 	            var coord = point.coord;
-	            var eventType = point.eventType;
-	            var address = point.address;
-	            var stopDuration = point.stopDuration;
 	            var speed = point.speed;
-	            var postedSpeed = point.postedSpeed;
 	            var direction = point.direction;
-	            var timestamp = point.timestamp;
-	            var landmark = point.landmark;
 	            var circleCertaintyRadius = point.circleCertaintyRadius;
-	            var status = point.status;
-	            var userNote = point.userNote;
-	            var driverID = point.driverID;
-	            var driverStatus = point.driverStatus;
-	            var beaconID = point.beaconID;
-	            var guardianID = point.guardianID;
 	            var loginID = point.loginID;
+				var driverID = point.driverID;	
 	            var driverName = point.driverName;	
-	            var ioprt1Scenario = point.ioprt1Scenario;
-	            var ioprt2Scenario = point.ioprt2Scenario;
-	            var ioprt3Scenario = point.ioprt3Scenario;
-	            var ioprt4Scenario = point.ioprt4Scenario;
 	            var lineColor = point.lineColor;
 	            var numberLabel = point.numberLabel;
-				var dispatch = point.dispatch;
                 var tripID = point.tripID;
 				var vehicleStatus = point.vehicleStatus;
-				var temperature = point.temperature;
 				var markerLabel = label;
 				var driverNameInItemMode = '';
 				
@@ -394,7 +379,7 @@ ContigoMap.prototype = {
 	            	label = driverName + ' (' + label + ')';
 	            	markerLabel = driverName;	            	
 	            } else {
-	            	if ($this.mapType == 'cp_fleet' || $this.mapType == "cp_rpt_routelog" || $this.mapType == "cp_rpt_stop_map" || $this.mapType == "cp_rpt_routetrip") {
+	            	if ($this.showDriverNameInInfoWindow) {
 	            		driverNameInItemMode = driverName;
 	            	}	            	
 	            }
@@ -477,50 +462,50 @@ ContigoMap.prototype = {
      * @param isLast
      * @param speed
      * @param direction
-     * @param itemStatus
+     * @param itemState
      */
-    generateMarkerLabelInfoByMapType : function(label, mapType, icon, isLast, speed, direction, itemStatus) {
-        var classes = content = title = statusClass = '', anchor = null;
+    generateMarkerLabelInfoByMapType : function(label, mapType, icon, isLast, speed, direction, itemState) {
+        var classes = content = title = '', anchor = null;
         if (label) {
 			var anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
-        	if (mapType == 'cp_fleet' && isLast) {        		
-        		var statusClass = labelClass = '';
-            	if (!this.isItemStatusActive) {
-					statusClass = 'item_status item_status_disabled';
+        	if (this.opts.controlOptions.DisplayItemStateOption && isLast) {        		
+        		var stateClass = labelClass = '';
+            	if (!this.isItemStateActive) {
+					stateClass = 'item_state item_state_disabled';
 				} else {
-					anchorX = 17, anchorY = 18, statusClass = 'item_status item_status_enabled', labelClass = 'item_status_label_enabled';
-            		switch (itemStatus) {
+					anchorX = 17, anchorY = 18, stateClass = 'item_state item_state_enabled', labelClass = 'item_state_label_enabled';
+            		switch (itemState) {
             		case "stop":
-                		statusClass += ' stop_status'; break;
+                		stateClass += ' stop_state'; break;
             		case "idle":
-                		statusClass += ' idle_status'; break;
+                		stateClass += ' idle_state'; break;
             		case "move":
 						if (!_.isEmpty(speed)) {
 							// for the case of an item with speed and direction
 							if (!direction) {
 								if (_.indexOf(["E", "W", "S", "N", "NE", "NW", "SE", "SW"], direction) > -1) {
-									statusClass += ' move_to_' + direction; break;
+									stateClass += ' move_to_' + direction; break;
 								} else {
 									// unknown direction
-									statusClass = labelClass = '', anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
+									stateClass = labelClass = '', anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
 								}				
 							} else {
 								// for the case of an item with speed but not direction
-                        		statusClass += ' move_status';
+                        		stateClass += ' move_state';
 							}			
 						} else {
 							// no speed
-							statusClass = labelClass = '', anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
+							stateClass = labelClass = '', anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
 						}
                 		break;
                 	default:
-						// unknown status
-                		statusClass = labelClass = '', anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
+						// unknown state
+                		stateClass = labelClass = '', anchorX = Math.floor(icon.width / 2), anchorY = -Math.floor(icon.height / 2);
                 		break;                
             		}
             	}
-            	var compiled = _.template("<div class='<%= statusClass %>'><div class='labels <%= labelClass %>'><%= label %></div></div>");
-            	content = $(compiled({label: label, labelClass: labelClass, statusClass: statusClass}))[0]; // get DOM object
+            	var compiled = _.template("<div class='<%= stateClass %>'><div class='labels <%= labelClass %>'><%= label %></div></div>");
+            	content = $(compiled({label: label, labelClass: labelClass, stateClass: stateClass}))[0]; // get DOM object
         	} else if ((mapType == 'cp_rpt_stop_map_multi' && indexOfMarker == szLocatePoints - 1) || mapType == 'address_to_map') {
 
         	} else {
@@ -555,9 +540,9 @@ ContigoMap.prototype = {
 	 * 
 	 * @returns string the content of InfoWindow
 	 */	
-	buildViewAddressInfoWindowContents : function(address) {
+	buildViewAddressInfoWindowContents : function(address, lat, lng) {
 		var compiled = _.template($("script.view_address_info_template").html());
-        content = $(compiled({address: address}))[0]; // get DOM object
+        content = $(compiled({address: address, lat: lat, lng: lng}))[0]; // get DOM object
         return content;	
 	},
 	
@@ -636,7 +621,7 @@ ContigoMap.prototype = {
 			}
 						
 			if (label) {
-				var labelInfo = $this.generateMarkerLabelInfoByMapType(label, $this.mapType, icon);
+				var labelInfo = $this.generateMarkerLabelInfoByMapType($this.showLabelWithLandmark ? label : "", $this.mapType, icon);
                 var infoContent = $this.buildLmkInfoWindowContents(label, userNote, lmkAddress, content, dispatch, coord);
                 var marker = {
                     id: TAG_GROUP.LANDMARK + "_" + i,
@@ -650,7 +635,7 @@ ContigoMap.prototype = {
 							anchor: new google.maps.Point(Math.floor(icon.width / 2), Math.floor(icon.height / 2))},
                         labelAnchor: labelInfo.anchor,
                         labelClass: labelInfo.classes,
-                        labelContent: landmark.label}};
+                        labelContent: labelInfo.content}};
                 markers.push(marker);
 			}	        
         });
@@ -1149,12 +1134,12 @@ ContigoMap.prototype = {
 	 * @param boolean enabled true to show the icon of item state for markers on the map, vice versa.
 	 */
 	enableItemState : function(enabled) {
-		this.isItemStatusActive = enabled;
-		$('.item_status').each(function(index, value) {
+		this.isItemStateActive = enabled;
+		$('.item_state').each(function(index, value) {
 			if (enabled) {
-				$(this).removeClass("item_status_disabled").addClass("item_status_enabled").children(":first").removeClass("item_status_label_disabled").addClass("item_status_label_enabled");
+				$(this).removeClass("item_state_disabled").addClass("item_state_enabled").children(":first").removeClass("item_state_label_disabled").addClass("item_state_label_enabled");
 			} else {
-				$(this).removeClass("item_status_enabled").addClass("item_status_disabled").children(":first").removeClass("item_status_label_enabled").addClass("item_status_label_disabled");
+				$(this).removeClass("item_state_enabled").addClass("item_state_disabled").children(":first").removeClass("item_state_label_enabled").addClass("item_state_label_disabled");
 			}
 		});
 	},    
