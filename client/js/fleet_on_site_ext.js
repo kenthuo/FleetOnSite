@@ -606,20 +606,11 @@ function TabularDataOption(contigoMap) {
             click: function() {
                 contigoMap.isTabularDataActive = contigoMap.idOptionChecked(this);
                 if (contigoMap.isTabularDataActive) {
+					var template = $("script.tabular_data_template").html();
                     contigoMap.canvas.gmap3({
                         panel: {
                             options: {
-                                content: 
-                                    '<div id="tabs">\
-                                        <ul>\
-                                            <li><a href="#tabs_locate">Event Location</a></li>\
-                                            <li><a href="#tabs_landmark">Landmark</a></li>\
-                                            <li><a href="#tabs_job">Job</a></li>\
-                                        </ul>\
-                                        <div id="tabs_locate"></div>\
-                                        <div id="tabs_landmark"></div>\
-                                        <div id="tabs_job"></div>\
-                                    </div>',
+                                content: template,
                                 bottom: true,
                                 left: true
                             },
@@ -678,30 +669,18 @@ function TabularDataOption(contigoMap) {
                                         all: true,
                                         full: true,
                                         callback: function(landmarks) {
-                                            var landmarkTable = $("<table id='landmark_table'></table>");
-                                            var landmarkThead = $("<thead></thead>").append("<tr>" + _.reduce(["", "Name", "Category", "Address", "Latitude", "Longitude", "Notes"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
-                                            var landmarkTbody = $("<tbody></tbody>");
-                                            _.each(landmarks, function(landmark, j) {
-                                                var html = $(landmark.data.content), address = "";
-                                                landmarkInfo = landmark.object.title.match(/^(.*)\((.*)\)$/); // "Office (Company)"
-                                                address = html.find(".landmark_address").html();
-                                                address = address ? ("<a id='" + landmark.id + "'>" + address + "</a>") : "";
-                                                landmarkTbody.append("<tr>" + _.reduce([
-                                                    "[" + ++j + "]", 
-                                                    landmarkInfo[1], 
-                                                    landmarkInfo[2],
-                                                    address,
-                                                    landmark.object.getPosition().lat().toFixed(5),
-                                                    landmark.object.getPosition().lng().toFixed(5),
-                                                    html.find(".landmark_content").html()], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
-                                                $(landmarkTbody).on("click", "#" + landmark.id, function() {
-                                                    // due to 'full' property is true, the real marker object is stored in marker.object property
-                                                    google.maps.event.trigger(landmark.object, 'click');
-                                                });
-                                            });
-                                            landmarkTable.append(landmarkThead);                                            
-                                            landmarkTable.append(landmarkTbody);
-                                            $("#tabs_landmark").append(landmarkTable);  
+											// When rending an underscore template, we want top-level
+											// variables to be referenced as part of an object. For
+											// technical reasons (scope-chain search), this speeds up
+											// rendering; however, more importantly, this also allows our
+											// templates to look / feel more like our server-side
+											// templates that use the rc (Request Context / Colletion) in
+											// order to render their markup.
+											 _.templateSettings.variable = "rc";
+											var compiled = _.template($("script.tabs_landmark_template").html());
+											$( "#tabs_landmark" ).append(
+												compiled({landmarkTab: $( "#tabs_landmark" ), landmarks: landmarks})
+											);
                                         }
                                     }
                                 });

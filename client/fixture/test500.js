@@ -1,6 +1,5 @@
 $(document).ready(function() {
-    var map = new ContigoMap("map", "cp_rpt_routelog");
-    map.init();
+    var map = new ContigoMap({callback: {mapLoaded: function() {
 																			
 var locatePoint_1988_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00810", width: 16, height: 16}), label: "1988-Steve", coord: new Coordinate({lat: 49.28100, lng: -123.00362}), eventType: "Locate", address: new Address({street: "4486 Hastings St", city: "Burnaby", county: "", state: "BC", postalCode: "V5C", country: "CANADA"}), stopDuration: "", speed: "", direction: "", timestamp: "04/18/2014 04:39:37PM PDT ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "1988", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "", temperature:  "" });
 
@@ -1010,6 +1009,7 @@ beaconPointsArray["1988"] = beaconItem;
 var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, measurementUnit: 'm'});
 
     map.sendPoints(poiCollection, true);
+    }}});
     
 $(window).on('resize', function(){
         map.resize("100%", "100%");

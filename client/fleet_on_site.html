@@ -9,6 +9,40 @@
     <link type="text/css" rel="stylesheet" href="css/gmap3menu.css" />
     <link type="text/css" rel="stylesheet" href="js/jquery-ui-1.10.4/css/smoothness/jquery-ui-1.10.4.custom.min.css" />
     <!-- BEGIN: Underscore Template Definition. -->
+	<script type="text/template" class="tabular_data_template">
+    	<div id="tabs">
+			<ul>
+				<li><a href="#tabs_locate">Event Location</a></li>
+				<li><a href="#tabs_landmark">Landmark</a></li>
+				<li><a href="#tabs_job">Job</a></li>
+			</ul>
+			<div id="tabs_locate"></div>
+			<div id="tabs_landmark"></div>
+			<div id="tabs_job"></div>
+		</div>
+    </script>
+	<script type="text/template" class="tabs_landmark_template">
+		<table id='landmark_table'>
+			<thead><tr><td>&nbsp;</td><td>Name</td><td>Category</td><td>Address</td><td>Latitude</td><td>Longitude</td><td>Notes</td></tr></thead>
+			<tbody>
+			<%
+			_.each(rc.landmarks, function(landmark, i) {
+				var html = $(landmark.data.content), address = "";
+				landmarkInfo = landmark.object.title.match(/^(.*)\((.*)\)$/); // "Office (Company)"
+				address = html.find(".landmark_address").html();
+			%>
+				<tr><td>[<%= ++i %>]</td><td><%= landmarkInfo[1] %></td><td><%= landmarkInfo[2] %></td><td><% if (address) { %><a id='<%= landmark.id %>'><%= address %></a><% } else { %><%= "&nbsp;" %><% } %></td><td><%= landmark.object.getPosition().lat().toFixed(5) %></td><td><%= landmark.object.getPosition().lng().toFixed(5) %></td><td><%= html.find(".landmark_content").html() %></td></tr>
+				<%				
+				rc.landmarkTab.on("click", "#" + landmark.id, function() {
+					// due to 'full' property is true, the real marker object is stored in marker.object property
+                    google.maps.event.trigger(landmark.object, 'click');
+                });
+				%>
+			<% }); %>
+			</tbody>
+		</table>
+    </script>
+	
 	<script type="text/template" class="view_address_info_template">
     	<div class='marker_infowindow'>
 			<div class='marker_infowindow_title'>View Address</div>
@@ -135,6 +169,6 @@
     <script type="text/javascript" src="js/ContigoPoiCollection.js"></script>
     <script type="text/javascript" src="js/fleet_on_site_ext.js"></script>
     <script type="text/javascript" src="js/fleet_on_site.js"></script>
-    <script type="text/javascript" src="fixture/test.js"></script>
+    <script type="text/javascript" src="fixture/test500.js"></script>
 </body>
 </html>
