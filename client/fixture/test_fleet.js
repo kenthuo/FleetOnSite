@@ -5,10 +5,26 @@ function reorderJob(beaconId, jobId) {
 
 $(document).ready(function() {
     //var map = new ContigoMap({callback: {reorderJob: reorderJob}});
-	var map = new ContigoMap({controlOptions: {DisplayItemStateOption: true}});
+
+    var map = new ContigoMap({controlOptions: {DisplayItemStateOption: true}, callback: {mapLoaded: function() {
+    var beaconPointsArray = {};
+    var jobsArray = {};
+    var job_1 = new ContigoJobPoi({id: "879", icon: new Icon({name: "job_yellow_deleted", width: 20, height: 20}),label: "dispatchdriver", coord: new Coordinate({lat: 37.40093, lng: -121.89535}),landmark: "", destination: "2030 Fortune Drive, San Jose, CA US", priority: "-1",status: "Acknowledged",sentTimestamp: "11/23/2012 04:06:22PM PST",ackTimestamp: "11/23/2012 04:07:47PM PST",etaTimestamp: "-",doneTimestamp: "-",deletedTimestamp: "11/23/2012 04:08:00PM PST",deletedBy: "by Driver",description: "2030 Fortune Drive, San Jose, CA, 95131, US",numberLabel: ""});
+    var job_2 = new ContigoJobPoi({id: "880", icon: new Icon({name: "job_orange_deleted", width: 20, height: 20}),label: "dispatchdriver", coord: new Coordinate({lat: 37.40093, lng: -121.89535}),landmark: "", destination: "2030 Fortune Drive, San Jose, CA US", priority: "-1",status: "Pending",sentTimestamp: "11/23/2012 04:12:37PM PST",ackTimestamp: "-",etaTimestamp: "-",doneTimestamp: "-",deletedTimestamp: "11/23/2012 04:12:56PM PST",deletedBy: "by Driver",description: "2030 Fortune Drive, San Jose, CA, 95131, US",numberLabel: ""});
+    var job_3 = new ContigoJobPoi({id: "881", icon: new Icon({name: "job_blue", width: 20, height: 20}),label: "dispatchdriver", coord: new Coordinate({lat: 49.26072, lng: -123.11635}),landmark: "", destination: "553 W 12th Ave, Vancouver, BC, V5Z 3X7, CANADA Lat: 49.26072, Long: -123.11635", priority: "1",status: "TBD",sentTimestamp: "11/23/2012 04:54:46PM PST",ackTimestamp: "-",etaTimestamp: "-",doneTimestamp: "-",deletedTimestamp: "",deletedBy: "",description: "(553 W 12th Ave)",numberLabel: "1"});
+    var job_4 = new ContigoJobPoi({id: "878", icon: new Icon({name: "job_orange_deleted", width: 20, height: 20}),label: "dispatchdriver", coord: new Coordinate({lat: 37.40093, lng: -121.89535}),landmark: "", destination: "2030 Fortune Drive, San Jose, CA US", priority: "-1",status: "Pending",sentTimestamp: "11/23/2012 03:57:32PM PST",ackTimestamp: "-",etaTimestamp: "-",doneTimestamp: "-",deletedTimestamp: "11/23/2012 04:07:59PM PST",deletedBy: "by Driver",description: "2030 Fortune Drive, San Jose, CA, 95131, US",numberLabel: ""});
+    var job_5 = new ContigoJobPoi({id: "877", icon: new Icon({name: "job_orange_deleted", width: 20, height: 20}),label: "dispatchdriver", coord: new Coordinate({lat: 37.40093, lng: -121.89535}),landmark: "", destination: "2030 Fortune Drive, San Jose, CA US", priority: "-1",status: "Pending",sentTimestamp: "11/23/2012 03:52:34PM PST",ackTimestamp: "-",etaTimestamp: "-",doneTimestamp: "-",deletedTimestamp: "11/23/2012 04:07:59PM PST",deletedBy: "by Driver",description: "2030 Fortune Drive, San Jose, CA, 95131, US",numberLabel: ""});
+    var jobs = [job_1, job_2, job_3, job_4, job_5];
+    jobsArray["1422"] = jobs;
+    var landmarkArray = [];
+    var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
+
+	
+    map.sendPoints(poiCollection, true);
+    }}});
     
     // First test fixture
-
+/*
     var beaconPointsArray = {};
     var jobsArray = {};
     var locatePoint_1520_1 = new ContigoBeaconPoi({icon: new Icon({name: "GB00414", width: 16, height: 16}), label: "354235050359342-1520-Kent2", coord: new Coordinate({lat: 49.26072, lng: -123.03474}), eventType: "Ignition Off", address: new Address({street: "Street Unavailable", city: "Vancouver", county: "", state: "BC", postalCode: "V5M 3T5", country: "CA"}), stopDuration: "STOP: 7h 59m 31s", speed: "", direction: "", timestamp: "06/05/2014 09:20:26AM PDT ", landmark: "", circleCertaintyRadius: "", status: "", userNote: "", driverID: "", driverStatus: "", beaconID: "1520", guardianID: "", ioprt1Scenario: "", ioprt2Scenario: "", ioprt3Scenario: "", ioprt4Scenario: "", lineColor: "", postedSpeed:  "", loginID: "", driverName:  "", tripID: "", vehicleStatus: "stop", temperature:  "" });
@@ -97,7 +113,7 @@ $(document).ready(function() {
 
     var landmarkArray = [];
     var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
-
+*/
     
 
 	// Second test fixture
@@ -437,21 +453,6 @@ var landmarkArray = [];
 var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
 */
 
-/*
-    var beaconPointsArray = {};
-    var jobsArray = {};
-    var job_1 = new ContigoJobPoi({id: "879", icon: new Icon({name: "job_yellow_deleted", width: 20, height: 20}),label: "dispatchdriver", coord: new Coordinate({lat: 37.40093, lng: -121.89535}),landmark: "", destination: "2030 Fortune Drive, San Jose, CA US", priority: "-1",status: "Acknowledged",sentTimestamp: "11/23/2012 04:06:22PM PST",ackTimestamp: "11/23/2012 04:07:47PM PST",etaTimestamp: "-",doneTimestamp: "-",deletedTimestamp: "11/23/2012 04:08:00PM PST",deletedBy: "by Driver",description: "2030 Fortune Drive, San Jose, CA, 95131, US",numberLabel: ""});
-    var job_2 = new ContigoJobPoi({id: "880", icon: new Icon({name: "job_orange_deleted", width: 20, height: 20}),label: "dispatchdriver", coord: new Coordinate({lat: 37.40093, lng: -121.89535}),landmark: "", destination: "2030 Fortune Drive, San Jose, CA US", priority: "-1",status: "Pending",sentTimestamp: "11/23/2012 04:12:37PM PST",ackTimestamp: "-",etaTimestamp: "-",doneTimestamp: "-",deletedTimestamp: "11/23/2012 04:12:56PM PST",deletedBy: "by Driver",description: "2030 Fortune Drive, San Jose, CA, 95131, US",numberLabel: ""});
-    var job_3 = new ContigoJobPoi({id: "881", icon: new Icon({name: "job_blue", width: 20, height: 20}),label: "dispatchdriver", coord: new Coordinate({lat: 49.26072, lng: -123.11635}),landmark: "", destination: "553 W 12th Ave, Vancouver, BC, V5Z 3X7, CANADA Lat: 49.26072, Long: -123.11635", priority: "1",status: "TBD",sentTimestamp: "11/23/2012 04:54:46PM PST",ackTimestamp: "-",etaTimestamp: "-",doneTimestamp: "-",deletedTimestamp: "",deletedBy: "",description: "(553 W 12th Ave)",numberLabel: "1"});
-    var job_4 = new ContigoJobPoi({id: "878", icon: new Icon({name: "job_orange_deleted", width: 20, height: 20}),label: "dispatchdriver", coord: new Coordinate({lat: 37.40093, lng: -121.89535}),landmark: "", destination: "2030 Fortune Drive, San Jose, CA US", priority: "-1",status: "Pending",sentTimestamp: "11/23/2012 03:57:32PM PST",ackTimestamp: "-",etaTimestamp: "-",doneTimestamp: "-",deletedTimestamp: "11/23/2012 04:07:59PM PST",deletedBy: "by Driver",description: "2030 Fortune Drive, San Jose, CA, 95131, US",numberLabel: ""});
-    var job_5 = new ContigoJobPoi({id: "877", icon: new Icon({name: "job_orange_deleted", width: 20, height: 20}),label: "dispatchdriver", coord: new Coordinate({lat: 37.40093, lng: -121.89535}),landmark: "", destination: "2030 Fortune Drive, San Jose, CA US", priority: "-1",status: "Pending",sentTimestamp: "11/23/2012 03:52:34PM PST",ackTimestamp: "-",etaTimestamp: "-",doneTimestamp: "-",deletedTimestamp: "11/23/2012 04:07:59PM PST",deletedBy: "by Driver",description: "2030 Fortune Drive, San Jose, CA, 95131, US",numberLabel: ""});
-    var jobs = [job_1, job_2, job_3, job_4, job_5];
-    jobsArray["1422"] = jobs;
-    var landmarkArray = [];
-    var poiCollection = new ContigoPoiCollection({landmarks: landmarkArray, beaconItems: beaconPointsArray, jobs: jobsArray, measurementUnit: 'm'});
-*/
-	
-    map.sendPoints(poiCollection, true);
     $(window).on('resize', function(){
         map.resize("100%", "100%");
     });

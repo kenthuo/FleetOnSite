@@ -621,45 +621,12 @@ function TabularDataOption(contigoMap) {
                                         tag: TAG_GROUP.LOCATION,
                                         all: true,
                                         full: true,
-                                        callback: function(markers) {
-                                            var locationTable = $("<table id='location_table'></table>");
-                                            var locationThead = $("<thead></thead>").append("<tr>" + _.reduce(["", "Date/Time", "Nearest Address", "Latitude", "Longitude", "Event", "Dir", "Speed", "Type/Age"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
-                                            var locationTbody = $("<tbody></tbody>");
-                                            _.each(markers, function(marker, j) {
-                                                var dateTime = landmark = address = "";
-                                                var html = $(marker.data.content);
-                                                landmark = html.find(".landmark").html();
-                                                dateTime = html.find(".date_time").html().match(/^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}[A|P]M [a-zA-Z]*)(.*\(GPS Age: |)([a-zA-Z0-9 ]+|)(\)|)/); // "08/21/2012 02:17:24PM EDT " || 08/20/2012 08:05:01PM EDT <br>(GPS Age: 0h 05m 01s)
-                                                
-                                                address = _.reduce([
-                                                    html.find(".street_address").html(), 
-                                                    html.find(".city").html(), 
-                                                    html.find(".county").html(), 
-                                                    html.find(".state_province").html(), 
-                                                    html.find(".country").html(), 
-                                                    html.find(".postal_code").html()], function(memo, part) { return memo ? (memo + (part ? ", " + part : "")) : part;}, "");
-
-                                                address = address ? ("<a id='" + marker.id + "'>" + address + "</a>") : "";
-                                                address = landmark ? ("<b>" + landmark + "</b>" + address) : address;
-                                                
-                                                locationTbody.append("<tr>" + _.reduce([
-                                                    "[" + ++j + "]", 
-                                                    dateTime[1], 
-                                                    address,
-                                                    marker.object.getPosition().lat().toFixed(5),
-                                                    marker.object.getPosition().lng().toFixed(5),
-                                                    html.find(".event_type").html(), 
-                                                    html.find(".direction").html(), 
-                                                    html.find(".speed").html(), 
-                                                    dateTime[3]], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
-                                                $(locationTbody).on("click", "#" + marker.id, function() {
-                                                    // due to 'full' property is true, the real marker object is stored in marker.object property
-                                                    google.maps.event.trigger(marker.object, 'click');
-                                                });
-                                            });
-                                            locationTable.append(locationThead);                                            
-                                            locationTable.append(locationTbody);
-                                            $("#tabs_locate").append(locationTable);                                            
+                                        callback: function(markers) {                                            
+                                            _.templateSettings.variable = "rc";
+											var compiled = _.template($("script.tabs_location_template").html());
+											$( "#tabs_location" ).append(
+												compiled({locationTab: $("#tabs_location"), markers: markers})
+											);                                           
                                         }
                                     }
                                 });
@@ -676,10 +643,10 @@ function TabularDataOption(contigoMap) {
 											// templates to look / feel more like our server-side
 											// templates that use the rc (Request Context / Colletion) in
 											// order to render their markup.
-											 _.templateSettings.variable = "rc";
+											_.templateSettings.variable = "rc";
 											var compiled = _.template($("script.tabs_landmark_template").html());
 											$( "#tabs_landmark" ).append(
-												compiled({landmarkTab: $( "#tabs_landmark" ), landmarks: landmarks})
+												compiled({landmarkTab: $("#tabs_landmark"), landmarks: landmarks})
 											);
                                         }
                                     }
@@ -690,30 +657,11 @@ function TabularDataOption(contigoMap) {
                                         all: true,
                                         full: true,
                                         callback: function(jobs) {
-                                            var jobTable = $("<table id='job_table'></table>");
-                                            var jobThead = $("<thead></thead>").append("<tr>" + _.reduce(["Priority", "Status", "Destination", "Latitude", "Longitude", "Description"], function(memo, column){ return memo + "<td>" + column + "</td>"; }, "") + "</tr>");
-                                            var jobTbody = $("<tbody></tbody>");
-                                            _.each(jobs, function(job) {
-                                                var html = $(job.data.content), destination = "";
-                                                priority = html.find(".job_priority").html();
-                                                status = html.find(".job_status").html();
-                                                destination = html.find(".job_destination").html();
-                                                destination = destination ? ("<a id='" + job.id + "'>" + destination + "</a>") : "";
-                                                jobTbody.append("<tr>" + _.reduce([
-                                                    html.find(".job_priority").html(), 
-                                                    html.find(".job_status").html(), 
-                                                    destination,
-                                                    job.object.getPosition().lat().toFixed(5),
-                                                    job.object.getPosition().lng().toFixed(5),
-                                                    html.find(".job_description_content").html()], function(memo, data){ return memo + "<td>" + (data ? data : "") + "</td>"; }, "") + "</tr>");
-                                                $(jobTbody).on("click", "#" + job.id, function() {
-                                                    // due to 'full' property is true, the real marker object is stored in marker.object property
-                                                    google.maps.event.trigger(job.object, 'click');
-                                                });
-                                            });
-                                            jobTable.append(jobThead);                                            
-                                            jobTable.append(jobTbody);
-                                            $("#tabs_job").append(jobTable);  
+                                            _.templateSettings.variable = "rc";
+											var compiled = _.template($("script.tabs_job_template").html());
+											$( "#tabs_job" ).append(
+												compiled({jobTab: $("#tabs_job"), jobs: jobs})
+											); 
                                         }
                                     }
                                 });

@@ -12,14 +12,43 @@
 	<script type="text/template" class="tabular_data_template">
     	<div id="tabs">
 			<ul>
-				<li><a href="#tabs_locate">Event Location</a></li>
+				<li><a href="#tabs_location">Event Location</a></li>
 				<li><a href="#tabs_landmark">Landmark</a></li>
 				<li><a href="#tabs_job">Job</a></li>
 			</ul>
-			<div id="tabs_locate"></div>
+			<div id="tabs_location"></div>
 			<div id="tabs_landmark"></div>
 			<div id="tabs_job"></div>
 		</div>
+    </script>
+	<script type="text/template" class="tabs_location_template">
+		<table id='location_table'>
+			<thead><tr><td>&nbsp;</td><td>Date/Time</td><td>Nearest Address</td><td>Latitude</td><td>Longitude</td><td>Event</td><td>Dir</td><td>Speed</td><td>Type/Age</td></tr></thead>
+			<tbody>
+			<%
+			_.each(rc.markers, function(marker, i) {
+				var dateTime = landmark = address = "";
+				var html = $(marker.data.content);
+				landmark = html.find(".landmark").html();
+				dateTime = html.find(".date_time").html().match(/^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}[A|P]M [a-zA-Z]*)(.*\(GPS Age: |)([a-zA-Z0-9 ]+|)(\)|)/); // "08/21/2012 02:17:24PM EDT " || 08/20/2012 08:05:01PM EDT <br>(GPS Age: 0h 05m 01s) 
+				address = _.reduce([
+					html.find(".street_address").html(), 
+					html.find(".city").html(), 
+					html.find(".county").html(), 
+					html.find(".state_province").html(), 
+					html.find(".country").html(), 
+					html.find(".postal_code").html()], function(memo, part) { return memo ? (memo + (part ? ", " + part : "")) : part;}, "");
+			%>
+				<tr><td>[<%= ++i %>]</td><td><%= dateTime[1] %></td><td><% if (address) { %><a id='<%= marker.id %>'><%= address %></a><% } else { %><%= "&nbsp;" %><% } %></td><td><%= marker.object.getPosition().lat().toFixed(5) %></td><td><%= marker.object.getPosition().lng().toFixed(5) %></td><td><%= html.find(".event_type").html() %></td><td><%= html.find(".direction").html() %></td><td><%= html.find(".speed").html() %></td></tr>
+				<%				
+				rc.locationTab.on("click", "#" + marker.id, function() {
+					// due to 'full' property is true, the real marker object is stored in marker.object property
+                    google.maps.event.trigger(marker.object, 'click');
+                });
+				%>
+			<% }); %>
+			</tbody>
+		</table>
     </script>
 	<script type="text/template" class="tabs_landmark_template">
 		<table id='landmark_table'>
@@ -34,7 +63,7 @@
 				<tr><td>[<%= ++i %>]</td><td><%= landmarkInfo[1] %></td><td><%= landmarkInfo[2] %></td><td><% if (address) { %><a id='<%= landmark.id %>'><%= address %></a><% } else { %><%= "&nbsp;" %><% } %></td><td><%= landmark.object.getPosition().lat().toFixed(5) %></td><td><%= landmark.object.getPosition().lng().toFixed(5) %></td><td><%= html.find(".landmark_content").html() %></td></tr>
 				<%				
 				rc.landmarkTab.on("click", "#" + landmark.id, function() {
-					// due to 'full' property is true, the real marker object is stored in marker.object property
+					// due to 'full' property is true, the real marker object is stored in landmark.object property
                     google.maps.event.trigger(landmark.object, 'click');
                 });
 				%>
@@ -42,7 +71,28 @@
 			</tbody>
 		</table>
     </script>
-	
+	<script type="text/template" class="tabs_job_template">
+		<table id='job_table'>
+			<thead><tr><td>Priority</td><td>Status</td><td>Destination</td><td>Latitude</td><td>Longitude</td><td>Description</td></tr></thead>
+			<tbody>
+			<%
+			_.each(rc.jobs, function(job, i) {
+				var html = $(job.data.content), destination = "";
+                priority = html.find(".job_priority").html();
+                status = html.find(".job_status").html();
+                destination = html.find(".job_destination").html();
+			%>
+				<tr><td>[<%= html.find(".job_priority").html() %>]</td><td><%= html.find(".job_status").html() %></td><td><% if (destination) { %><a id='<%= job.id %>'><%= destination %></a><% } else { %><%= "&nbsp;" %><% } %></td><td><%= job.object.getPosition().lat().toFixed(5) %></td><td><%= job.object.getPosition().lng().toFixed(5) %></td><td><%= html.find(".job_description_content").html() %></td></tr>
+				<%				
+				rc.jobTab.on("click", "#" + job.id, function() {
+					// due to 'full' property is true, the real marker object is stored in job.object property
+                    google.maps.event.trigger(job.object, 'click');
+                });
+				%>
+			<% }); %>
+			</tbody>
+		</table>
+    </script>
 	<script type="text/template" class="view_address_info_template">
     	<div class='marker_infowindow'>
 			<div class='marker_infowindow_title'>View Address</div>
@@ -169,6 +219,6 @@
     <script type="text/javascript" src="js/ContigoPoiCollection.js"></script>
     <script type="text/javascript" src="js/fleet_on_site_ext.js"></script>
     <script type="text/javascript" src="js/fleet_on_site.js"></script>
-    <script type="text/javascript" src="fixture/test500.js"></script>
+    <script type="text/javascript" src="fixture/test_fleet.js"></script>
 </body>
 </html>

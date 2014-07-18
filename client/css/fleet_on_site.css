@@ -368,7 +368,7 @@ body {
     font-size: 82.5%;
 }
 
-#tabs_locate, #tabs_landmark, #tabs_job {
+#tabs_location, #tabs_landmark, #tabs_job {
     height: 130px;
     overflow: auto;
 }
