@@ -46,6 +46,8 @@ function ContigoMap(opts) {
 		}, function(error) {
 			$this.init();
 		});
+    } else {
+        $this.init();
     }
     
 }
